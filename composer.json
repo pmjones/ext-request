@@ -1,0 +1,26 @@
+{
+    "name": "pmjones/phprequest",
+    "type": "library",
+    "description": "A read-only PHP request values object.",
+    "keywords": [
+        "http",
+        "server",
+        "request"
+    ],
+    "homepage": "https://github.com/pmjones/phprequest",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "PhpRequest Contributors",
+            "homepage": "https://github.com/pmjones/phprequest/contributors"
+        }
+    ],
+    "require": {
+        "php": ">=5.5.0"
+    },
+    "autoload": {
+        "classmap": [
+            "src/"
+        ]
+    }
+}
