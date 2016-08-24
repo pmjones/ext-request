@@ -1,5 +1,9 @@
 <?php
-require dirname(__DIR__) . '/src/PhpRequest.php';
+// this allows for using this test for *both* the reference
+// implementation *and* the extension
+if (! class_exists('PhpRequest')) {
+    require dirname(__DIR__) . '/src/PhpRequest.php';
+}
 
 /**
  * @backupGlobals enabled
