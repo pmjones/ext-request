@@ -169,17 +169,17 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
         ];
         $request = new PhpRequest();
 
-        $expect = [
+        $expect = (object) [
             'scheme' => 'http',
             'host' => 'example.com',
             'port' => 8080,
-            'user' => NULL,
-            'pass' => NULL,
+            'user' => null,
+            'pass' => null,
             'path' => '/foo/bar',
             'query' => 'baz=dib',
-            'fragment' => NULL,
+            'fragment' => null,
         ];
-        $this->assertSame($expect, $request->url);
+        $this->assertEquals($expect, $request->url);
     }
 
     public function testUrl_withoutHost()
@@ -197,7 +197,7 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
         $_SERVER['HTTPS'] = 'on';
         $request = new PhpRequest();
 
-        $this->assertSame('https', $request->url['scheme']);
+        $this->assertSame('https', $request->url->scheme);
     }
 
     public function testUrl_serverName()
@@ -207,7 +207,7 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
         ];
 
         $request = new PhpRequest();
-        $this->assertSame('example.com', $request->url['host']);
+        $this->assertSame('example.com', $request->url->host);
     }
 
     public function testUrl_hostPort()
@@ -217,8 +217,8 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
         ];
 
         $request = new PhpRequest();
-        $this->assertSame('example.com', $request->url['host']);
-        $this->assertSame(8080, $request->url['port']);
+        $this->assertSame('example.com', $request->url->host);
+        $this->assertSame(8080, $request->url->port);
     }
 
     public function testUrl_serverPort()
@@ -228,8 +228,8 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
         ];
 
         $request = new PhpRequest();
-        $this->assertSame('example.com', $request->url['host']);
-        $this->assertSame(8080, $request->url['port']);
+        $this->assertSame('example.com', $request->url->host);
+        $this->assertSame(8080, $request->url->port);
     }
 
     public function testAcceptMedia()

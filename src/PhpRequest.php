@@ -45,16 +45,7 @@ class PhpRequest
     protected $post = [];
     protected $secure = false;
     protected $server = [];
-    protected $url = [
-        'scheme' => null,
-        'host' => null,
-        'port' => null,
-        'user' => null,
-        'pass' => null,
-        'path' => null,
-        'query' => null,
-        'fragment' => null,
-    ];
+    protected $url;
 
     protected $xhr = false;
 
@@ -192,8 +183,17 @@ class PhpRequest
             : '';
 
         $url = $scheme . $host . $port . $uri;
-
-        $this->url = array_merge($this->url, parse_url($url));
+        $base =  [
+            'scheme' => null,
+            'host' => null,
+            'port' => null,
+            'user' => null,
+            'pass' => null,
+            'path' => null,
+            'query' => null,
+            'fragment' => null,
+        ];
+        $this->url = (object) array_merge($base, parse_url($url));
     }
 
     protected function setAccepts() // : void
