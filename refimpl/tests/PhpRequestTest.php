@@ -250,28 +250,29 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
         $request = new PhpRequest();
 
         $expect = [
-            0 => [
+            0 => (object) [
                 'value' => 'application/json',
                 'quality' => '1.0',
                 'params' => ['foo' => 'bar'],
             ],
-            1 => [
+            1 => (object) [
                 'value' => 'application/xml',
                 'quality' => '0.8',
                 'params' => [],
             ],
-            2 => [
+            2 => (object) [
                 'value' => 'text/*',
                 'quality' => '0.2',
                 'params' => [],
             ],
-            3 => [
+            3 => (object) [
                 'value' => '*/*',
                 'quality' => '0.1',
                 'params' => [],
             ],
         ];
-        $this->assertSame($expect, $request->acceptMedia);
+
+        $this->assertEquals($expect, $request->acceptMedia);
     }
 
     public function testAcceptCharset()
@@ -283,19 +284,19 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
         $request = new PhpRequest();
 
         $expect = [
-            0 => [
+            0 => (object) [
                 'value' => 'unicode-1-1',
                 'quality' => '1.0',
                 'params' => [],
             ],
-            1 => [
+            1 => (object) [
                 'value' => 'iso-8859-5',
                 'quality' => '0.8',
                 'params' => [],
             ],
         ];
 
-        $this->assertSame($expect, $request->acceptCharset);
+        $this->assertEquals($expect, $request->acceptCharset);
     }
 
     public function testAcceptEncoding()
@@ -307,19 +308,19 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
         $request = new PhpRequest();
 
         $expect = [
-            0 => [
+            0 => (object) [
                 'value' => 'gzip',
                 'quality' => '1.0',
                 'params' => [],
             ],
-            1 => [
+            1 => (object) [
                 'value' => 'compress',
                 'quality' => '0.5',
                 'params' => [],
             ],
         ];
 
-        $this->assertSame($expect, $request->acceptEncoding);
+        $this->assertEquals($expect, $request->acceptEncoding);
     }
 
     public function testAcceptLanguage()
@@ -331,28 +332,28 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
         $request = new PhpRequest();
 
         $expect = [
-            0 => [
+            0 => (object) [
                 'value' => 'en-US',
                 'quality' => '1.0',
                 'params' => [],
                 'type' => 'en',
                 'subtype' => 'US',
             ],
-            1 => [
+            1 => (object) [
                 'value' => 'en-GB',
                 'quality' => '1.0',
                 'params' => [],
                 'type' => 'en',
                 'subtype' => 'GB',
             ],
-            2 => [
+            2 => (object) [
                 'value' => 'en',
                 'quality' => '1.0',
                 'params' => [],
                 'type' => 'en',
                 'subtype' => null,
             ],
-            3 => [
+            3 => (object) [
                 'value' => '*',
                 'quality' => '1.0',
                 'params' => [],
@@ -361,6 +362,6 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
             ],
         ];
 
-        $this->assertSame($expect, $request->acceptLanguage);
+        $this->assertEquals($expect, $request->acceptLanguage);
     }
 }

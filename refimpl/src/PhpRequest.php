@@ -213,9 +213,9 @@ class PhpRequest
         if (isset($this->headers['Accept-Language'])) {
             $language = $this->parseAccepts($this->headers['Accept-Language']);
             foreach ($language as $lang) {
-                $parts = explode('-', $lang['value']);
-                $lang['type'] = array_shift($parts);
-                $lang['subtype'] = array_shift($parts);
+                $parts = explode('-', $lang->value);
+                $lang->type = array_shift($parts);
+                $lang->subtype = array_shift($parts);
                 $this->acceptLanguage[] = $lang;
             }
         }
@@ -273,7 +273,7 @@ class PhpRequest
         $return = [];
         foreach ($buckets as $q => $accepts) {
             foreach ($accepts as $accept) {
-                $return[] = $accept;
+                $return[] = (object) $accept;
             }
         }
 
