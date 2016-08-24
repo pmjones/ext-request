@@ -1,4 +1,6 @@
 <?php
+require dirname(__DIR__) . '/src/PhpRequest.php';
+
 /**
  * @backupGlobals enabled
  */
