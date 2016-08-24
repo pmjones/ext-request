@@ -109,11 +109,10 @@ static inline void copy_global(zval* obj, const char* key, size_t key_len, const
 }
 #define copy_global_lit(obj, glob, key) copy_global(obj, ZEND_STRL(glob), ZEND_STRL(key))
 
-static inline void set_method(zval* object, zend_string * method)
+static inline void set_method(zval* object, zval *server, zend_string * method)
 {
     zval rv;
     zend_string* tmp;
-    zval* server;
     zval* val;
 
     // force the method?
@@ -125,8 +124,7 @@ static inline void set_method(zval* object, zend_string * method)
         return;
     }
 
-    // get server
-    server = zend_read_property(Z_CE_P(object), object, ZEND_STRL("server"), 0, &rv);
+    // check server
     if( !server || Z_TYPE_P(server) != IS_ARRAY ) {
         return;
     }
@@ -179,18 +177,15 @@ static inline void normalize_set_header(zval *headers, const char *key, size_t l
     zend_string_release(tmp);
 }
 
-static inline void set_headers(zval *object)
+static inline void set_headers(zval *object, zval *server)
 {
     zend_string *key;
     zend_ulong index;
     zval *val;
-    zval *server;
-    zval rv;
     zval headers;
     const size_t offset = sizeof("HTTP_") - 1;
 
     // get server
-    server = zend_read_property(Z_CE_P(object), object, ZEND_STRL("server"), 0, &rv);
     if( !server || Z_TYPE_P(server) != IS_ARRAY ) {
         return;
     }
@@ -215,10 +210,37 @@ static inline void set_headers(zval *object)
     zend_update_property(Z_CE_P(object), object, ZEND_STRL("headers"), &headers);
 }
 
+static inline void set_secure(zval *object, zval *server)
+{
+    zval *tmp;
+    zend_bool secure = 0;
+
+    if( !server || Z_TYPE_P(server) != IS_ARRAY ) {
+        return;
+    }
+
+    if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTPS"))) &&
+            Z_TYPE_P(tmp) == IS_STRING &&
+            zend_string_equals_literal_ci(Z_STR_P(tmp), "on") ) {
+        secure = 1;
+    } else if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("SERVER_PORT"))) &&
+            ((Z_TYPE_P(tmp) == IS_LONG && Z_LVAL_P(tmp) == 443) || (Z_TYPE_P(tmp) == IS_STRING && zend_string_equals_literal(Z_STR_P(tmp), "443"))) ) {
+        secure = 1;
+    } else if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_X_FORWARDED_PROTO"))) &&
+               Z_TYPE_P(tmp) == IS_STRING &&
+               zend_string_equals_literal_ci(Z_STR_P(tmp), "https") ) {
+        secure = 1;
+    }
+
+    zend_update_property_bool(Z_CE_P(object), object, ZEND_STRL("secure"), secure);
+}
+
 PHP_METHOD(PhpRequest, __construct)
 {
     zval * _this_zval = getThis();
     zend_string * method = NULL;
+    zval *server;
+    zval rv;
 
     ZEND_PARSE_PARAMETERS_START(0, 1)
             Z_PARAM_OPTIONAL
@@ -236,8 +258,13 @@ PHP_METHOD(PhpRequest, __construct)
     copy_global_lit(_this_zval, "get", "_GET");
     copy_global_lit(_this_zval, "post", "_POST");
 
-    set_method(_this_zval, method);
-    set_headers(_this_zval);
+    // Read back server property
+    server = zend_read_property(Z_CE_P(_this_zval), _this_zval, ZEND_STRL("server"), 0, &rv);
+
+    // Internal setters
+    set_method(_this_zval, server, method);
+    set_headers(_this_zval, server);
+    set_secure(_this_zval, server);
 
     // Lock the object
     intern->locked = 1;
