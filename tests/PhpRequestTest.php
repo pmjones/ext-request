@@ -63,6 +63,13 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
         unset($request->method);
     }
 
+    public function testSuperglobalsAreCopied()
+    {
+        $request = new PhpRequest();
+        $_SERVER['HTTP_HOST'] = 'NOT example.com';
+        $this->assertSame('example.com', $request->server['HTTP_HOST']);
+    }
+
     public function testMethod()
     {
         $request = new PhpRequest();
