@@ -17,6 +17,10 @@
  * @property-read $acceptEncoding
  * @property-read $acceptLanguage
  * @property-read $acceptMedia
+ * @property-read $authDigest
+ * @property-read $authPw
+ * @property-read $authType
+ * @property-read $authUser
  * @property-read $cookie
  * @property-read $env
  * @property-read $files
