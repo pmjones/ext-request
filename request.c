@@ -55,7 +55,7 @@ static zend_object * php_request_obj_create(zend_class_entry * ce)
 static int php_request_object_has_property(zval *object, zval *member, int has_set_exists, void **cache_slot)
 {
     if( !std_object_handlers.has_property(object, member, has_set_exists, cache_slot) ) {
-        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "PhpRequest::%s does not exist.", Z_STRVAL_P(member));
+        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "PhpRequest::$%s does not exist.", Z_STRVAL_P(member));
         return 0;
     } else {
         return 1;
@@ -67,7 +67,7 @@ static int php_request_object_has_property(zval *object, zval *member, int has_s
 static zval* php_request_object_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv)
 {
     if( !std_object_handlers.has_property(object, member, 2, cache_slot) ) {
-        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "PhpRequest::%s does not exist.", Z_STRVAL_P(member));
+        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "PhpRequest::$%s does not exist.", Z_STRVAL_P(member));
         return rv;
     } else {
         return std_object_handlers.read_property(object, member, type, cache_slot, rv);
@@ -153,6 +153,68 @@ static inline void set_method(zval* object, zend_string * method)
     zend_string_release(tmp);
 }
 
+static inline void normalize_set_header(zval *headers, const char *key, size_t len, zval *val)
+{
+    zval zkey;
+    char mask[256];
+    register char *r, *r_end;
+    zend_string *tmp = zend_string_init(key, len, 0);
+
+    r = ZSTR_VAL(tmp);
+
+    *r = toupper((unsigned char) *r);
+    r++;
+    for( r_end = r + ZSTR_LEN(tmp) - 1; r <= r_end; r++ ) {
+        if( (unsigned char)*(r - 1) == '-' ) {
+            *r = toupper((unsigned char) *r);
+        } else if( *r == '_' ) {
+            *r = '-';
+        } else {
+            *r = tolower((unsigned char) *r);
+        }
+    }
+
+    add_assoc_zval_ex(headers, ZSTR_VAL(tmp), ZSTR_LEN(tmp), val);
+
+    zend_string_release(tmp);
+}
+
+static inline void set_headers(zval *object)
+{
+    zend_string *key;
+    zend_ulong index;
+    zval *val;
+    zval *server;
+    zval rv;
+    zval headers;
+    const size_t offset = sizeof("HTTP_") - 1;
+
+    // get server
+    server = zend_read_property(Z_CE_P(object), object, ZEND_STRL("server"), 0, &rv);
+    if( !server || Z_TYPE_P(server) != IS_ARRAY ) {
+        return;
+    }
+
+    // build headers
+    array_init(&headers);
+
+    ZEND_HASH_FOREACH_KEY_VAL(Z_ARRVAL_P(server), index, key, val) {
+        if( key && ZSTR_LEN(key) > 5 && strncmp(ZSTR_VAL(key), "HTTP_", offset) == 0 ) {
+            normalize_set_header(&headers, ZSTR_VAL(key) + offset, ZSTR_LEN(key) - offset, val);
+        }
+    } ZEND_HASH_FOREACH_END();
+
+    // RFC 3875 headers not prefixed with HTTP_*
+    if( val = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("CONTENT_LENGTH")) ) {
+        add_assoc_zval_ex(&headers, ZEND_STRL("Content-Length"), val);
+    }
+    if( val = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("CONTENT_TYPE")) ) {
+        add_assoc_zval_ex(&headers, ZEND_STRL("Content-Type"), val);
+    }
+
+    zend_update_property(Z_CE_P(object), object, ZEND_STRL("headers"), &headers);
+}
+
 PHP_METHOD(PhpRequest, __construct)
 {
     zval * _this_zval = getThis();
@@ -175,6 +237,7 @@ PHP_METHOD(PhpRequest, __construct)
     copy_global_lit(_this_zval, "post", "_POST");
 
     set_method(_this_zval, method);
+    set_headers(_this_zval);
 
     // Lock the object
     intern->locked = 1;
