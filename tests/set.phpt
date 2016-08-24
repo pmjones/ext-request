@@ -1,21 +1,14 @@
 --TEST--
-PhpRequest::$method
+PhpRequest setter
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --FILE--
 <?php
-$_SERVER['REQUEST_METHOD'] = 'GET';
 $request = new PhpRequest();
-echo $request->method, "\n";
-$request = new PhpRequest('PUT');
-echo $request->method, "\n";
 try {
-    $request->method = 'PATCH';
-    echo 'fail';
+    $request->undefinedProp = 'foo';
 } catch( \RuntimeException $e ) {
     echo $e->getMessage();
 }
 --EXPECT--
-GET
-PUT
 PhpRequest is read-only.

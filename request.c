@@ -6,6 +6,7 @@
 #include "main/php.h"
 #include "main/php_ini.h"
 #include "ext/standard/info.h"
+#include "ext/spl/spl_exceptions.h"
 #include "Zend/zend_API.h"
 
 #include "php_request.h"
@@ -51,15 +52,24 @@ static zend_object * php_request_obj_create(zend_class_entry * ce)
 /* {{{ php_request_object_has_property */
 static int php_request_object_has_property(zval *object, zval *member, int has_set_exists, void **cache_slot)
 {
-    return std_object_handlers.has_property(object, member, has_set_exists, cache_slot);
-
+    if( !std_object_handlers.has_property(object, member, has_set_exists, cache_slot) ) {
+        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "PhpRequest::%s does not exist.", Z_STRVAL_P(member));
+        return 0;
+    } else {
+        return 1;
+    }
 }
 /* }}} */
 
 /* {{{ php_request_object_read_property */
 static zval* php_request_object_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv)
 {
-    return std_object_handlers.read_property(object, member, type, cache_slot, rv);
+    if( !std_object_handlers.has_property(object, member, 2, cache_slot) ) {
+        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "PhpRequest::%s does not exist.", Z_STRVAL_P(member));
+        return rv;
+    } else {
+        return std_object_handlers.read_property(object, member, type, cache_slot, rv);
+    }
 }
 /* }}} */
 
@@ -68,9 +78,22 @@ static void php_request_object_write_property(zval *object, zval *member, zval *
 {
     struct php_request_obj * intern = Z_REQUEST_P(object);
     if( intern->locked ) {
-        // @todo throw exception if not writable
+        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "PhpRequest is read-only.");
+    } else {
+        std_object_handlers.write_property(object, member, value, cache_slot);
     }
-    std_object_handlers.write_property(object, member, value, cache_slot);
+}
+/* }}} */
+
+/* {{{ php_request_object_unset_property */
+static void php_request_object_unset_property(zval *object, zval *member, void **cache_slot)
+{
+    struct php_request_obj * intern = Z_REQUEST_P(object);
+    if( intern->locked ) {
+        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "PhpRequest is read-only.");
+    } else {
+        std_object_handlers.unset_property(object, member, cache_slot);
+    }
 }
 /* }}} */
 
@@ -110,6 +133,7 @@ static PHP_MINIT_FUNCTION(request)
     PhpRequest_obj_handlers.has_property = php_request_object_has_property;
     PhpRequest_obj_handlers.read_property = php_request_object_read_property;
     PhpRequest_obj_handlers.write_property = php_request_object_write_property;
+    PhpRequest_obj_handlers.unset_property = php_request_object_unset_property;
 
     INIT_CLASS_ENTRY(ce, "PhpRequest", PhpRequest_methods);
     PhpRequest_ce_ptr = zend_register_internal_class(&ce);
