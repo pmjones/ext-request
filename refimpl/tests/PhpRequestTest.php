@@ -444,6 +444,20 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
         $this->assertSame('text/plain', $request->contentType);
         $this->assertNull($request->contentCharset);
 
+        $_SERVER['HTTP_CONTENT_TYPE'] = 'text/plain;charset=utf-8';
+        $request = new PhpRequest();
+        $this->assertSame('foobar', $request->contentMd5);
+        $this->assertSame('123', $request->contentLength);
+        $this->assertSame('text/plain', $request->contentType);
+        $this->assertSame('utf-8', $request->contentCharset);
+
+        $_SERVER['HTTP_CONTENT_TYPE'] = 'text/plain;foo=bar';
+        $request = new PhpRequest();
+        $this->assertSame('foobar', $request->contentMd5);
+        $this->assertSame('123', $request->contentLength);
+        $this->assertSame('text/plain', $request->contentType);
+        $this->assertNull($request->contentCharset);
+
         $_SERVER['HTTP_CONTENT_TYPE'] = 'text/plain;foo=bar;charset=utf-8;baz=dib';
         $request = new PhpRequest();
         $this->assertSame('foobar', $request->contentMd5);
