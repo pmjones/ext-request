@@ -7,9 +7,11 @@
 #include "main/php_ini.h"
 #include "ext/standard/info.h"
 #include "ext/standard/php_string.h"
+#include "ext/standard/url.h"
 #include "ext/spl/spl_exceptions.h"
 #include "Zend/zend_API.h"
 #include "Zend/zend_portability.h"
+#include "Zend/zend_smart_str.h"
 
 #include "php_request.h"
 
@@ -235,6 +237,125 @@ static inline void set_secure(zval *object, zval *server)
     zend_update_property_bool(Z_CE_P(object), object, ZEND_STRL("secure"), secure);
 }
 
+static inline void set_url(zval *object, zval *server)
+{
+    zval rv = {0};
+    zval *tmp;
+    zend_bool is_secure = 0;
+    zend_string * host = NULL;
+    zend_string * port = NULL;
+    zend_string * uri = NULL;
+    smart_str buf = {0};
+    php_url * url;
+    zval arr;
+
+    if( !server || Z_TYPE_P(server) != IS_ARRAY ) {
+        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "Could not determine host for PhpRequest.");
+        return;
+    }
+
+    // Get scheme
+    tmp = zend_read_property(Z_CE_P(object), object, ZEND_STRL("secure"), 0, &rv);
+    if( tmp && Z_TYPE_P(tmp) == IS_TRUE ) {
+        is_secure = 1;
+    }
+
+    // Get host
+    if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_HOST"))) &&
+            Z_TYPE_P(tmp) == IS_STRING ) {
+        host = Z_STR_P(tmp);
+    } else if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("SERVER_NAME"))) &&
+               Z_TYPE_P(tmp) == IS_STRING ) {
+        host = Z_STR_P(tmp);
+
+        // Get port
+        if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("SERVER_PORT"))) &&
+            Z_TYPE_P(tmp) == IS_STRING ) {
+            port = Z_STR_P(tmp);
+        }
+    } else {
+        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "Could not determine host for PhpRequest.");
+        return;
+    }
+
+    // Get uri
+    if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("REQUEST_URI"))) &&
+        Z_TYPE_P(tmp) == IS_STRING ) {
+        uri = Z_STR_P(tmp);
+    }
+
+    // Form URL
+    smart_str_alloc(&buf, 1024, 0);
+    if( is_secure ) {
+        smart_str_appendl_ex(&buf, ZEND_STRL("https://"), 0);
+    } else {
+        smart_str_appendl_ex(&buf, ZEND_STRL("http://"), 0);
+    }
+    smart_str_append_ex(&buf, host, 0);
+    if( port ) {
+        smart_str_appendc_ex(&buf, ':', 0);
+        smart_str_append_ex(&buf, port, 0);
+    }
+    if( uri ) {
+        smart_str_append_ex(&buf, uri, 0);
+    }
+    smart_str_0(&buf);
+
+    // Re-parse URL
+    url = php_url_parse_ex(ZSTR_VAL(buf.s), ZSTR_LEN(buf.s));
+    smart_str_free(&buf);
+    if( !url ) {
+        return;
+    }
+
+    // Form array
+    array_init(&arr);
+    if( url->scheme ) {
+        add_assoc_string(&arr, "scheme", url->scheme);
+    } else {
+        add_assoc_null(&arr, "scheme");
+    }
+    if( url->host ) {
+        add_assoc_string(&arr, "host", url->host);
+    } else {
+        add_assoc_null(&arr, "host");
+    }
+    if( url->port ) {
+        add_assoc_long(&arr, "port", url->port);
+    } else {
+        add_assoc_null(&arr, "port");
+    }
+    if( url->user ) {
+        add_assoc_string(&arr, "user", url->user);
+    } else {
+        add_assoc_null(&arr, "user");
+    }
+    if( url->pass ) {
+        add_assoc_string(&arr, "pass", url->pass);
+    } else {
+        add_assoc_null(&arr, "pass");
+    }
+    if( url->path ) {
+        add_assoc_string(&arr, "path", url->path);
+    } else {
+        add_assoc_null(&arr, "path");
+    }
+    if( url->query ) {
+        add_assoc_string(&arr, "query", url->query);
+    } else {
+        add_assoc_null(&arr, "query");
+    }
+    if( url->fragment ) {
+        add_assoc_string(&arr, "fragment", url->fragment);
+    } else {
+        add_assoc_null(&arr, "fragment");
+    }
+
+    convert_to_object(&arr);
+
+    zend_update_property(Z_CE_P(object), object, ZEND_STRL("url"), &arr);
+}
+
 PHP_METHOD(PhpRequest, __construct)
 {
     zval * _this_zval = getThis();
@@ -265,6 +386,7 @@ PHP_METHOD(PhpRequest, __construct)
     set_method(_this_zval, server, method);
     set_headers(_this_zval, server);
     set_secure(_this_zval, server);
+    set_url(_this_zval, server);
 
     // Lock the object
     intern->locked = 1;

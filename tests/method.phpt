@@ -4,6 +4,7 @@ PhpRequest::$method
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --FILE--
 <?php
+$_SERVER['HTTP_HOST'] = 'localhost';
 $_SERVER['REQUEST_METHOD'] = 'GET';
 $request = new PhpRequest();
 echo $request->method, "\n";
