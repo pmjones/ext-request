@@ -236,13 +236,29 @@ static inline void set_secure(zval *object, zval *server)
     zend_update_property_bool(Z_CE_P(object), object, ZEND_STRL("secure"), secure);
 }
 
+static inline const unsigned char * extract_port(const unsigned char * host, size_t len)
+{
+    const unsigned char * right = host + len - 1;
+    const unsigned char * left = len > 6 ? right - 6 : host;
+    const unsigned char * pos = right;
+    for( ; pos != left; pos-- ) {
+        if( !isdigit(*pos) ) {
+            if( *pos == ':' ) {
+                return pos + 1;
+            }
+            break;
+        }
+    }
+    return NULL;
+}
+
 static inline void set_url(zval *object, zval *server)
 {
     zval rv = {0};
     zval *tmp;
     zend_bool is_secure = 0;
     zend_string * host = NULL;
-    zend_string * port = NULL;
+    zend_long port = 0;
     zend_string * uri = NULL;
     smart_str buf = {0};
     php_url * url;
@@ -266,15 +282,17 @@ static inline void set_url(zval *object, zval *server)
     } else if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("SERVER_NAME"))) &&
                Z_TYPE_P(tmp) == IS_STRING ) {
         host = Z_STR_P(tmp);
-
-        // Get port
-        if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("SERVER_PORT"))) &&
-            Z_TYPE_P(tmp) == IS_STRING ) {
-            port = Z_STR_P(tmp);
-        }
     } else {
         zend_throw_exception_ex(spl_ce_RuntimeException, 0, "Could not determine host for PhpRequest.");
         return;
+    }
+
+    // Get port
+    if( NULL != extract_port(ZSTR_VAL(host), ZSTR_LEN(host)) ) {
+        // no need to extract
+    } else if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("SERVER_PORT"))) ) {
+        convert_to_long(tmp);
+        port = Z_LVAL_P(tmp);
     }
 
     // Get uri
@@ -291,9 +309,9 @@ static inline void set_url(zval *object, zval *server)
         smart_str_appendl_ex(&buf, ZEND_STRL("http://"), 0);
     }
     smart_str_append_ex(&buf, host, 0);
-    if( port ) {
+    if( port > 0 ) {
         smart_str_appendc_ex(&buf, ':', 0);
-        smart_str_append_ex(&buf, port, 0);
+        smart_str_append_long(&buf, port);
     }
     if( uri ) {
         smart_str_append_ex(&buf, uri, 0);
