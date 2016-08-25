@@ -2,16 +2,12 @@
 /**
  *
  * Goals:
- * - Provide HTTP-related superglobals as read-only instance properties.
- * - Add $method for the HTTP method, and convenience methods for is*().
- * - Add $headers for normalized HTTP headers
+ * - Provide a struct of non-session superglobals as read-only properties.
+ * - Add other read-only properties calculated from the superglobals ($method,
+ *   $headers, $content, etc.) to the struct.
  * - Only build things that don't require application input; e.g., no negotiation,
  *   but build acceptables for application to work through.
- *
- * It looks like we can have $body as a scalar, null, or array, but not as an
- * object. Maybe scan through arrays to see if their top-level members are
- * objects other than StdClass, otherwise you can use methods to modify objects
- * in the array.
+ * - No methods, just properties (i.e., a struct).
  *
  * @property-read $acceptCharset
  * @property-read $acceptEncoding
@@ -21,6 +17,7 @@
  * @property-read $authPw
  * @property-read $authType
  * @property-read $authUser
+ * @property-read $content
  * @property-read $contentCharset
  * @property-read $contentLength
  * @property-read $contentMd5
@@ -48,6 +45,7 @@ class PhpRequest
     protected $authPw;
     protected $authType;
     protected $authUser;
+    protected $content;
     protected $contentCharset;
     protected $contentLength;
     protected $contentMd5;
@@ -351,6 +349,8 @@ class PhpRequest
 
     protected function setContent() // : void
     {
+        $this->content = file_get_contents('php://input');
+
         if (isset($this->headers['Content-Md5'])) {
             $this->contentMd5 = $this->headers['Content-Md5'];
         }
