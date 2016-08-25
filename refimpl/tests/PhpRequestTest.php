@@ -6,6 +6,7 @@ if (! class_exists('PhpRequest')) {
 }
 
 /**
+ * @todo test that StdClass objects remain read-only
  * @backupGlobals enabled
  */
 class PhpRequestTest extends PHPUnit_Framework_TestCase
