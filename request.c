@@ -156,7 +156,6 @@ static inline void set_method(zval* object, zval *server, zend_string * method)
 static inline void normalize_set_header(zval *headers, const char *key, size_t len, zval *val)
 {
     zval zkey;
-    char mask[256];
     register char *r, *r_end;
     zend_string *tmp = zend_string_init(key, len, 0);
 
@@ -185,7 +184,7 @@ static inline void set_headers(zval *object, zval *server)
     zend_ulong index;
     zval *val;
     zval headers;
-    const size_t offset = sizeof("HTTP_") - 1;
+    static const size_t offset = sizeof("HTTP_") - 1;
 
     // get server
     if( !server || Z_TYPE_P(server) != IS_ARRAY ) {
