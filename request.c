@@ -113,7 +113,7 @@ static inline void copy_global(zval* obj, const char* key, size_t key_len, const
 
 static inline void set_method(zval* object, zval *server, zend_string * method)
 {
-    zval rv;
+    zval rv = {0};
     zend_string* tmp;
     zval* val;
 
@@ -155,7 +155,7 @@ static inline void set_method(zval* object, zval *server, zend_string * method)
 
 static inline void normalize_set_header(zval *headers, const char *key, size_t len, zval *val)
 {
-    zval zkey;
+    zval zkey = {0};
     register char *r, *r_end;
     zend_string *tmp = zend_string_init(key, len, 0);
 
@@ -183,7 +183,7 @@ static inline void set_headers(zval *object, zval *server)
     zend_string *key;
     zend_ulong index;
     zval *val;
-    zval headers;
+    zval headers = {0};
     static const size_t offset = sizeof("HTTP_") - 1;
 
     // get server
@@ -262,7 +262,7 @@ static inline void set_url(zval *object, zval *server)
     zend_string * uri = NULL;
     smart_str buf = {0};
     php_url * url;
-    zval arr;
+    zval arr = {0};
 
     if( !server || Z_TYPE_P(server) != IS_ARRAY ) {
         zend_throw_exception_ex(spl_ce_RuntimeException, 0, "Could not determine host for PhpRequest.");
@@ -378,7 +378,7 @@ PHP_METHOD(PhpRequest, __construct)
     zval * _this_zval = getThis();
     zend_string * method = NULL;
     zval *server;
-    zval rv;
+    zval rv = {0};
 
     ZEND_PARSE_PARAMETERS_START(0, 1)
             Z_PARAM_OPTIONAL
@@ -423,6 +423,7 @@ static PHP_MINIT_FUNCTION(request)
     zend_class_entry ce;
 
     memcpy(&PhpRequest_obj_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
+    PhpRequest_obj_handlers.offset = XtOffsetOf(struct php_request_obj, std);
     PhpRequest_obj_handlers.has_property = php_request_object_has_property;
     PhpRequest_obj_handlers.read_property = php_request_object_read_property;
     PhpRequest_obj_handlers.write_property = php_request_object_write_property;
