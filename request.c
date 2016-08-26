@@ -20,8 +20,8 @@ static zend_object_handlers PhpRequest_obj_handlers;
 static HashTable PhpRequest_prop_handlers;
 
 struct php_request_obj {
-    zend_object std;
     zend_bool locked;
+    zend_object std;
 };
 
 /* {{{ Argument Info */
