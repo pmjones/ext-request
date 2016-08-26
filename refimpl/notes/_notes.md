@@ -1,7 +1,10 @@
-- $request->forwarded as array of objects
+2nd iteration:
 
-- $request->forwarded(For|Host|Port|Proto) as built from
+- NEEDED
+    - Read-only objects for all StdClass representations
 
-- $request->remoteAddr as calculated through trusted proxies
-
-- $request->content as php://input.  Lazy-load it, or load at construction time?
+- OPTIONAL
+    - $request->forwarded as array of objects from Forwarded header
+    - $request->forwarded(For|Host|Port|Proto) from relevant headers
+    - $request->clientIp as calculated from relevant headers
+    - $request->remoteAddr
