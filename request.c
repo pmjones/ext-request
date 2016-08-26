@@ -16,6 +16,7 @@
 #include "Zend/zend_smart_str.h"
 
 #include "php_request.h"
+#include "request_scanners.h"
 #include "request_utils.h"
 
 zend_class_entry * PhpRequest_ce_ptr;
@@ -260,7 +261,11 @@ static inline void set_auth(zval *object, zval *server)
         zend_update_property(Z_CE_P(object), object, ZEND_STRL("authUser"), tmp);
     }
 
-    // @todo digest
+    if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("PHP_AUTH_DIGEST"))) ) {
+        zend_string *str = zval_get_string(tmp);
+        php_request_digest_lex(ZSTR_VAL(str), ZSTR_LEN(str));
+    }
+
 }
 
 static inline void set_content(zval *object, zval *server)
