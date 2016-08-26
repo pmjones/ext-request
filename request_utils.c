@@ -59,6 +59,108 @@ zend_bool php_request_detect_method(zval *return_value, zval *server, zend_strin
 }
 /* }}} */
 
+/* {{{ php_request_detect_url */
+static inline const unsigned char * extract_port_from_host(const unsigned char * host, size_t len)
+{
+    const unsigned char * right = host + len - 1;
+    const unsigned char * left = len > 6 ? right - 6 : host;
+    const unsigned char * pos = right;
+    for( ; pos > left; pos-- ) {
+        if( !isdigit(*pos) ) {
+            if( *pos == ':' ) {
+                return pos + 1;
+            }
+            break;
+        }
+    }
+    return NULL;
+}
+
+static inline zend_string *extract_host_from_server(zval *server)
+{
+    zval *tmp;
+    zend_string *host = NULL;
+
+    // Get host
+    if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_HOST"))) &&
+            Z_TYPE_P(tmp) == IS_STRING ) {
+        host = Z_STR_P(tmp);
+    } else if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("SERVER_NAME"))) &&
+            Z_TYPE_P(tmp) == IS_STRING ) {
+        host = Z_STR_P(tmp);
+    }
+
+    return host;
+}
+
+static inline zend_long extract_port_from_server(zval *server, zend_string * host)
+{
+    zval *tmp;
+
+    // Get port
+    if( NULL != extract_port_from_host(ZSTR_VAL(host), ZSTR_LEN(host)) ) {
+        // no need to extract
+    } else if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("SERVER_PORT"))) ) {
+        return zval_get_long(tmp);
+    }
+
+    return 0;
+}
+
+static inline zend_string *extract_uri_from_server(zval *server)
+{
+    zval *tmp;
+
+    if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("REQUEST_URI"))) &&
+            Z_TYPE_P(tmp) == IS_STRING ) {
+        return Z_STR_P(tmp);
+    }
+
+    return NULL;
+}
+
+zend_string *php_request_detect_url(zval *server)
+{
+    zval *tmp;
+    zend_bool is_secure = php_request_is_secure(server);
+    zend_string * host = NULL;
+    zend_long port = 0;
+    zend_string * uri = NULL;
+    smart_str buf = {0};
+    php_url * url;
+    zval arr = {0};
+
+    // Get host
+    if( !(host = extract_host_from_server(server)) ) {
+        return NULL;
+    }
+
+    port = extract_port_from_server(server, host);
+
+    // Get uri
+    uri = extract_uri_from_server(server);
+
+    // Form URL
+    smart_str_alloc(&buf, 1024, 0);
+    if( is_secure ) {
+        smart_str_appendl_ex(&buf, ZEND_STRL("https://"), 0);
+    } else {
+        smart_str_appendl_ex(&buf, ZEND_STRL("http://"), 0);
+    }
+    smart_str_append_ex(&buf, host, 0);
+    if( port > 0 ) {
+        smart_str_appendc_ex(&buf, ':', 0);
+        smart_str_append_long(&buf, port);
+    }
+    if( uri ) {
+        smart_str_append_ex(&buf, uri, 0);
+    }
+    smart_str_0(&buf);
+
+    return buf.s;
+}
+/* }}} */
+
 /* {{{ php_request_is_secure */
 zend_bool php_request_is_secure(zval *server)
 {

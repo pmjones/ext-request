@@ -14,6 +14,7 @@
 #include "Zend/zend_smart_str.h"
 
 #include "php_request.h"
+#include "request_utils.h"
 
 zend_class_entry * PhpRequest_ce_ptr;
 static zend_object_handlers PhpRequest_obj_handlers;
@@ -116,91 +117,20 @@ static inline void copy_global(zval* obj, const char* key, size_t key_len, const
 }
 #define copy_global_lit(obj, glob, key) copy_global(obj, ZEND_STRL(glob), ZEND_STRL(key))
 
-static inline const unsigned char * extract_port(const unsigned char * host, size_t len)
+static inline void set_url(zval *object, zval *server)
 {
-    const unsigned char * right = host + len - 1;
-    const unsigned char * left = len > 6 ? right - 6 : host;
-    const unsigned char * pos = right;
-    for( ; pos > left; pos-- ) {
-        if( !isdigit(*pos) ) {
-            if( *pos == ':' ) {
-                return pos + 1;
-            }
-            break;
-        }
-    }
-    return NULL;
-}
-
-static inline void set_url(zval *object, zval *server, zend_bool secure)
-{
-    zval rv = {0};
-    zval *tmp;
-    zend_bool is_secure = 0;
-    zend_string * host = NULL;
-    zend_long port = 0;
-    zend_string * uri = NULL;
-    smart_str buf = {0};
-    php_url * url;
+    php_url * url = NULL;
     zval arr = {0};
+    zend_string *tmp;
 
-    if( !server || Z_TYPE_P(server) != IS_ARRAY ) {
+    tmp = php_request_detect_url(server);
+    if( !tmp ) {
         zend_throw_exception_ex(spl_ce_RuntimeException, 0, "Could not determine host for PhpRequest.");
         return;
     }
 
-    // Get scheme
-    tmp = zend_read_property(Z_CE_P(object), object, ZEND_STRL("secure"), 0, &rv);
-    if( tmp && Z_TYPE_P(tmp) == IS_TRUE ) {
-        is_secure = 1;
-    }
-
-    // Get host
-    if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_HOST"))) &&
-            Z_TYPE_P(tmp) == IS_STRING ) {
-        host = Z_STR_P(tmp);
-    } else if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("SERVER_NAME"))) &&
-            Z_TYPE_P(tmp) == IS_STRING ) {
-        host = Z_STR_P(tmp);
-    } else {
-        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "Could not determine host for PhpRequest.");
-        return;
-    }
-
-    // Get port
-    if( NULL != extract_port(ZSTR_VAL(host), ZSTR_LEN(host)) ) {
-        // no need to extract
-    } else if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("SERVER_PORT"))) ) {
-        convert_to_long(tmp);
-        port = Z_LVAL_P(tmp);
-    }
-
-    // Get uri
-    if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("REQUEST_URI"))) &&
-        Z_TYPE_P(tmp) == IS_STRING ) {
-        uri = Z_STR_P(tmp);
-    }
-
-    // Form URL
-    smart_str_alloc(&buf, 1024, 0);
-    if( is_secure ) {
-        smart_str_appendl_ex(&buf, ZEND_STRL("https://"), 0);
-    } else {
-        smart_str_appendl_ex(&buf, ZEND_STRL("http://"), 0);
-    }
-    smart_str_append_ex(&buf, host, 0);
-    if( port > 0 ) {
-        smart_str_appendc_ex(&buf, ':', 0);
-        smart_str_append_long(&buf, port);
-    }
-    if( uri ) {
-        smart_str_append_ex(&buf, uri, 0);
-    }
-    smart_str_0(&buf);
-
-    // Re-parse URL
-    url = php_url_parse_ex(ZSTR_VAL(buf.s), ZSTR_LEN(buf.s));
-    smart_str_free(&buf);
+    url = php_url_parse_ex(ZSTR_VAL(tmp), ZSTR_LEN(tmp));
+    zend_string_release(tmp);
     if( !url ) {
         return;
     }
@@ -310,7 +240,7 @@ PHP_METHOD(PhpRequest, __construct)
         zend_update_property(Z_CE_P(_this_zval), _this_zval, ZEND_STRL("headers"), &headers);
 
         // url
-        set_url(_this_zval, server, secure);
+        set_url(_this_zval, server);
 
         // accepts
         set_accept_by_name(_this_zval, server, ZEND_STRL("HTTP_ACCEPT"), ZEND_STRL("acceptMedia"));
