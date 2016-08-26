@@ -162,7 +162,7 @@ static int php_request_accept_compare(const void *a, const void *b)
         return 0;
     }
 
-    return 1 - strnatcmp_ex(Z_STRVAL_P(first), Z_STRLEN_P(first), Z_STRVAL_P(second), Z_STRLEN_P(second), 0);
+    return -1 * strnatcmp_ex(Z_STRVAL_P(first), Z_STRLEN_P(first), Z_STRVAL_P(second), Z_STRLEN_P(second), 0);
 }
 
 static void php_request_parse_accepts4(struct accepts_ctx *ctx, const unsigned char * str, size_t len)

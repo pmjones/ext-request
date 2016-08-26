@@ -316,7 +316,7 @@ PHP_METHOD(PhpRequest, __construct)
         set_accept_by_name(_this_zval, server, ZEND_STRL("HTTP_ACCEPT"), ZEND_STRL("acceptMedia"));
         set_accept_by_name(_this_zval, server, ZEND_STRL("HTTP_ACCEPT_CHARSET"), ZEND_STRL("acceptCharset"));
         set_accept_by_name(_this_zval, server, ZEND_STRL("HTTP_ACCEPT_ENCODING"), ZEND_STRL("acceptEncoding"));
-        //set_accept_by_name(_this_zval, server, ZEND_STRL("HTTP_ACCEPT_LANGUAGE"), ZEND_STRL("acceptLanguage"));
+        set_accept_by_name(_this_zval, server, ZEND_STRL("HTTP_ACCEPT_LANGUAGE"), ZEND_STRL("acceptLanguage"));
     }
 
     // Lock the object
