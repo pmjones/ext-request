@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 
+/* Adapted from http://re2c.org/examples/example_07.html */
+
 #define YYCTYPE char
 
 struct lex_ctx {
