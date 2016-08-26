@@ -5,11 +5,136 @@
 
 #include "main/php.h"
 #include "ext/standard/php_string.h"
+#include "ext/standard/url.h"
 #include "Zend/zend_API.h"
 #include "Zend/zend_portability.h"
+#include "Zend/zend_smart_str.h"
 
 #include "php_request.h"
 #include "request_utils.h"
+
+/* {{ php_request_detect_method */
+zend_bool php_request_detect_method(zval *return_value, zval *server, zend_string *method)
+{
+    zval rv;
+    zend_string* tmp;
+    zval* val;
+    zend_bool xhr = 0;
+
+    // force the method?
+    if( method && ZSTR_LEN(method) > 0 ) {
+        goto found;
+    }
+
+    // check server
+    if( !server || Z_TYPE_P(server) != IS_ARRAY ) {
+        return xhr;
+    }
+
+    // determine method from request
+    val = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("REQUEST_METHOD"));
+    if( !val || Z_TYPE_P(val) != IS_STRING ) {
+        return xhr;
+    }
+    method = Z_STR_P(val);
+
+    // XmlHttpRequest method override?
+    if( zend_string_equals_literal_ci(method, "POST") ) {
+        val = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_X_HTTP_METHOD_OVERRIDE"));
+        if( val && Z_TYPE_P(val) == IS_STRING ) {
+            method = Z_STR_P(val);
+            xhr = 1;
+        }
+    }
+
+    if( method ) {
+        found:
+        tmp = zend_string_dup(method, 0);
+        php_strtoupper(ZSTR_VAL(tmp), ZSTR_LEN(tmp));
+        ZVAL_STR(return_value, tmp);
+        zend_string_release(tmp);
+    }
+
+    return xhr;
+}
+/* }}} */
+
+/* {{{ php_request_is_secure */
+zend_bool php_request_is_secure(zval *server)
+{
+    zval *tmp;
+
+    if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTPS"))) &&
+        Z_TYPE_P(tmp) == IS_STRING &&
+        zend_string_equals_literal_ci(Z_STR_P(tmp), "on") ) {
+        return 1;
+    }
+
+    if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("SERVER_PORT"))) &&
+               ((Z_TYPE_P(tmp) == IS_LONG && Z_LVAL_P(tmp) == 443) || (Z_TYPE_P(tmp) == IS_STRING && zend_string_equals_literal(Z_STR_P(tmp), "443"))) ) {
+        return 1;
+    }
+
+    if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_X_FORWARDED_PROTO"))) &&
+               Z_TYPE_P(tmp) == IS_STRING &&
+               zend_string_equals_literal_ci(Z_STR_P(tmp), "https") ) {
+        return 1;
+    }
+
+    return 0;
+}
+/* }}} */
+
+/* {{{ php_request_normalize_headers */
+static const char http_str[] = "HTTP_";
+static const size_t http_len = sizeof(http_str) - 1;
+
+void php_request_normalize_header_name(char *key, size_t key_length)
+{
+    register char *r = key;
+    register char *r_end = r_end = r + key_length - 1;
+
+    *r = toupper((unsigned char) *r);
+    r++;
+    for( ; r <= r_end; r++ ) {
+        if( (unsigned char)*(r - 1) == '-' ) {
+            *r = toupper((unsigned char) *r);
+        } else if( *r == '_' ) {
+            *r = '-';
+        } else {
+            *r = tolower((unsigned char) *r);
+        }
+    }
+}
+
+void php_request_normalize_headers(zval *return_value, zval *server)
+{
+    zend_string *key;
+    zend_ulong index;
+    zval *val;
+    zend_string *tmp;
+
+    array_init(return_value);
+
+    // Main headers
+    ZEND_HASH_FOREACH_KEY_VAL(Z_ARRVAL_P(server), index, key, val) {
+        if( key && ZSTR_LEN(key) > 5 && strncmp(ZSTR_VAL(key), http_str, http_len) == 0 ) {
+            tmp = zend_string_init(ZSTR_VAL(key) + http_len, ZSTR_LEN(key) - http_len, 0);
+            php_request_normalize_header_name(ZSTR_VAL(tmp), ZSTR_LEN(tmp));
+            add_assoc_zval_ex(return_value, ZSTR_VAL(tmp), ZSTR_LEN(tmp), val);
+            zend_string_release(tmp);
+        }
+    } ZEND_HASH_FOREACH_END();
+
+    // RFC 3875 headers not prefixed with HTTP_*
+    if( val = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("CONTENT_LENGTH")) ) {
+        add_assoc_zval_ex(return_value, ZEND_STRL("Content-Length"), val);
+    }
+    if( val = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("CONTENT_TYPE")) ) {
+        add_assoc_zval_ex(return_value, ZEND_STRL("Content-Type"), val);
+    }
+}
+/* }}} */
 
 /* {{{ php_request_parse_accepts */
 struct accepts_ctx {

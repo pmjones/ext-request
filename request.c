@@ -116,130 +116,6 @@ static inline void copy_global(zval* obj, const char* key, size_t key_len, const
 }
 #define copy_global_lit(obj, glob, key) copy_global(obj, ZEND_STRL(glob), ZEND_STRL(key))
 
-static inline void set_method(zval* object, zval *server, zend_string * method)
-{
-    zval rv;
-    zend_string* tmp;
-    zval* val;
-
-    // force the method?
-    if( method && ZSTR_LEN(method) > 0 ) {
-        tmp = zend_string_dup(method, 0);
-        php_strtoupper(ZSTR_VAL(tmp), ZSTR_LEN(tmp));
-        zend_update_property_stringl(Z_CE_P(object), object, ZEND_STRL("method"), ZSTR_VAL(tmp), ZSTR_LEN(tmp));
-        zend_string_release(tmp);
-        return;
-    }
-
-    // check server
-    if( !server || Z_TYPE_P(server) != IS_ARRAY ) {
-        return;
-    }
-
-    // determine method from request
-    val = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("REQUEST_METHOD"));
-    if( !val || Z_TYPE_P(val) != IS_STRING ) {
-        return;
-    }
-    method = Z_STR_P(val);
-
-    // XmlHttpRequest method override?
-    if( zend_string_equals_literal_ci(method, "POST") ) {
-        val = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_X_HTTP_METHOD_OVERRIDE"));
-        if( val && Z_TYPE_P(val) == IS_STRING ) {
-            method = Z_STR_P(val);
-            zend_update_property_bool(Z_CE_P(object), object, ZEND_STRL("xhr"), 1);
-        }
-    }
-
-    tmp = zend_string_dup(method, 0);
-    php_strtoupper(ZSTR_VAL(tmp), ZSTR_LEN(tmp));
-    zend_update_property_str(Z_CE_P(object), object, ZEND_STRL("method"), method);
-    zend_string_release(tmp);
-}
-
-static inline void normalize_set_header(zval *headers, const char *key, size_t len, zval *val)
-{
-    register char *r, *r_end;
-    zend_string *tmp = zend_string_init(key, len, 0);
-
-    r = ZSTR_VAL(tmp);
-
-    *r = toupper((unsigned char) *r);
-    r++;
-    for( r_end = r + ZSTR_LEN(tmp) - 1; r <= r_end; r++ ) {
-        if( (unsigned char)*(r - 1) == '-' ) {
-            *r = toupper((unsigned char) *r);
-        } else if( *r == '_' ) {
-            *r = '-';
-        } else {
-            *r = tolower((unsigned char) *r);
-        }
-    }
-
-    add_assoc_zval_ex(headers, ZSTR_VAL(tmp), ZSTR_LEN(tmp), val);
-
-    zend_string_release(tmp);
-}
-
-static inline void set_headers(zval *object, zval *server)
-{
-    zend_string *key;
-    zend_ulong index;
-    zval *val;
-    zval headers = {0};
-    static const size_t offset = sizeof("HTTP_") - 1;
-
-    // get server
-    if( !server || Z_TYPE_P(server) != IS_ARRAY ) {
-        return;
-    }
-
-    // build headers
-    array_init(&headers);
-
-    ZEND_HASH_FOREACH_KEY_VAL(Z_ARRVAL_P(server), index, key, val) {
-        if( key && ZSTR_LEN(key) > 5 && strncmp(ZSTR_VAL(key), "HTTP_", offset) == 0 ) {
-            normalize_set_header(&headers, ZSTR_VAL(key) + offset, ZSTR_LEN(key) - offset, val);
-        }
-    } ZEND_HASH_FOREACH_END();
-
-    // RFC 3875 headers not prefixed with HTTP_*
-    if( val = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("CONTENT_LENGTH")) ) {
-        add_assoc_zval_ex(&headers, ZEND_STRL("Content-Length"), val);
-    }
-    if( val = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("CONTENT_TYPE")) ) {
-        add_assoc_zval_ex(&headers, ZEND_STRL("Content-Type"), val);
-    }
-
-    zend_update_property(Z_CE_P(object), object, ZEND_STRL("headers"), &headers);
-}
-
-static inline void set_secure(zval *object, zval *server)
-{
-    zval *tmp;
-    zend_bool secure = 0;
-
-    if( !server || Z_TYPE_P(server) != IS_ARRAY ) {
-        return;
-    }
-
-    if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTPS"))) &&
-            Z_TYPE_P(tmp) == IS_STRING &&
-            zend_string_equals_literal_ci(Z_STR_P(tmp), "on") ) {
-        secure = 1;
-    } else if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("SERVER_PORT"))) &&
-            ((Z_TYPE_P(tmp) == IS_LONG && Z_LVAL_P(tmp) == 443) || (Z_TYPE_P(tmp) == IS_STRING && zend_string_equals_literal(Z_STR_P(tmp), "443"))) ) {
-        secure = 1;
-    } else if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_X_FORWARDED_PROTO"))) &&
-            Z_TYPE_P(tmp) == IS_STRING &&
-            zend_string_equals_literal_ci(Z_STR_P(tmp), "https") ) {
-        secure = 1;
-    }
-
-    zend_update_property_bool(Z_CE_P(object), object, ZEND_STRL("secure"), secure);
-}
-
 static inline const unsigned char * extract_port(const unsigned char * host, size_t len)
 {
     const unsigned char * right = host + len - 1;
@@ -256,7 +132,7 @@ static inline const unsigned char * extract_port(const unsigned char * host, siz
     return NULL;
 }
 
-static inline void set_url(zval *object, zval *server)
+static inline void set_url(zval *object, zval *server, zend_bool secure)
 {
     zval rv = {0};
     zval *tmp;
@@ -389,13 +265,6 @@ static inline void set_accept_by_name(zval *object, zval *server, const char *sr
     zend_update_property(Z_CE_P(object), object, dest, dest_length, &val);
 }
 
-static inline void set_accepts(zval *object, zval *server)
-{
-    set_accept_by_name(object, server, ZEND_STRL("HTTP_ACCEPT"), ZEND_STRL("acceptMedia"));
-    set_accept_by_name(object, server, ZEND_STRL("HTTP_ACCEPT_CHARSET"), ZEND_STRL("acceptCharset"));
-    set_accept_by_name(object, server, ZEND_STRL("HTTP_ACCEPT_ENCODING"), ZEND_STRL("acceptEncoding"));
-}
-
 PHP_METHOD(PhpRequest, __construct)
 {
     zval * _this_zval = getThis();
@@ -422,15 +291,32 @@ PHP_METHOD(PhpRequest, __construct)
     // Read back server property
     server = zend_read_property(Z_CE_P(_this_zval), _this_zval, ZEND_STRL("server"), 0, &rv);
 
-    // Internal setters
-    set_method(_this_zval, server, method);
+    // method
+    zval zmethod = {0};
+    ZVAL_STRING(&zmethod, "");
+    zend_bool xhr = php_request_detect_method(&zmethod, server, method);
+    zend_update_property(Z_CE_P(_this_zval), _this_zval, ZEND_STRL("method"), &zmethod);
+    zend_update_property_bool(Z_CE_P(_this_zval), _this_zval, ZEND_STRL("xhr"), xhr);
 
     // Internal setters that require server
     if( server && Z_TYPE_P(server) == IS_ARRAY ) {
-        set_headers(_this_zval, server);
-        set_secure(_this_zval, server);
-        set_url(_this_zval, server);
-        set_accepts(_this_zval, server);
+        // secure
+        zend_bool secure = php_request_is_secure(server);
+        zend_update_property_bool(Z_CE_P(_this_zval), _this_zval, ZEND_STRL("secure"), secure);
+
+        // headers
+        zval headers = {0};
+        php_request_normalize_headers(&headers, server);
+        zend_update_property(Z_CE_P(_this_zval), _this_zval, ZEND_STRL("headers"), &headers);
+
+        // url
+        set_url(_this_zval, server, secure);
+
+        // accepts
+        set_accept_by_name(_this_zval, server, ZEND_STRL("HTTP_ACCEPT"), ZEND_STRL("acceptMedia"));
+        set_accept_by_name(_this_zval, server, ZEND_STRL("HTTP_ACCEPT_CHARSET"), ZEND_STRL("acceptCharset"));
+        set_accept_by_name(_this_zval, server, ZEND_STRL("HTTP_ACCEPT_ENCODING"), ZEND_STRL("acceptEncoding"));
+        //set_accept_by_name(_this_zval, server, ZEND_STRL("HTTP_ACCEPT_LANGUAGE"), ZEND_STRL("acceptLanguage"));
     }
 
     // Lock the object

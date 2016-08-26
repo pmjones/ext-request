@@ -4,7 +4,9 @@
 
 #include "main/php.h"
 
-void php_request_parse_accepts(zval * return_value, const unsigned char * str, size_t len);
+zend_bool php_request_is_secure(zval *server);
+void php_request_normalize_headers(zval *return_value, zval *server);
+void php_request_parse_accepts(zval *return_value, const unsigned char *str, size_t len);
 
 #endif	/* PHP_REQUEST_H */
 
