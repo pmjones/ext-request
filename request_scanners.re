@@ -64,14 +64,11 @@ int php_request_digest_lex(const char * str, size_t len)
 
             end = "\x00";
 
-            *   { return 0; printf("sigh %c\n", *in->tok); continue; return 0; }
+            *   { return 0; }
             end { return in->lim == in->tok; }
 
             // whitespaces
-            mcm = "/*" ([^*] | ("*" [^/]))* "*""/";
-            scm = "//" [^\n]* "\n";
-            wsp = ([ \t\v\n\r] | scm | mcm)+;
-            wsp { printf(" "); continue; }
+            [ \t\v\n\r] { printf(" "); continue; }
 
             // character and string literals
             "L"? ['"] { if (!lex_str(in, *(in->cur - 1))) return 0; continue; }
@@ -90,9 +87,8 @@ int php_request_digest_lex(const char * str, size_t len)
             ","     { printf(",");     continue; }
 
             // identifiers
-            id = [a-zA-Z_][a-zA-Z_0-9]*;
+            id = [a-zA-Z0-9_-]+;
             id { printf("%.*s", in->cur - in->tok, in->tok); continue; }
-
         */
     }
 }
