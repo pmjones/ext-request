@@ -244,6 +244,40 @@ static inline void set_accept_language(zval *object, zval *server)
     zend_update_property(Z_CE_P(object), object, ZEND_STRL("acceptLanguage"), &val);
 }
 
+static inline void set_auth(zval *object, zval *server)
+{
+    zval *tmp;
+
+    if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("PHP_AUTH_PW"))) ) {
+        zend_update_property(Z_CE_P(object), object, ZEND_STRL("authPw"), tmp);
+    }
+
+    if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("PHP_AUTH_TYPE"))) ) {
+        zend_update_property(Z_CE_P(object), object, ZEND_STRL("authType"), tmp);
+    }
+
+    if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("PHP_AUTH_USER"))) ) {
+        zend_update_property(Z_CE_P(object), object, ZEND_STRL("authUser"), tmp);
+    }
+
+    // @todo digest
+}
+
+static inline void set_content(zval *object, zval *server)
+{
+    zval *tmp;
+
+    if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_CONTENT_MD5"))) ) {
+        zend_update_property(Z_CE_P(object), object, ZEND_STRL("contentMd5"), tmp);
+    }
+
+    if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_CONTENT_LENGTH"))) ) {
+        zend_update_property(Z_CE_P(object), object, ZEND_STRL("contentLength"), tmp);
+    }
+
+    // @todo content-type
+}
+
 PHP_METHOD(PhpRequest, __construct)
 {
     zval * _this_zval = getThis();
@@ -296,6 +330,10 @@ PHP_METHOD(PhpRequest, __construct)
         set_accept_by_name(_this_zval, server, ZEND_STRL("HTTP_ACCEPT_CHARSET"), ZEND_STRL("acceptCharset"));
         set_accept_by_name(_this_zval, server, ZEND_STRL("HTTP_ACCEPT_ENCODING"), ZEND_STRL("acceptEncoding"));
         set_accept_language(_this_zval, server);
+
+        // auth
+        set_auth(_this_zval, server);
+        set_content(_this_zval, server);
     }
 
     // Lock the object
@@ -345,6 +383,14 @@ static PHP_MINIT_FUNCTION(request)
     zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("acceptEncoding"), ZEND_ACC_PUBLIC);
     zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("acceptLanguage"), ZEND_ACC_PUBLIC);
     zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("acceptMedia"), ZEND_ACC_PUBLIC);
+    zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("authDigest"), ZEND_ACC_PUBLIC);
+    zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("authPw"), ZEND_ACC_PUBLIC);
+    zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("authType"), ZEND_ACC_PUBLIC);
+    zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("authUser"), ZEND_ACC_PUBLIC);
+    zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("contentCharset"), ZEND_ACC_PUBLIC);
+    zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("contentLength"), ZEND_ACC_PUBLIC);
+    zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("contentMd5"), ZEND_ACC_PUBLIC);
+    zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("contentType"), ZEND_ACC_PUBLIC);
     zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("cookie"), ZEND_ACC_PUBLIC);
     zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("env"), ZEND_ACC_PUBLIC);
     zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("files"), ZEND_ACC_PUBLIC);
