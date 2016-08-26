@@ -71,7 +71,7 @@ zend_bool php_request_is_secure(zval *server)
     }
 
     if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("SERVER_PORT"))) &&
-               ((Z_TYPE_P(tmp) == IS_LONG && Z_LVAL_P(tmp) == 443) || (Z_TYPE_P(tmp) == IS_STRING && zend_string_equals_literal(Z_STR_P(tmp), "443"))) ) {
+            443 == zval_get_long(tmp) ) {
         return 1;
     }
 
