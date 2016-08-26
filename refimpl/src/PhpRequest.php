@@ -17,6 +17,14 @@
  * @property-read $acceptEncoding
  * @property-read $acceptLanguage
  * @property-read $acceptMedia
+ * @property-read $authDigest
+ * @property-read $authPw
+ * @property-read $authType
+ * @property-read $authUser
+ * @property-read $contentCharset
+ * @property-read $contentLength
+ * @property-read $contentMd5
+ * @property-read $contentType
  * @property-read $cookie
  * @property-read $env
  * @property-read $files
@@ -36,6 +44,14 @@ class PhpRequest
     protected $acceptEncoding = [];
     protected $acceptLanguage = [];
     protected $acceptMedia = [];
+    protected $authDigest;
+    protected $authPw;
+    protected $authType;
+    protected $authUser;
+    protected $contentCharset;
+    protected $contentLength;
+    protected $contentMd5;
+    protected $contentType;
     protected $cookie = [];
     protected $env = [];
     protected $files = [];
@@ -46,7 +62,6 @@ class PhpRequest
     protected $secure = false;
     protected $server = [];
     protected $url;
-
     protected $xhr = false;
 
     public function __construct($method = '')
@@ -64,6 +79,8 @@ class PhpRequest
         $this->setSecure();
         $this->setUrl();
         $this->setAccepts();
+        $this->setAuth();
+        $this->setContent();
     }
 
     public function __get($key) // : array
@@ -279,5 +296,86 @@ class PhpRequest
 
         // done
         return $return;
+    }
+
+    protected function setAuth() // : void
+    {
+        if (isset($this->server['PHP_AUTH_PW'])) {
+            $this->authPw = $this->server['PHP_AUTH_PW'];
+        }
+
+        if (isset($this->server['PHP_AUTH_TYPE'])) {
+            $this->authType = $this->server['PHP_AUTH_TYPE'];
+        }
+
+        if (isset($this->server['PHP_AUTH_USER'])) {
+            $this->authUser = $this->server['PHP_AUTH_USER'];
+        }
+
+        if (! isset($this->server['PHP_AUTH_DIGEST'])) {
+            return;
+        }
+
+        /* modified from https://secure.php.net/manual/en/features.http-auth.php */
+
+        $text = $this->server['PHP_AUTH_DIGEST'];
+
+        $data = [];
+        $need = [
+            'nonce' => true,
+            'nc' => true,
+            'cnonce' => true,
+            'qop' => true,
+            'username' => true,
+            'uri' => true,
+            'response' => true,
+        ];
+        $keys = implode('|', array_keys($need));
+
+        preg_match_all(
+            '@(' . $keys . ')=(?:([\'"])([^\2]+?)\2|([^\s,]+))@',
+            $text,
+            $matches,
+            PREG_SET_ORDER
+        );
+
+        foreach ($matches as $m) {
+            $data[$m[1]] = $m[3] ? $m[3] : $m[4];
+            unset($need[$m[1]]);
+        }
+
+        if (! $need) {
+            $this->authDigest = (object) $data;
+        }
+    }
+
+    protected function setContent() // : void
+    {
+        if (isset($this->headers['Content-Md5'])) {
+            $this->contentMd5 = $this->headers['Content-Md5'];
+        }
+
+        if (isset($this->headers['Content-Length'])) {
+            $this->contentLength = $this->headers['Content-Length'];
+        }
+
+        if (! isset($this->headers['Content-Type'])) {
+            return;
+        }
+
+        $parts = explode(';', $this->headers['Content-Type']);
+        $this->contentType = array_shift($parts);
+
+        if (! $parts) {
+            return;
+        }
+
+        foreach ($parts as $part) {
+            $part = str_replace(' ', '', $part);
+            if (substr($part, 0, 8) == 'charset=') {
+                $this->contentCharset = substr($part, 8);
+                return;
+            }
+        }
     }
 }

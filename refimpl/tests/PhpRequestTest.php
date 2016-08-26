@@ -6,6 +6,7 @@ if (! class_exists('PhpRequest')) {
 }
 
 /**
+ * @todo test that StdClass objects remain read-only
  * @backupGlobals enabled
  */
 class PhpRequestTest extends PHPUnit_Framework_TestCase
@@ -367,5 +368,102 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
         ];
 
         $this->assertEquals($expect, $request->acceptLanguage);
+    }
+
+    public function testAuthBasic()
+    {
+        $_SERVER += [
+            'PHP_AUTH_TYPE' => 'Basic',
+            'PHP_AUTH_USER' => 'foo',
+            'PHP_AUTH_PW' => 'bar'
+        ];
+
+        $request = new PhpRequest();
+
+        $this->assertSame('Basic', $request->authType);
+        $this->assertSame('foo', $request->authUser);
+        $this->assertSame('bar', $request->authPw);
+    }
+
+    public function testAuthDigest()
+    {
+        $_SERVER += [
+            'PHP_AUTH_TYPE' => 'Digest',
+            'PHP_AUTH_DIGEST' => implode(',', [
+                'nonce="foo"',
+                'nc=\'bar\'',
+                'cnonce=baz',
+                'qop="dib"',
+                'username="zim"',
+                'uri="gir"',
+                'response="irk"',
+            ]),
+        ];
+
+        $request = new PhpRequest();
+
+        $expect = (object) [
+            'nonce' => 'foo',
+            'nc' => 'bar',
+            'cnonce' => 'baz',
+            'qop' => 'dib',
+            'username' => 'zim',
+            'uri' => 'gir',
+            'response' => 'irk',
+        ];
+
+        $this->assertEquals($expect, $request->authDigest);
+    }
+
+    public function testAuthDigest_missingParts()
+    {
+        $_SERVER += [
+            'PHP_AUTH_TYPE' => 'Digest',
+            'PHP_AUTH_DIGEST' => implode(',', [
+                'nonce="foo"',
+                'nc=\'bar\'',
+                'cnonce=baz',
+            ]),
+        ];
+
+        $request = new PhpRequest();
+        $this->assertSame('Digest', $request->authType);
+        $this->assertNull($request->authDigest);
+    }
+
+    public function testContent()
+    {
+        $_SERVER += [
+            'HTTP_CONTENT_MD5' => 'foobar',
+            'HTTP_CONTENT_LENGTH' => '123',
+            'HTTP_CONTENT_TYPE' => 'text/plain',
+        ];
+
+        $request = new PhpRequest();
+        $this->assertSame('foobar', $request->contentMd5);
+        $this->assertSame('123', $request->contentLength);
+        $this->assertSame('text/plain', $request->contentType);
+        $this->assertNull($request->contentCharset);
+
+        $_SERVER['HTTP_CONTENT_TYPE'] = 'text/plain;charset=utf-8';
+        $request = new PhpRequest();
+        $this->assertSame('foobar', $request->contentMd5);
+        $this->assertSame('123', $request->contentLength);
+        $this->assertSame('text/plain', $request->contentType);
+        $this->assertSame('utf-8', $request->contentCharset);
+
+        $_SERVER['HTTP_CONTENT_TYPE'] = 'text/plain;foo=bar';
+        $request = new PhpRequest();
+        $this->assertSame('foobar', $request->contentMd5);
+        $this->assertSame('123', $request->contentLength);
+        $this->assertSame('text/plain', $request->contentType);
+        $this->assertNull($request->contentCharset);
+
+        $_SERVER['HTTP_CONTENT_TYPE'] = 'text/plain;foo=bar;charset=utf-8;baz=dib';
+        $request = new PhpRequest();
+        $this->assertSame('foobar', $request->contentMd5);
+        $this->assertSame('123', $request->contentLength);
+        $this->assertSame('text/plain', $request->contentType);
+        $this->assertSame('utf-8', $request->contentCharset);
     }
 }
