@@ -83,10 +83,6 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
         $this->assertSame('', $request->method);
         $this->assertFalse($request->xhr);
 
-        $request = new PhpRequest('PATCH');
-        $this->assertSame('PATCH', $request->method);
-        $this->assertFalse($request->xhr);
-
         $_SERVER['REQUEST_METHOD'] = 'POST';
         $request = new PhpRequest();
         $this->assertSame('POST', $request->method);

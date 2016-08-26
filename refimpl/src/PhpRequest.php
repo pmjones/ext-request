@@ -64,7 +64,7 @@ class PhpRequest
     protected $url;
     protected $xhr = false;
 
-    public function __construct($method = '')
+    public function __construct()
     {
         $this->env = $_ENV;
         $this->server = $_SERVER;
@@ -74,7 +74,7 @@ class PhpRequest
         $this->get = $_GET;
         $this->post = $_POST;
 
-        $this->setMethod($method);
+        $this->setMethod();
         $this->setHeaders();
         $this->setSecure();
         $this->setUrl();
@@ -112,20 +112,12 @@ class PhpRequest
         throw new RuntimeException("PhpRequest is read-only.");
     }
 
-    protected function setMethod($method = '') // : void
+    protected function setMethod() // : void
     {
-        // force the method?
-        if ($method != '') {
-            $this->method = strtoupper($method);
-            return;
-        }
-
-        // determine method from request
         if (isset($this->server['REQUEST_METHOD'])) {
             $this->method = strtoupper($this->server['REQUEST_METHOD']);
         }
 
-        // XmlHttpRequest method override?
         if ($this->method == 'POST' && isset($this->server['HTTP_X_HTTP_METHOD_OVERRIDE'])) {
             $this->method = strtoupper($this->server['HTTP_X_HTTP_METHOD_OVERRIDE']);
             $this->xhr = true;
@@ -154,7 +146,7 @@ class PhpRequest
         }
     }
 
-    protected function setSecure()
+    protected function setSecure() // : void
     {
         $scheme = isset($this->server['HTTPS'])
             && strtolower($this->server['HTTPS']) == 'on';
@@ -168,7 +160,7 @@ class PhpRequest
         $this->secure = $scheme || $port || $forward;
     }
 
-    protected function setUrl()
+    protected function setUrl() // : void
     {
         // scheme
         $scheme = ($this->secure) ? 'https://' : 'http://';
@@ -382,14 +374,14 @@ class PhpRequest
         }
     }
 
-    protected function setUploads()
+    protected function setUploads() // : void
     {
         foreach ($this->files as $key => $spec) {
             $this->uploads[$key] = $this->setUploadsFromSpec($spec);
         }
     }
 
-    protected function setUploadsFromSpec(array $spec)
+    protected function setUploadsFromSpec(array $spec) // : object|array
     {
         if (is_array($spec['tmp_name'])) {
             return $this->setUploadsFromNested($spec);
@@ -398,7 +390,7 @@ class PhpRequest
         return (object) $spec;
     }
 
-    protected function setUploadsFromNested(array $nested)
+    protected function setUploadsFromNested(array $nested) // : array
     {
         $uploads = [];
         $keys = array_keys($nested['tmp_name']);
