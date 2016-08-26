@@ -181,6 +181,8 @@ static inline void set_url(zval *object, zval *server)
     convert_to_object(&arr);
 
     zend_update_property(Z_CE_P(object), object, ZEND_STRL("url"), &arr);
+    
+    php_url_free(url);
 }
 
 static inline void set_accept_by_name(zval *object, zval *server, const char *src, size_t src_length, const char *dest, size_t dest_length)
