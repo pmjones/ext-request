@@ -3,6 +3,8 @@
 #include "config.h"
 #endif
 
+#include <string.h>
+
 #include "main/php.h"
 #include "main/php_ini.h"
 #include "ext/standard/info.h"
@@ -181,7 +183,7 @@ static inline void set_url(zval *object, zval *server)
     convert_to_object(&arr);
 
     zend_update_property(Z_CE_P(object), object, ZEND_STRL("url"), &arr);
-    
+
     php_url_free(url);
 }
 
@@ -195,6 +197,51 @@ static inline void set_accept_by_name(zval *object, zval *server, const char *sr
         php_request_parse_accepts(&val, Z_STRVAL_P(tmp), Z_STRLEN_P(tmp));
     }
     zend_update_property(Z_CE_P(object), object, dest, dest_length, &val);
+}
+
+static inline void parse_accept_language(zval *lang)
+{
+    zend_string *key;
+    zend_ulong index;
+    zval *val;
+    zval *value;
+    zval rv;
+    zend_string * str;
+    char *r1;
+    char *r2;
+    zval type = {0};
+    zval subtype = {0};
+
+    ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(lang), val) {
+        value = zend_read_property(Z_CE_P(val), val, ZEND_STRL("value"), 0, &rv);
+        if( value ) {
+            str = zval_get_string(value);
+            r1 = ZSTR_VAL(str);
+            r2 = memchr(r1, '-', ZSTR_LEN(str));
+            if( r2 ) {
+                ZVAL_STRINGL(&type, r1, r2 - r1);
+                ZVAL_STRINGL(&subtype, r2 + 1, r1 + ZSTR_LEN(str) - r2 - 1);
+            } else {
+                ZVAL_STR(&type, str);
+                ZVAL_NULL(&subtype);
+            }
+            zend_update_property(Z_CE_P(val), val, ZEND_STRL("type"), &type);
+            zend_update_property(Z_CE_P(val), val, ZEND_STRL("subtype"), &subtype);
+        }
+    } ZEND_HASH_FOREACH_END();
+}
+
+static inline void set_accept_language(zval *object, zval *server)
+{
+    zval val;
+    zval *tmp;
+
+    array_init(&val);
+    if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_ACCEPT_LANGUAGE"))) ) {
+        php_request_parse_accepts(&val, Z_STRVAL_P(tmp), Z_STRLEN_P(tmp));
+        parse_accept_language(&val);
+    }
+    zend_update_property(Z_CE_P(object), object, ZEND_STRL("acceptLanguage"), &val);
 }
 
 PHP_METHOD(PhpRequest, __construct)
@@ -248,7 +295,7 @@ PHP_METHOD(PhpRequest, __construct)
         set_accept_by_name(_this_zval, server, ZEND_STRL("HTTP_ACCEPT"), ZEND_STRL("acceptMedia"));
         set_accept_by_name(_this_zval, server, ZEND_STRL("HTTP_ACCEPT_CHARSET"), ZEND_STRL("acceptCharset"));
         set_accept_by_name(_this_zval, server, ZEND_STRL("HTTP_ACCEPT_ENCODING"), ZEND_STRL("acceptEncoding"));
-        set_accept_by_name(_this_zval, server, ZEND_STRL("HTTP_ACCEPT_LANGUAGE"), ZEND_STRL("acceptLanguage"));
+        set_accept_language(_this_zval, server);
     }
 
     // Lock the object

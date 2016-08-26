@@ -10,7 +10,7 @@ PHPAPI zend_string *php_request_detect_url(zval *server);
 PHPAPI void php_request_normalize_headers(zval *return_value, zval *server);
 PHPAPI void php_request_parse_accepts(zval *return_value, const unsigned char *str, size_t len);
 
-#endif	/* PHP_REQUEST_H */
+#endif	/* REQUEST_UTILS_H */
 
 /*
  * Local variables:
