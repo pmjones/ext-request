@@ -31,6 +31,7 @@
  * @property-read $post
  * @property-read $secure
  * @property-read $server
+ * @property-read $uploads
  * @property-read $url
  * @property-read $xhr
  *
@@ -59,6 +60,7 @@ class PhpRequest
     protected $post = [];
     protected $secure = false;
     protected $server = [];
+    protected $uploads = [];
     protected $url;
     protected $xhr = false;
 
@@ -79,6 +81,7 @@ class PhpRequest
         $this->setAccepts();
         $this->setAuth();
         $this->setContent();
+        $this->setUploads();
     }
 
     public function __get($key) // : array
@@ -377,5 +380,38 @@ class PhpRequest
                 return;
             }
         }
+    }
+
+    protected function setUploads()
+    {
+        foreach ($this->files as $key => $spec) {
+            $this->uploads[$key] = $this->setUploadsFromSpec($spec);
+        }
+    }
+
+    protected function setUploadsFromSpec(array $spec)
+    {
+        if (is_array($spec['tmp_name'])) {
+            return $this->setUploadsFromNested($spec);
+        }
+
+        return (object) $spec;
+    }
+
+    protected function setUploadsFromNested(array $nested)
+    {
+        $uploads = [];
+        $keys = array_keys($nested['tmp_name']);
+        foreach ($keys as $key) {
+            $spec = [
+                'error'    => $nested['error'][$key],
+                'name'     => $nested['name'][$key],
+                'size'     => $nested['size'][$key],
+                'tmp_name' => $nested['tmp_name'][$key],
+                'type'     => $nested['type'][$key],
+            ];
+            $uploads[$key] = $this->setUploadsFromSpec($spec);
+        }
+        return $uploads;
     }
 }

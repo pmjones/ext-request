@@ -466,4 +466,360 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
         $this->assertSame('text/plain', $request->contentType);
         $this->assertSame('utf-8', $request->contentCharset);
     }
+
+    /**
+     * Given a horribly complex file upload like this ...
+     *
+     * <form action="index.php" method="post" enctype="multipart/form-data">
+     * <p><input type="file" name="foo1" /></p>
+     * <p><input type="file" name="foo2" /></p>
+     * <p><input type="file" name="foo3" /></p>
+     * <p><input type="file" name="bar[0]" /></p>
+     * <p><input type="file" name="bar[1]" /></p>
+     * <p><input type="file" name="bar[2]" /></p>
+     * <p><input type="file" name="baz[baz1]" /></p>
+     * <p><input type="file" name="baz[baz2]" /></p>
+     * <p><input type="file" name="baz[baz3]" /></p>
+     * <p><input type="file" name="dib[dib1][dib1a]" /></p>
+     * <p><input type="file" name="dib[dib1][dib1b]" /></p>
+     * <p><input type="file" name="dib[dib1][dib1c]" /></p>
+     * <p><input type="file" name="dib[dib2][dib2a]" /></p>
+     * <p><input type="file" name="dib[dib2][dib2b]" /></p>
+     * <p><input type="file" name="dib[dib2][dib2c]" /></p>
+     * <p><input type="file" name="dib[dib3][dib3a]" /></p>
+     * <p><input type="file" name="dib[dib3][dib3b]" /></p>
+     * <p><input type="file" name="dib[dib3][dib3c]" /></p>
+     * <p><input type="submit" /></p>
+     * </form>
+     *
+     * ... PHP generates a monster $_FILES array. We want it looking more like
+     * $_POST.
+     *
+     */
+
+    public function testUploads_trivial()
+    {
+        $_FILES = [
+          'foo1' => [
+            'error' => 4,
+            'name' => '',
+            'size' => 0,
+            'tmp_name' => '',
+            'type' => '',
+          ],
+          'foo2' => [
+            'error' => 4,
+            'name' => '',
+            'size' => 0,
+            'tmp_name' => '',
+            'type' => '',
+          ],
+          'foo3' => [
+            'error' => 4,
+            'name' => '',
+            'size' => 0,
+            'tmp_name' => '',
+            'type' => '',
+          ],
+          'bar' => [
+            'name' => [
+              0 => '',
+              1 => '',
+              2 => '',
+            ],
+            'type' => [
+              0 => '',
+              1 => '',
+              2 => '',
+            ],
+            'tmp_name' => [
+              0 => '',
+              1 => '',
+              2 => '',
+            ],
+            'error' => [
+              0 => 4,
+              1 => 4,
+              2 => 4,
+            ],
+            'size' => [
+              0 => 0,
+              1 => 0,
+              2 => 0,
+            ],
+          ],
+          'baz' => [
+            'name' => [
+              'baz1' => '',
+              'baz2' => '',
+              'baz3' => '',
+            ],
+            'type' => [
+              'baz1' => '',
+              'baz2' => '',
+              'baz3' => '',
+            ],
+            'tmp_name' => [
+              'baz1' => '',
+              'baz2' => '',
+              'baz3' => '',
+            ],
+            'error' => [
+              'baz1' => 4,
+              'baz2' => 4,
+              'baz3' => 4,
+            ],
+            'size' => [
+              'baz1' => 0,
+              'baz2' => 0,
+              'baz3' => 0,
+            ],
+          ],
+        ];
+
+        $request = new PhpRequest();
+
+        $expect = [
+          'foo1' => (object) [
+            'error' => 4,
+            'name' => '',
+            'size' => 0,
+            'tmp_name' => '',
+            'type' => '',
+          ],
+          'foo2' => (object) [
+            'error' => 4,
+            'name' => '',
+            'size' => 0,
+            'tmp_name' => '',
+            'type' => '',
+          ],
+          'foo3' => (object) [
+            'error' => 4,
+            'name' => '',
+            'size' => 0,
+            'tmp_name' => '',
+            'type' => '',
+          ],
+          'bar' => [
+            0 => (object) [
+              'error' => 4,
+              'name' => '',
+              'size' => 0,
+              'tmp_name' => '',
+              'type' => '',
+            ],
+            1 => (object) [
+              'error' => 4,
+              'name' => '',
+              'size' => 0,
+              'tmp_name' => '',
+              'type' => '',
+            ],
+            2 => (object) [
+              'error' => 4,
+              'name' => '',
+              'size' => 0,
+              'tmp_name' => '',
+              'type' => '',
+            ],
+          ],
+          'baz' => [
+            'baz1' => (object) [
+              'error' => 4,
+              'name' => '',
+              'size' => 0,
+              'tmp_name' => '',
+              'type' => '',
+            ],
+            'baz2' => (object) [
+              'error' => 4,
+              'name' => '',
+              'size' => 0,
+              'tmp_name' => '',
+              'type' => '',
+            ],
+            'baz3' => (object) [
+              'error' => 4,
+              'name' => '',
+              'size' => 0,
+              'tmp_name' => '',
+              'type' => '',
+            ]
+          ],
+        ];
+
+        $this->assertEquals($expect, $request->uploads);
+    }
+
+    public function testUploads_complex()
+    {
+        $_FILES = [
+          'dib' => [
+            'name' => [
+              'dib1' => [
+                'dib1a' => '',
+                'dib1b' => '',
+                'dib1c' => '',
+              ],
+              'dib2' => [
+                'dib2a' => '',
+                'dib2b' => '',
+                'dib2c' => '',
+              ],
+              'dib3' => [
+                'dib3a' => '',
+                'dib3b' => '',
+                'dib3c' => '',
+              ],
+            ],
+            'type' => [
+              'dib1' => [
+                'dib1a' => '',
+                'dib1b' => '',
+                'dib1c' => '',
+              ],
+              'dib2' => [
+                'dib2a' => '',
+                'dib2b' => '',
+                'dib2c' => '',
+              ],
+              'dib3' => [
+                'dib3a' => '',
+                'dib3b' => '',
+                'dib3c' => '',
+              ],
+            ],
+            'tmp_name' => [
+              'dib1' => [
+                'dib1a' => '',
+                'dib1b' => '',
+                'dib1c' => '',
+              ],
+              'dib2' => [
+                'dib2a' => '',
+                'dib2b' => '',
+                'dib2c' => '',
+              ],
+              'dib3' => [
+                'dib3a' => '',
+                'dib3b' => '',
+                'dib3c' => '',
+              ],
+            ],
+            'error' => [
+              'dib1' => [
+                'dib1a' => 4,
+                'dib1b' => 4,
+                'dib1c' => 4,
+              ],
+              'dib2' => [
+                'dib2a' => 4,
+                'dib2b' => 4,
+                'dib2c' => 4,
+              ],
+              'dib3' => [
+                'dib3a' => 4,
+                'dib3b' => 4,
+                'dib3c' => 4,
+              ],
+            ],
+            'size' => [
+              'dib1' => [
+                'dib1a' => 0,
+                'dib1b' => 0,
+                'dib1c' => 0,
+              ],
+              'dib2' => [
+                'dib2a' => 0,
+                'dib2b' => 0,
+                'dib2c' => 0,
+              ],
+              'dib3' => [
+                'dib3a' => 0,
+                'dib3b' => 0,
+                'dib3c' => 0,
+              ],
+            ],
+          ],
+        ];
+
+        $request = new PhpRequest();
+
+        $expect = [
+          'dib' => [
+            'dib1' => [
+              'dib1a' => (object) [
+                'error' => 4,
+                'name' => '',
+                'size' => 0,
+                'tmp_name' => '',
+                'type' => '',
+              ],
+              'dib1b' => (object) [
+                'error' => 4,
+                'name' => '',
+                'size' => 0,
+                'tmp_name' => '',
+                'type' => '',
+              ],
+              'dib1c' => (object) [
+                'error' => 4,
+                'name' => '',
+                'size' => 0,
+                'tmp_name' => '',
+                'type' => '',
+              ],
+            ],
+            'dib2' => [
+              'dib2a' => (object) [
+                'error' => 4,
+                'name' => '',
+                'size' => 0,
+                'tmp_name' => '',
+                'type' => '',
+              ],
+              'dib2b' => (object) [
+                'error' => 4,
+                'name' => '',
+                'size' => 0,
+                'tmp_name' => '',
+                'type' => '',
+              ],
+              'dib2c' => (object) [
+                'error' => 4,
+                'name' => '',
+                'size' => 0,
+                'tmp_name' => '',
+                'type' => '',
+              ],
+            ],
+            'dib3' => [
+              'dib3a' => (object) [
+                'error' => 4,
+                'name' => '',
+                'size' => 0,
+                'tmp_name' => '',
+                'type' => '',
+              ],
+              'dib3b' => (object) [
+                'error' => 4,
+                'name' => '',
+                'size' => 0,
+                'tmp_name' => '',
+                'type' => '',
+              ],
+              'dib3c' => (object) [
+                'error' => 4,
+                'name' => '',
+                'size' => 0,
+                'tmp_name' => '',
+                'type' => '',
+              ],
+            ],
+          ],
+        ];
+
+        $this->assertEquals($expect, $request->uploads);
+    }
 }
