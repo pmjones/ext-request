@@ -25,8 +25,12 @@ struct php_request_obj {
 };
 
 /* {{{ Argument Info */
-ZEND_BEGIN_ARG_INFO_EX(PhpRequest_construct_args, ZEND_SEND_BY_VAL, 0, 0)
-                ZEND_ARG_INFO(0, method)
+ZEND_BEGIN_ARG_INFO_EX(PhpRequest_construct_args, 0, 0, 0)
+    ZEND_ARG_INFO(0, method)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(PhpRequest_parseAccepts_args, 0, 0, 0)
+    ZEND_ARG_INFO(0, header)
 ZEND_END_ARG_INFO()
 /* }}} Argument Info */
 
@@ -101,6 +105,7 @@ static void php_request_object_unset_property(zval *object, zval *member, void *
 }
 /* }}} */
 
+
 /* {{{ proto PhpRequest::__construct([string $method]) */
 static inline void copy_global(zval* obj, const char* key, size_t key_len, const char* sg, size_t sg_len)
 {
@@ -113,7 +118,7 @@ static inline void copy_global(zval* obj, const char* key, size_t key_len, const
 
 static inline void set_method(zval* object, zval *server, zend_string * method)
 {
-    zval rv = {0};
+    zval rv;
     zend_string* tmp;
     zval* val;
 
@@ -121,7 +126,7 @@ static inline void set_method(zval* object, zval *server, zend_string * method)
     if( method && ZSTR_LEN(method) > 0 ) {
         tmp = zend_string_dup(method, 0);
         php_strtoupper(ZSTR_VAL(tmp), ZSTR_LEN(tmp));
-        zend_update_property_str(Z_CE_P(object), object, ZEND_STRL("method"), method);
+        zend_update_property_stringl(Z_CE_P(object), object, ZEND_STRL("method"), ZSTR_VAL(tmp), ZSTR_LEN(tmp));
         zend_string_release(tmp);
         return;
     }
@@ -155,7 +160,6 @@ static inline void set_method(zval* object, zval *server, zend_string * method)
 
 static inline void normalize_set_header(zval *headers, const char *key, size_t len, zval *val)
 {
-    zval zkey = {0};
     register char *r, *r_end;
     zend_string *tmp = zend_string_init(key, len, 0);
 
@@ -228,8 +232,8 @@ static inline void set_secure(zval *object, zval *server)
             ((Z_TYPE_P(tmp) == IS_LONG && Z_LVAL_P(tmp) == 443) || (Z_TYPE_P(tmp) == IS_STRING && zend_string_equals_literal(Z_STR_P(tmp), "443"))) ) {
         secure = 1;
     } else if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_X_FORWARDED_PROTO"))) &&
-               Z_TYPE_P(tmp) == IS_STRING &&
-               zend_string_equals_literal_ci(Z_STR_P(tmp), "https") ) {
+            Z_TYPE_P(tmp) == IS_STRING &&
+            zend_string_equals_literal_ci(Z_STR_P(tmp), "https") ) {
         secure = 1;
     }
 
@@ -241,7 +245,7 @@ static inline const unsigned char * extract_port(const unsigned char * host, siz
     const unsigned char * right = host + len - 1;
     const unsigned char * left = len > 6 ? right - 6 : host;
     const unsigned char * pos = right;
-    for( ; pos != left; pos-- ) {
+    for( ; pos > left; pos-- ) {
         if( !isdigit(*pos) ) {
             if( *pos == ':' ) {
                 return pos + 1;
@@ -280,7 +284,7 @@ static inline void set_url(zval *object, zval *server)
             Z_TYPE_P(tmp) == IS_STRING ) {
         host = Z_STR_P(tmp);
     } else if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("SERVER_NAME"))) &&
-               Z_TYPE_P(tmp) == IS_STRING ) {
+            Z_TYPE_P(tmp) == IS_STRING ) {
         host = Z_STR_P(tmp);
     } else {
         zend_throw_exception_ex(spl_ce_RuntimeException, 0, "Could not determine host for PhpRequest.");
@@ -373,16 +377,35 @@ static inline void set_url(zval *object, zval *server)
     zend_update_property(Z_CE_P(object), object, ZEND_STRL("url"), &arr);
 }
 
+static inline void set_accept_by_name(zval *object, zval *server, const char *src, size_t src_length, const char *dest, size_t dest_length)
+{
+    zval val;
+    zval *tmp;
+
+    array_init(&val);
+    if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), src, src_length)) ) {
+        php_request_parse_accepts(&val, Z_STRVAL_P(tmp), Z_STRLEN_P(tmp));
+    }
+    zend_update_property(Z_CE_P(object), object, dest, dest_length, &val);
+}
+
+static inline void set_accepts(zval *object, zval *server)
+{
+    set_accept_by_name(object, server, ZEND_STRL("HTTP_ACCEPT"), ZEND_STRL("acceptMedia"));
+    set_accept_by_name(object, server, ZEND_STRL("HTTP_ACCEPT_CHARSET"), ZEND_STRL("acceptCharset"));
+    set_accept_by_name(object, server, ZEND_STRL("HTTP_ACCEPT_ENCODING"), ZEND_STRL("acceptEncoding"));
+}
+
 PHP_METHOD(PhpRequest, __construct)
 {
     zval * _this_zval = getThis();
     zend_string * method = NULL;
     zval *server;
-    zval rv = {0};
+    zval rv;
 
     ZEND_PARSE_PARAMETERS_START(0, 1)
-            Z_PARAM_OPTIONAL
-            Z_PARAM_STR(method)
+        Z_PARAM_OPTIONAL
+        Z_PARAM_STR(method)
     ZEND_PARSE_PARAMETERS_END();
 
     struct php_request_obj * intern = Z_REQUEST_P(_this_zval);
@@ -401,19 +424,39 @@ PHP_METHOD(PhpRequest, __construct)
 
     // Internal setters
     set_method(_this_zval, server, method);
-    set_headers(_this_zval, server);
-    set_secure(_this_zval, server);
-    set_url(_this_zval, server);
+
+    // Internal setters that require server
+    if( server && Z_TYPE_P(server) == IS_ARRAY ) {
+        set_headers(_this_zval, server);
+        set_secure(_this_zval, server);
+        set_url(_this_zval, server);
+        set_accepts(_this_zval, server);
+    }
 
     // Lock the object
     intern->locked = 1;
 }
 /* }}} PhpRequest::__construct */
 
+/* {{{ proto PhpRequest::__construct([string $method]) */
+PHP_METHOD(PhpRequest, parseAccepts)
+{
+    zend_string * header;
+
+    ZEND_PARSE_PARAMETERS_START(1, 1)
+        Z_PARAM_STR(header)
+    ZEND_PARSE_PARAMETERS_END();
+
+    php_request_parse_accepts(return_value, ZSTR_VAL(header), ZSTR_LEN(header));
+
+}
+/* }}} PhpRequest::__construct */
+
 /* {{{ PhpRequest methods */
 static zend_function_entry PhpRequest_methods[] = {
-        PHP_ME(PhpRequest, __construct, PhpRequest_construct_args, ZEND_ACC_PUBLIC)
-        PHP_FE_END
+    PHP_ME(PhpRequest, __construct, PhpRequest_construct_args, ZEND_ACC_PUBLIC)
+    PHP_ME(PhpRequest, parseAccepts, PhpRequest_parseAccepts_args, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+    PHP_FE_END
 };
 /* }}} PhpRequest methods */
 
@@ -433,21 +476,21 @@ static PHP_MINIT_FUNCTION(request)
     PhpRequest_ce_ptr = zend_register_internal_class(&ce);
     PhpRequest_ce_ptr->create_object = php_request_obj_create;
 
-    zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("acceptCharset"), ZEND_ACC_PUBLIC TSRMLS_CC);
-    zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("acceptEncoding"), ZEND_ACC_PUBLIC TSRMLS_CC);
-    zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("acceptLanguage"), ZEND_ACC_PUBLIC TSRMLS_CC);
-    zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("acceptMedia"), ZEND_ACC_PUBLIC TSRMLS_CC);
-    zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("cookie"), ZEND_ACC_PUBLIC TSRMLS_CC);
-    zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("env"), ZEND_ACC_PUBLIC TSRMLS_CC);
-    zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("files"), ZEND_ACC_PUBLIC TSRMLS_CC);
-    zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("get"), ZEND_ACC_PUBLIC TSRMLS_CC);
-    zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("headers"), ZEND_ACC_PUBLIC TSRMLS_CC);
-    zend_declare_property_string(PhpRequest_ce_ptr, ZEND_STRL("method"), "", ZEND_ACC_PUBLIC TSRMLS_CC);
-    zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("post"), ZEND_ACC_PUBLIC TSRMLS_CC);
-    zend_declare_property_bool(PhpRequest_ce_ptr, ZEND_STRL("secure"), 0, ZEND_ACC_PUBLIC TSRMLS_CC);
-    zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("server"), ZEND_ACC_PUBLIC TSRMLS_CC);
-    zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("url"), ZEND_ACC_PUBLIC TSRMLS_CC);
-    zend_declare_property_bool(PhpRequest_ce_ptr, ZEND_STRL("xhr"), 0, ZEND_ACC_PUBLIC TSRMLS_CC);
+    zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("acceptCharset"), ZEND_ACC_PUBLIC);
+    zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("acceptEncoding"), ZEND_ACC_PUBLIC);
+    zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("acceptLanguage"), ZEND_ACC_PUBLIC);
+    zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("acceptMedia"), ZEND_ACC_PUBLIC);
+    zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("cookie"), ZEND_ACC_PUBLIC);
+    zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("env"), ZEND_ACC_PUBLIC);
+    zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("files"), ZEND_ACC_PUBLIC);
+    zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("get"), ZEND_ACC_PUBLIC);
+    zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("headers"), ZEND_ACC_PUBLIC);
+    zend_declare_property_string(PhpRequest_ce_ptr, ZEND_STRL("method"), "", ZEND_ACC_PUBLIC);
+    zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("post"), ZEND_ACC_PUBLIC);
+    zend_declare_property_bool(PhpRequest_ce_ptr, ZEND_STRL("secure"), 0, ZEND_ACC_PUBLIC);
+    zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("server"), ZEND_ACC_PUBLIC);
+    zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("url"), ZEND_ACC_PUBLIC);
+    zend_declare_property_bool(PhpRequest_ce_ptr, ZEND_STRL("xhr"), 0, ZEND_ACC_PUBLIC);
 
     return SUCCESS;
 }
