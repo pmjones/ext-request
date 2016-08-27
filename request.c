@@ -7,6 +7,7 @@
 
 #include "main/php.h"
 #include "main/php_ini.h"
+#include "main/SAPI.h"
 #include "ext/standard/info.h"
 #include "ext/standard/php_string.h"
 #include "ext/standard/url.h"
@@ -264,6 +265,18 @@ static inline void set_auth(zval *object, zval *server)
 static inline void set_content(zval *object, zval *server)
 {
     zval *tmp;
+    php_stream *stream;
+    zend_string *str;
+    zval zv = {0};
+
+    stream = php_stream_open_wrapper_ex("php://input", "rb", REPORT_ERRORS, NULL, NULL);
+    if( stream ) {
+        if ((str = php_stream_copy_to_mem(stream, PHP_STREAM_COPY_ALL, 0))) {
+            ZVAL_STR(&zv, str);
+            zend_update_property(Z_CE_P(object), object, ZEND_STRL("content"), &zv);
+        }
+        php_stream_close(stream);
+    }
 
     if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_CONTENT_MD5"))) ) {
         zend_update_property(Z_CE_P(object), object, ZEND_STRL("contentMd5"), tmp);
@@ -382,6 +395,7 @@ static PHP_MINIT_FUNCTION(request)
     zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("authPw"), ZEND_ACC_PUBLIC);
     zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("authType"), ZEND_ACC_PUBLIC);
     zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("authUser"), ZEND_ACC_PUBLIC);
+    zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("content"), ZEND_ACC_PUBLIC);
     zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("contentCharset"), ZEND_ACC_PUBLIC);
     zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("contentLength"), ZEND_ACC_PUBLIC);
     zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("contentMd5"), ZEND_ACC_PUBLIC);
@@ -395,6 +409,7 @@ static PHP_MINIT_FUNCTION(request)
     zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("post"), ZEND_ACC_PUBLIC);
     zend_declare_property_bool(PhpRequest_ce_ptr, ZEND_STRL("secure"), 0, ZEND_ACC_PUBLIC);
     zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("server"), ZEND_ACC_PUBLIC);
+    zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("uploads"), ZEND_ACC_PUBLIC);
     zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("url"), ZEND_ACC_PUBLIC);
     zend_declare_property_bool(PhpRequest_ce_ptr, ZEND_STRL("xhr"), 0, ZEND_ACC_PUBLIC);
 
