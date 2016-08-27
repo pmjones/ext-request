@@ -42,7 +42,6 @@ zend_bool php_request_detect_method(zval *return_value, zval *server)
         tmp = zend_string_dup(method, 0);
         php_strtoupper(ZSTR_VAL(tmp), ZSTR_LEN(tmp));
         ZVAL_STR(return_value, tmp);
-        zend_string_release(tmp);
     }
 
     return xhr;
