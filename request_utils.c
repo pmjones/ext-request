@@ -14,22 +14,13 @@
 #include "request_utils.h"
 
 /* {{ php_request_detect_method */
-zend_bool php_request_detect_method(zval *return_value, zval *server, zend_string *method)
+zend_bool php_request_detect_method(zval *return_value, zval *server)
 {
     zval rv;
     zend_string* tmp;
     zval* val;
     zend_bool xhr = 0;
-
-    // force the method?
-    if( method && ZSTR_LEN(method) > 0 ) {
-        goto found;
-    }
-
-    // check server
-    if( !server || Z_TYPE_P(server) != IS_ARRAY ) {
-        return xhr;
-    }
+    zend_string *method;
 
     // determine method from request
     val = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("REQUEST_METHOD"));
@@ -48,7 +39,6 @@ zend_bool php_request_detect_method(zval *return_value, zval *server, zend_strin
     }
 
     if( method ) {
-        found:
         tmp = zend_string_dup(method, 0);
         php_strtoupper(ZSTR_VAL(tmp), ZSTR_LEN(tmp));
         ZVAL_STR(return_value, tmp);

@@ -24,7 +24,7 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
 
     public function test__get()
     {
-        $request = new PhpRequest('PATCH');
+        $request = new PhpRequest();
         $this->assertTrue(isset($request->method));
 
         $this->setExpectedException(
@@ -36,7 +36,7 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
 
     public function test__unset()
     {
-        $request = new PhpRequest('PATCH');
+        $request = new PhpRequest();
 
         $this->setExpectedException(
             RuntimeException::CLASS,
@@ -48,7 +48,7 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
 
     public function test__isset()
     {
-        $request = new PhpRequest('PATCH');
+        $request = new PhpRequest();
         $this->assertTrue(isset($request->method));
 
         $this->setExpectedException(
@@ -60,7 +60,7 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
 
     public function test__set()
     {
-        $request = new PhpRequest('PATCH');
+        $request = new PhpRequest();
 
         $this->setExpectedException(
             RuntimeException::CLASS,
