@@ -227,6 +227,89 @@ void php_request_normalize_headers(zval *return_value, zval *server)
 }
 /* }}} */
 
+/* {{{ php_request_normalize_files */
+static void upload_from_spec(zval *return_value, zval *file);
+
+static inline void copy_key(zval *return_value, zval *nested, const char *key1, size_t key1_len, zend_ulong index2, zend_string *key2)
+{
+    zval *tmp = zend_hash_str_find(Z_ARRVAL_P(nested), key1, key1_len);
+    if( !tmp ) {
+        goto err;
+    }
+
+    if( Z_TYPE_P(tmp) == IS_ARRAY ) {
+        if( key2 ) {
+            tmp = zend_hash_find(Z_ARRVAL_P(tmp), key2);
+        } else {
+            tmp = zend_hash_index_find(Z_ARRVAL_P(tmp), index2);
+        }
+    }
+
+    if( tmp ) {
+        add_assoc_zval_ex(return_value, key1, key1_len, tmp);
+    } else {
+        err:
+        add_assoc_null_ex(return_value, key1, key1_len);
+    }
+}
+
+static inline void upload_from_nested(zval *return_value, zval *nested, zval *tmp_name)
+{
+    zend_string *key;
+    zend_ulong index;
+    zval tmp = {0};
+    zval tmp2 = {0};
+
+    array_init(return_value);
+
+    ZEND_HASH_FOREACH_KEY(Z_ARRVAL_P(tmp_name), index, key) {
+        array_init(&tmp);
+        copy_key(&tmp, nested, ZEND_STRL("error"), index, key);
+        copy_key(&tmp, nested, ZEND_STRL("name"), index, key);
+        copy_key(&tmp, nested, ZEND_STRL("size"), index, key);
+        copy_key(&tmp, nested, ZEND_STRL("tmp_name"), index, key);
+        copy_key(&tmp, nested, ZEND_STRL("type"), index, key);
+
+        upload_from_spec(&tmp2, &tmp);
+        if( key ) {
+            add_assoc_zval_ex(return_value, ZSTR_VAL(key), ZSTR_LEN(key), &tmp2);
+        } else {
+            add_index_zval(return_value, index, &tmp2);
+        }
+    } ZEND_HASH_FOREACH_END();
+}
+
+static void upload_from_spec(zval *return_value, zval *file)
+{
+    zval *tmp = zend_hash_str_find(Z_ARRVAL_P(file), ZEND_STRL("tmp_name"));
+    if( tmp && Z_TYPE_P(tmp) == IS_ARRAY ) {
+        upload_from_nested(return_value, file, tmp);
+    } else {
+        ZVAL_ZVAL(return_value, file, 0, 0);
+        convert_to_object(return_value);
+    }
+}
+
+void php_request_normalize_files(zval *return_value, zval *files)
+{
+    zend_string *key;
+    zend_ulong index;
+    zval *val;
+    zval tmp = {0};
+
+    ZEND_HASH_FOREACH_KEY_VAL(Z_ARRVAL_P(files), index, key, val) {
+        if( Z_TYPE_P(val) == IS_ARRAY ) {
+            upload_from_spec(&tmp, val);
+            if( key ) {
+                add_assoc_zval_ex(return_value, ZSTR_VAL(key), ZSTR_LEN(key), &tmp);
+            } else {
+                add_index_zval(return_value, index, &tmp);
+            }
+        }
+    } ZEND_HASH_FOREACH_END();
+}
+/* }}} */
+
 /* {{{ php_request_parse_accepts */
 struct accepts_ctx {
     int st;

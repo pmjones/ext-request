@@ -294,6 +294,7 @@ PHP_METHOD(PhpRequest, __construct)
 {
     zval * _this_zval = getThis();
     zval *server;
+    zval *files;
     zval rv;
 
     ZEND_PARSE_PARAMETERS_START(0, 0)
@@ -343,6 +344,16 @@ PHP_METHOD(PhpRequest, __construct)
         // auth
         set_auth(_this_zval, server);
         set_content(_this_zval, server);
+    }
+
+    // Read back files property
+    files = zend_read_property(Z_CE_P(_this_zval), _this_zval, ZEND_STRL("files"), 0, &rv);
+
+    if( files && Z_TYPE_P(files) == IS_ARRAY ) {
+        zval uploads = {0};
+        array_init(&uploads);
+        php_request_normalize_files(&uploads, files);
+        zend_update_property(Z_CE_P(_this_zval), _this_zval, ZEND_STRL("uploads"), &uploads);
     }
 
     // Lock the object
