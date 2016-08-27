@@ -269,6 +269,7 @@ static inline void set_content(zval *object, zval *server)
     zend_string *str;
     zval zv = {0};
 
+    // @todo read this when the property is read
     stream = php_stream_open_wrapper_ex("php://input", "rb", REPORT_ERRORS, NULL, NULL);
     if( stream ) {
         if ((str = php_stream_copy_to_mem(stream, PHP_STREAM_COPY_ALL, 0))) {
