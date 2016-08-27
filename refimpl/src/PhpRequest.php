@@ -2,16 +2,12 @@
 /**
  *
  * Goals:
- * - Provide HTTP-related superglobals as read-only instance properties.
- * - Add $method for the HTTP method, and convenience methods for is*().
- * - Add $headers for normalized HTTP headers
+ * - Provide a struct of non-session superglobals as read-only properties.
+ * - Add other read-only properties calculated from the superglobals ($method,
+ *   $headers, $content, etc.) to the struct.
  * - Only build things that don't require application input; e.g., no negotiation,
  *   but build acceptables for application to work through.
- *
- * It looks like we can have $body as a scalar, null, or array, but not as an
- * object. Maybe scan through arrays to see if their top-level members are
- * objects other than StdClass, otherwise you can use methods to modify objects
- * in the array.
+ * - No methods, just properties (i.e., a struct).
  *
  * @property-read $acceptCharset
  * @property-read $acceptEncoding
@@ -21,6 +17,7 @@
  * @property-read $authPw
  * @property-read $authType
  * @property-read $authUser
+ * @property-read $content
  * @property-read $contentCharset
  * @property-read $contentLength
  * @property-read $contentMd5
@@ -34,6 +31,7 @@
  * @property-read $post
  * @property-read $secure
  * @property-read $server
+ * @property-read $uploads
  * @property-read $url
  * @property-read $xhr
  *
@@ -48,6 +46,7 @@ class PhpRequest
     protected $authPw;
     protected $authType;
     protected $authUser;
+    protected $content;
     protected $contentCharset;
     protected $contentLength;
     protected $contentMd5;
@@ -61,10 +60,11 @@ class PhpRequest
     protected $post = [];
     protected $secure = false;
     protected $server = [];
+    protected $uploads = [];
     protected $url;
     protected $xhr = false;
 
-    public function __construct($method = '')
+    public function __construct()
     {
         $this->env = $_ENV;
         $this->server = $_SERVER;
@@ -74,13 +74,14 @@ class PhpRequest
         $this->get = $_GET;
         $this->post = $_POST;
 
-        $this->setMethod($method);
+        $this->setMethod();
         $this->setHeaders();
         $this->setSecure();
         $this->setUrl();
         $this->setAccepts();
         $this->setAuth();
         $this->setContent();
+        $this->setUploads();
     }
 
     public function __get($key) // : array
@@ -111,20 +112,12 @@ class PhpRequest
         throw new RuntimeException("PhpRequest is read-only.");
     }
 
-    protected function setMethod($method = '') // : void
+    protected function setMethod() // : void
     {
-        // force the method?
-        if ($method != '') {
-            $this->method = strtoupper($method);
-            return;
-        }
-
-        // determine method from request
         if (isset($this->server['REQUEST_METHOD'])) {
             $this->method = strtoupper($this->server['REQUEST_METHOD']);
         }
 
-        // XmlHttpRequest method override?
         if ($this->method == 'POST' && isset($this->server['HTTP_X_HTTP_METHOD_OVERRIDE'])) {
             $this->method = strtoupper($this->server['HTTP_X_HTTP_METHOD_OVERRIDE']);
             $this->xhr = true;
@@ -153,7 +146,7 @@ class PhpRequest
         }
     }
 
-    protected function setSecure()
+    protected function setSecure() // : void
     {
         $scheme = isset($this->server['HTTPS'])
             && strtolower($this->server['HTTPS']) == 'on';
@@ -167,7 +160,7 @@ class PhpRequest
         $this->secure = $scheme || $port || $forward;
     }
 
-    protected function setUrl()
+    protected function setUrl() // : void
     {
         // scheme
         $scheme = ($this->secure) ? 'https://' : 'http://';
@@ -351,6 +344,8 @@ class PhpRequest
 
     protected function setContent() // : void
     {
+        $this->content = file_get_contents('php://input');
+
         if (isset($this->headers['Content-Md5'])) {
             $this->contentMd5 = $this->headers['Content-Md5'];
         }
@@ -377,5 +372,38 @@ class PhpRequest
                 return;
             }
         }
+    }
+
+    protected function setUploads() // : void
+    {
+        foreach ($this->files as $key => $spec) {
+            $this->uploads[$key] = $this->setUploadsFromSpec($spec);
+        }
+    }
+
+    protected function setUploadsFromSpec(array $spec) // : object|array
+    {
+        if (is_array($spec['tmp_name'])) {
+            return $this->setUploadsFromNested($spec);
+        }
+
+        return (object) $spec;
+    }
+
+    protected function setUploadsFromNested(array $nested) // : array
+    {
+        $uploads = [];
+        $keys = array_keys($nested['tmp_name']);
+        foreach ($keys as $key) {
+            $spec = [
+                'error'    => $nested['error'][$key],
+                'name'     => $nested['name'][$key],
+                'size'     => $nested['size'][$key],
+                'tmp_name' => $nested['tmp_name'][$key],
+                'type'     => $nested['type'][$key],
+            ];
+            $uploads[$key] = $this->setUploadsFromSpec($spec);
+        }
+        return $uploads;
     }
 }
