@@ -7,6 +7,7 @@
 
 #include "main/php.h"
 #include "main/php_ini.h"
+#include "main/SAPI.h"
 #include "ext/standard/info.h"
 #include "ext/standard/php_string.h"
 #include "ext/standard/url.h"
@@ -30,7 +31,6 @@ struct php_request_obj {
 
 /* {{{ Argument Info */
 ZEND_BEGIN_ARG_INFO_EX(PhpRequest_construct_args, 0, 0, 0)
-    ZEND_ARG_INFO(0, method)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO_EX(PhpRequest_parseAccepts_args, 0, 0, 0)
@@ -109,8 +109,7 @@ static void php_request_object_unset_property(zval *object, zval *member, void *
 }
 /* }}} */
 
-
-/* {{{ proto PhpRequest::__construct([string $method]) */
+/* {{{ proto PhpRequest::__construct() */
 static inline void copy_global(zval* obj, const char* key, size_t key_len, const char* sg, size_t sg_len)
 {
     zval * tmp = zend_hash_str_find(&EG(symbol_table), sg, sg_len);
@@ -271,6 +270,18 @@ static inline void set_auth(zval *object, zval *server)
 static inline void set_content(zval *object, zval *server)
 {
     zval *tmp;
+    php_stream *stream;
+    zend_string *str;
+    zval zv = {0};
+
+    stream = php_stream_open_wrapper_ex("php://input", "rb", REPORT_ERRORS, NULL, NULL);
+    if( stream ) {
+        if ((str = php_stream_copy_to_mem(stream, PHP_STREAM_COPY_ALL, 0))) {
+            ZVAL_STR(&zv, str);
+            zend_update_property(Z_CE_P(object), object, ZEND_STRL("content"), &zv);
+        }
+        php_stream_close(stream);
+    }
 
     if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_CONTENT_MD5"))) ) {
         zend_update_property(Z_CE_P(object), object, ZEND_STRL("contentMd5"), tmp);
@@ -286,13 +297,10 @@ static inline void set_content(zval *object, zval *server)
 PHP_METHOD(PhpRequest, __construct)
 {
     zval * _this_zval = getThis();
-    zend_string * method = NULL;
     zval *server;
     zval rv;
 
-    ZEND_PARSE_PARAMETERS_START(0, 1)
-        Z_PARAM_OPTIONAL
-        Z_PARAM_STR(method)
+    ZEND_PARSE_PARAMETERS_START(0, 0)
     ZEND_PARSE_PARAMETERS_END();
 
     struct php_request_obj * intern = Z_REQUEST_P(_this_zval);
@@ -309,15 +317,15 @@ PHP_METHOD(PhpRequest, __construct)
     // Read back server property
     server = zend_read_property(Z_CE_P(_this_zval), _this_zval, ZEND_STRL("server"), 0, &rv);
 
-    // method
-    zval zmethod = {0};
-    ZVAL_STRING(&zmethod, "");
-    zend_bool xhr = php_request_detect_method(&zmethod, server, method);
-    zend_update_property(Z_CE_P(_this_zval), _this_zval, ZEND_STRL("method"), &zmethod);
-    zend_update_property_bool(Z_CE_P(_this_zval), _this_zval, ZEND_STRL("xhr"), xhr);
-
     // Internal setters that require server
     if( server && Z_TYPE_P(server) == IS_ARRAY ) {
+        // method
+        zval method = {0};
+        ZVAL_STRING(&method, "");
+        zend_bool xhr = php_request_detect_method(&method, server);
+        zend_update_property(Z_CE_P(_this_zval), _this_zval, ZEND_STRL("method"), &method);
+        zend_update_property_bool(Z_CE_P(_this_zval), _this_zval, ZEND_STRL("xhr"), xhr);
+
         // secure
         zend_bool secure = php_request_is_secure(server);
         zend_update_property_bool(Z_CE_P(_this_zval), _this_zval, ZEND_STRL("secure"), secure);
@@ -346,7 +354,7 @@ PHP_METHOD(PhpRequest, __construct)
 }
 /* }}} PhpRequest::__construct */
 
-/* {{{ proto PhpRequest::__construct([string $method]) */
+/* {{{ proto PhpRequest::parseAccepts([string $header]) */
 PHP_METHOD(PhpRequest, parseAccepts)
 {
     zend_string * header;
@@ -358,7 +366,7 @@ PHP_METHOD(PhpRequest, parseAccepts)
     php_request_parse_accepts(return_value, ZSTR_VAL(header), ZSTR_LEN(header));
 
 }
-/* }}} PhpRequest::__construct */
+/* }}} PhpRequest::parseAccepts */
 
 /* {{{ PhpRequest methods */
 static zend_function_entry PhpRequest_methods[] = {
@@ -392,6 +400,7 @@ static PHP_MINIT_FUNCTION(request)
     zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("authPw"), ZEND_ACC_PUBLIC);
     zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("authType"), ZEND_ACC_PUBLIC);
     zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("authUser"), ZEND_ACC_PUBLIC);
+    zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("content"), ZEND_ACC_PUBLIC);
     zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("contentCharset"), ZEND_ACC_PUBLIC);
     zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("contentLength"), ZEND_ACC_PUBLIC);
     zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("contentMd5"), ZEND_ACC_PUBLIC);
@@ -405,6 +414,7 @@ static PHP_MINIT_FUNCTION(request)
     zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("post"), ZEND_ACC_PUBLIC);
     zend_declare_property_bool(PhpRequest_ce_ptr, ZEND_STRL("secure"), 0, ZEND_ACC_PUBLIC);
     zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("server"), ZEND_ACC_PUBLIC);
+    zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("uploads"), ZEND_ACC_PUBLIC);
     zend_declare_property_null(PhpRequest_ce_ptr, ZEND_STRL("url"), ZEND_ACC_PUBLIC);
     zend_declare_property_bool(PhpRequest_ce_ptr, ZEND_STRL("xhr"), 0, ZEND_ACC_PUBLIC);
 

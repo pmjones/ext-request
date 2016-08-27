@@ -8,8 +8,6 @@ $_SERVER['HTTP_HOST'] = 'localhost';
 $_SERVER['REQUEST_METHOD'] = 'GET';
 $request = new PhpRequest();
 echo $request->method, "\n";
-$request = new PhpRequest('PUT');
-echo $request->method, "\n";
 try {
     $request->method = 'PATCH';
     echo 'fail';
@@ -18,5 +16,4 @@ try {
 }
 --EXPECT--
 GET
-PUT
 PhpRequest is read-only.
