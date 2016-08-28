@@ -124,6 +124,7 @@ static inline void copy_global(zval* obj, const char* key, size_t key_len, const
     zval * tmp = zend_hash_str_find(&EG(symbol_table), sg, sg_len);
     if( tmp ) {
         zend_update_property(Z_CE_P(obj), obj, key, key_len, tmp);
+        Z_TRY_ADDREF_P(tmp);
     }
 }
 #define copy_global_lit(obj, glob, key) copy_global(obj, ZEND_STRL(glob), ZEND_STRL(key))
