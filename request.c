@@ -36,6 +36,10 @@ ZEND_END_ARG_INFO()
 ZEND_BEGIN_ARG_INFO_EX(PhpRequest_parseAccepts_args, 0, 0, 0)
     ZEND_ARG_INFO(0, header)
 ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(PhpRequest_parseDigestAuth_args, 0, 0, 0)
+    ZEND_ARG_INFO(0, header)
+ZEND_END_ARG_INFO()
 /* }}} Argument Info */
 
 /* {{{ Z_REQUEST_P */
@@ -247,6 +251,7 @@ static inline void set_accept_language(zval *object, zval *server)
 static inline void set_auth(zval *object, zval *server)
 {
     zval *tmp;
+    zval digest = {0};
 
     if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("PHP_AUTH_PW"))) ) {
         zend_update_property(Z_CE_P(object), object, ZEND_STRL("authPw"), tmp);
@@ -262,7 +267,8 @@ static inline void set_auth(zval *object, zval *server)
 
     if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("PHP_AUTH_DIGEST"))) ) {
         zend_string *str = zval_get_string(tmp);
-        php_request_digest_lex(ZSTR_VAL(str), ZSTR_LEN(str));
+        php_request_parse_digest_auth(&digest, ZSTR_VAL(str), ZSTR_LEN(str));
+        zend_update_property(Z_CE_P(object), object, ZEND_STRL("authDigest"), &digest);
     }
 
 }
@@ -380,10 +386,24 @@ PHP_METHOD(PhpRequest, parseAccepts)
 }
 /* }}} PhpRequest::parseAccepts */
 
+/* {{{ proto PhpRequest::parseDigestAuth([string $header]) */
+PHP_METHOD(PhpRequest, parseDigestAuth)
+{
+    zend_string * header;
+
+    ZEND_PARSE_PARAMETERS_START(1, 1)
+        Z_PARAM_STR(header)
+    ZEND_PARSE_PARAMETERS_END();
+
+    php_request_parse_digest_auth(return_value, ZSTR_VAL(header), ZSTR_LEN(header));
+}
+/* }}} PhpRequest::parseAccepts */
+
 /* {{{ PhpRequest methods */
 static zend_function_entry PhpRequest_methods[] = {
     PHP_ME(PhpRequest, __construct, PhpRequest_construct_args, ZEND_ACC_PUBLIC)
     PHP_ME(PhpRequest, parseAccepts, PhpRequest_parseAccepts_args, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+    PHP_ME(PhpRequest, parseDigestAuth, PhpRequest_parseDigestAuth_args, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
     PHP_FE_END
 };
 /* }}} PhpRequest methods */

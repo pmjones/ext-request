@@ -11,6 +11,7 @@
 #include "Zend/zend_smart_str.h"
 
 #include "php_request.h"
+#include "request_scanners.h"
 #include "request_utils.h"
 
 /* {{ php_request_detect_method */
@@ -311,6 +312,7 @@ void php_request_normalize_files(zval *return_value, zval *files)
 /* }}} */
 
 /* {{{ php_request_parse_accepts */
+/* @see https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html */
 struct accepts_ctx {
     int st;
     zval value;
