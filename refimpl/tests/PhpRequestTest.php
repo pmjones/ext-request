@@ -67,7 +67,7 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
             'PhpRequest is read-only.'
         );
 
-        unset($request->method);
+        $request->method = 'PATCH';
     }
 
     public function testSuperglobalsAreCopied()
