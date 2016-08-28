@@ -22,6 +22,7 @@
 
     end = "\x00";
     id = [a-zA-Z0-9_\.-]+;
+    mime = ("*" | [a-zA-Z0-9-]+) "/" ("*" | [a-zA-Z0-9-]+);
 */
 
 enum scanner_token_type {
@@ -34,7 +35,9 @@ enum scanner_token_type {
     TOKEN_COMMA,
     TOKEN_ID,
     TOKEN_SEMICOLON,
-    TOKEN_SLASH
+    TOKEN_SLASH,
+    TOKEN_MIME,
+    TOKEN_STAR
 };
 
 struct scanner_input {
@@ -119,25 +122,29 @@ static struct scanner_token lex_accept(struct scanner_input *in)
     for (;;) {
         in->tok = in->cur;
         /*!re2c
-            *   { token1(&tok, TOKEN_UNKNOWN, in->tok, 1); return tok; }
-            end { token1(&tok, TOKEN_END, "", 0); return tok; }
+            *   { token1(&tok, TOKEN_UNKNOWN, in->tok, 1); break; }
+            end { token1(&tok, TOKEN_END, "", 0); break; }
 
             // whitespaces
-            [ \t\v\n\r] { continue; tok.type = TOKEN_WHITESPACE; return tok; }
+            [ \t\v\n\r] { continue; tok.type = TOKEN_WHITESPACE; break; }
 
             // character and string literals
-            ['"] { tok = lex_quoted_str(in, *(in->cur - 1)); return tok; }
-            "''" { token1(&tok, TOKEN_STRING, "", 0); return tok; }
+            ['"] { tok = lex_quoted_str(in, *(in->cur - 1)); break; }
+            "''" { token1(&tok, TOKEN_STRING, "", 0); break; }
 
-            "=" { token1(&tok, TOKEN_EQUALS, "=", 1); return tok; }
-            "/" { token1(&tok, TOKEN_SLASH, "/", 1); return tok; }
-            ";" { token1(&tok, TOKEN_SEMICOLON, ";", 1); return tok; }
-            "," { token1(&tok, TOKEN_COMMA, ",", 1); return tok; }
+            "=" { token1(&tok, TOKEN_EQUALS, "=", 1); break; }
+            "/" { token1(&tok, TOKEN_SLASH, "/", 1); break; }
+            ";" { token1(&tok, TOKEN_SEMICOLON, ";", 1); break; }
+            "," { token1(&tok, TOKEN_COMMA, ",", 1); break; }
+            "*" { token1(&tok, TOKEN_STAR, in->tok, 1); break; }
 
             // identifiers
-            [a-zA-Z0-9_\./\*-]+ { token1(&tok, TOKEN_ID, in->tok, in->cur - in->tok); return tok; }
+            mime { token1(&tok, TOKEN_MIME, in->tok, in->cur - in->tok); break; }
+            id { token1(&tok, TOKEN_ID, in->tok, in->cur - in->tok); break; }
         */
     }
+    //fprintf(stderr, "ARGGGG %d %.*s\n", tok.type, tok.yyleng, tok.yytext);
+    return tok;
 }
 
 static int parse_accept_params(struct scanner_input *in, zval *params)
@@ -215,7 +222,7 @@ void php_request_parse_accept(zval *return_value, const char *str, size_t len)
 
         // MIME type
         tok = lex_accept(&in);
-        if( tok.type != TOKEN_ID ) {
+        if( tok.type != TOKEN_MIME && tok.type != TOKEN_ID && tok.type != TOKEN_STAR ) {
             break;
         }
 
