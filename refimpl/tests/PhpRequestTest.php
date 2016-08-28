@@ -43,7 +43,7 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
             'PhpRequest is read-only.'
         );
 
-        $request->method = 'HEAD';
+        unset($request->method);
     }
 
     public function test__isset()
