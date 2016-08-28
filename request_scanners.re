@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "main/php.h"
 #include "Zend/zend_API.h"
 #include "Zend/zend_smart_str.h"
 
@@ -20,7 +21,7 @@
     re2c:yyfill:enable = 0;
 
     end = "\x00";
-    id = [a-zA-Z0-9_-]+;
+    id = [a-zA-Z0-9_\.-]+;
 */
 
 enum scanner_token_type {
@@ -89,14 +90,160 @@ static struct scanner_token lex_quoted_str(struct scanner_input *in, unsigned ch
     return tok;
 }
 
-/* {{{ php_request_parse_accepts */
+/* {{{ php_request_parse_accept */
 /* @see https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html */
+static int php_request_accept_compare(const void *a, const void *b)
+{
+    Bucket *f = (Bucket *) a;
+    Bucket *s = (Bucket *) b;
+    zval *first = &f->val;
+    zval *second = &s->val;
+
+    if( Z_TYPE_P(first) != IS_OBJECT || Z_TYPE_P(second) != IS_OBJECT ) {
+        return 0;
+    }
+
+    first = zend_read_property(Z_CE_P(first), first, ZEND_STRL("quality"), 0, NULL);
+    second = zend_read_property(Z_CE_P(second), second, ZEND_STRL("quality"), 0, NULL);
+
+    if( !first || !second || Z_TYPE_P(first) != IS_STRING || Z_TYPE_P(second) != IS_STRING ) {
+        return 0;
+    }
+
+    return -1 * strnatcmp_ex(Z_STRVAL_P(first), Z_STRLEN_P(first), Z_STRVAL_P(second), Z_STRLEN_P(second), 0);
+}
+
+static struct scanner_token lex_accept(struct scanner_input *in)
+{
+    struct scanner_token tok = {0};
+    for (;;) {
+        in->tok = in->cur;
+        /*!re2c
+            *   { token1(&tok, TOKEN_UNKNOWN, in->tok, 1); return tok; }
+            end { token1(&tok, TOKEN_END, "", 0); return tok; }
+
+            // whitespaces
+            [ \t\v\n\r] { continue; tok.type = TOKEN_WHITESPACE; return tok; }
+
+            // character and string literals
+            ['"] { tok = lex_quoted_str(in, *(in->cur - 1)); return tok; }
+            "''" { token1(&tok, TOKEN_STRING, "", 0); return tok; }
+
+            "=" { token1(&tok, TOKEN_EQUALS, "=", 1); return tok; }
+            "/" { token1(&tok, TOKEN_SLASH, "/", 1); return tok; }
+            ";" { token1(&tok, TOKEN_SEMICOLON, ";", 1); return tok; }
+            "," { token1(&tok, TOKEN_COMMA, ",", 1); return tok; }
+
+            // identifiers
+            [a-zA-Z0-9_\./\*-]+ { token1(&tok, TOKEN_ID, in->tok, in->cur - in->tok); return tok; }
+        */
+    }
+}
+
+static int parse_accept_params(struct scanner_input *in, zval *params)
+{
+    struct scanner_token tok = {0};
+    struct scanner_token left;
+    struct scanner_token right;
+    zend_string *value;
+
+    array_init(params);
+
+    for(;;) {
+        // Check for semicolon or comma
+        tok = lex_accept(in);
+        if( tok.type == TOKEN_SEMICOLON ) {
+            // there's another param
+        } else if( tok.type == TOKEN_COMMA ) {
+            // end of params
+            break;
+        } else {
+            return 0; // err
+        }
+
+        // ID
+        tok = lex_accept(in);
+        if( tok.type != TOKEN_ID ) {
+            return 0; // err
+        }
+        left = tok;
+
+        // Equals
+        tok = lex_accept(in);
+        if( tok.type != TOKEN_EQUALS ) {
+            return 0; // err
+        }
+
+        // ID | string
+        tok = lex_accept(in);
+        if( tok.type != TOKEN_ID && tok.type != TOKEN_STRING ) {
+            return 0; // err
+        }
+        right = tok;
+
+        // Save KV pair
+        if( right.type == TOKEN_STRING ) {
+            value = strip_slashes(right.yytext, right.yyleng);
+        } else {
+            value = zend_string_init(right.yytext, right.yyleng, 0);
+        }
+        add_assoc_str_ex(params, left.yytext, left.yyleng, value);
+    }
+
+    return 1;
+}
 
 void php_request_parse_accept(zval *return_value, const char *str, size_t len)
 {
+    struct scanner_input in = {
+        str,
+        str,
+        str,
+        0,
+        str + len
+    };
+    struct scanner_token tok = {0};
+    zval *qual;
+    int con = 1;
 
+    array_init(return_value);
+
+    for(;con;) {
+        zval item = {0};
+        zval params = {0};
+        int ret;
+
+        // MIME type
+        tok = lex_accept(&in);
+        if( tok.type != TOKEN_ID ) {
+            break;
+        }
+
+        // Params
+        con = parse_accept_params(&in, &params);
+
+        // Save
+        array_init(&item);
+        add_assoc_stringl_ex(&item, ZEND_STRL("value"), tok.yytext, tok.yyleng);
+
+        // Get quality
+        qual = zend_hash_str_find(Z_ARRVAL(params), ZEND_STRL("q"));
+        if( qual && Z_TYPE_P(qual) == IS_STRING ) {
+            add_assoc_stringl_ex(&item, ZEND_STRL("quality"), Z_STRVAL_P(qual), Z_STRLEN_P(qual));
+            zend_hash_str_del(Z_ARRVAL(params), ZEND_STRL("q"));
+        } else {
+            add_assoc_string_ex(&item, ZEND_STRL("quality"), "1.0");
+        }
+
+        add_assoc_zval_ex(&item, ZEND_STRL("params"), &params);
+        convert_to_object(&item);
+        add_next_index_zval(return_value, &item);
+    };
+
+    // Sort
+    zend_hash_sort(Z_ARRVAL_P(return_value), php_request_accept_compare, 1);
 }
-/* }}} php_request_parse_accepts */
+/* }}} php_request_parse_accept */
 
 /* {{{ php_request_parse_content_type */
 /* @see https://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.7 */

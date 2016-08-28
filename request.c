@@ -202,7 +202,7 @@ static inline void set_accept_by_name(zval *object, zval *server, const char *sr
 
     array_init(&val);
     if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), src, src_length)) ) {
-        php_request_parse_accepts(&val, Z_STRVAL_P(tmp), Z_STRLEN_P(tmp));
+        php_request_parse_accept(&val, Z_STRVAL_P(tmp), Z_STRLEN_P(tmp));
     }
     zend_update_property(Z_CE_P(object), object, dest, dest_length, &val);
 }
@@ -246,7 +246,7 @@ static inline void set_accept_language(zval *object, zval *server)
 
     array_init(&val);
     if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_ACCEPT_LANGUAGE"))) ) {
-        php_request_parse_accepts(&val, Z_STRVAL_P(tmp), Z_STRLEN_P(tmp));
+        php_request_parse_accept(&val, Z_STRVAL_P(tmp), Z_STRLEN_P(tmp));
         parse_accept_language(&val);
     }
     zend_update_property(Z_CE_P(object), object, ZEND_STRL("acceptLanguage"), &val);
@@ -401,8 +401,8 @@ PHP_METHOD(PhpRequest, parseAccept)
         Z_PARAM_STR(header)
     ZEND_PARSE_PARAMETERS_END();
 
-    array_init(return_value);
-    php_request_parse_accepts(return_value, ZSTR_VAL(header), ZSTR_LEN(header));
+    //array_init(return_value);
+    php_request_parse_accept(return_value, ZSTR_VAL(header), ZSTR_LEN(header));
 
 }
 /* }}} PhpRequest::parseAccept */

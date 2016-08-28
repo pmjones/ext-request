@@ -4,7 +4,8 @@ PhpRequest::parseAccept
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --FILE--
 <?php
-//var_dump(PhpRequest::parseAccept(''));
+var_dump(PhpRequest::parseAccept(null));
+var_dump(PhpRequest::parseAccept(''));
 
 // Accept
 var_dump(PhpRequest::parseAccept('application/xml;q=0.8, application/json;foo=bar, text/*;q=0.2, */*;q=0.1'));
@@ -17,10 +18,14 @@ var_dump(PhpRequest::parseAccept('compress;q=0.5, gzip;q=1.0'));
 
 // Accept-Language
 var_dump(PhpRequest::parseAccept('en-US, en-GB, en, *'));
---EXPECT--
+--EXPECTF--
+array(0) {
+}
+array(0) {
+}
 array(4) {
   [0]=>
-  object(stdClass)#2 (3) {
+  object(stdClass)#%d (3) {
     ["value"]=>
     string(16) "application/json"
     ["quality"]=>
@@ -32,7 +37,7 @@ array(4) {
     }
   }
   [1]=>
-  object(stdClass)#1 (3) {
+  object(stdClass)#%d (3) {
     ["value"]=>
     string(15) "application/xml"
     ["quality"]=>
@@ -42,7 +47,7 @@ array(4) {
     }
   }
   [2]=>
-  object(stdClass)#3 (3) {
+  object(stdClass)#%d (3) {
     ["value"]=>
     string(6) "text/*"
     ["quality"]=>
@@ -52,7 +57,7 @@ array(4) {
     }
   }
   [3]=>
-  object(stdClass)#4 (3) {
+  object(stdClass)#%d (3) {
     ["value"]=>
     string(3) "*/*"
     ["quality"]=>
@@ -64,7 +69,7 @@ array(4) {
 }
 array(2) {
   [0]=>
-  object(stdClass)#3 (3) {
+  object(stdClass)#%d (3) {
     ["value"]=>
     string(11) "unicode-1-1"
     ["quality"]=>
@@ -74,7 +79,7 @@ array(2) {
     }
   }
   [1]=>
-  object(stdClass)#4 (3) {
+  object(stdClass)#%d (3) {
     ["value"]=>
     string(10) "iso-8859-5"
     ["quality"]=>
@@ -86,7 +91,7 @@ array(2) {
 }
 array(2) {
   [0]=>
-  object(stdClass)#3 (3) {
+  object(stdClass)#%d (3) {
     ["value"]=>
     string(4) "gzip"
     ["quality"]=>
@@ -96,7 +101,7 @@ array(2) {
     }
   }
   [1]=>
-  object(stdClass)#4 (3) {
+  object(stdClass)#%d (3) {
     ["value"]=>
     string(8) "compress"
     ["quality"]=>
@@ -108,7 +113,7 @@ array(2) {
 }
 array(4) {
   [0]=>
-  object(stdClass)#4 (3) {
+  object(stdClass)#%d (3) {
     ["value"]=>
     string(5) "en-US"
     ["quality"]=>
@@ -118,7 +123,7 @@ array(4) {
     }
   }
   [1]=>
-  object(stdClass)#3 (3) {
+  object(stdClass)#%d (3) {
     ["value"]=>
     string(5) "en-GB"
     ["quality"]=>
@@ -128,7 +133,7 @@ array(4) {
     }
   }
   [2]=>
-  object(stdClass)#1 (3) {
+  object(stdClass)#%d (3) {
     ["value"]=>
     string(2) "en"
     ["quality"]=>
@@ -138,7 +143,7 @@ array(4) {
     }
   }
   [3]=>
-  object(stdClass)#2 (3) {
+  object(stdClass)#%d (3) {
     ["value"]=>
     string(1) "*"
     ["quality"]=>
