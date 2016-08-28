@@ -321,7 +321,6 @@ static inline void set_content(zval *object, zval *server)
             }
         }
     }
-    // @todo content-type
 }
 
 PHP_METHOD(PhpRequest, __construct)
