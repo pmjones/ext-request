@@ -89,6 +89,15 @@ static struct scanner_token lex_quoted_str(struct scanner_input *in, unsigned ch
     return tok;
 }
 
+/* {{{ php_request_parse_accepts */
+/* @see https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html */
+
+void php_request_parse_accept(zval *return_value, const char *str, size_t len)
+{
+
+}
+/* }}} php_request_parse_accepts */
+
 /* {{{ php_request_parse_content_type */
 /* @see https://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.7 */
 /* @see https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html */

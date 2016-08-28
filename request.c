@@ -33,7 +33,7 @@ struct php_request_obj {
 ZEND_BEGIN_ARG_INFO_EX(PhpRequest_construct_args, 0, 0, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(PhpRequest_parseAccepts_args, 0, 0, 0)
+ZEND_BEGIN_ARG_INFO_EX(PhpRequest_parseAccept_args, 0, 0, 0)
     ZEND_ARG_INFO(0, header)
 ZEND_END_ARG_INFO()
 
@@ -392,8 +392,8 @@ PHP_METHOD(PhpRequest, __construct)
 }
 /* }}} PhpRequest::__construct */
 
-/* {{{ proto PhpRequest::parseAccepts([string $header]) */
-PHP_METHOD(PhpRequest, parseAccepts)
+/* {{{ proto PhpRequest::parseAccept([string $header]) */
+PHP_METHOD(PhpRequest, parseAccept)
 {
     zend_string * header;
 
@@ -401,10 +401,11 @@ PHP_METHOD(PhpRequest, parseAccepts)
         Z_PARAM_STR(header)
     ZEND_PARSE_PARAMETERS_END();
 
+    array_init(return_value);
     php_request_parse_accepts(return_value, ZSTR_VAL(header), ZSTR_LEN(header));
 
 }
-/* }}} PhpRequest::parseAccepts */
+/* }}} PhpRequest::parseAccept */
 
 /* {{{ proto PhpRequest::parseContentType([string $header]) */
 PHP_METHOD(PhpRequest, parseContentType)
@@ -435,7 +436,7 @@ PHP_METHOD(PhpRequest, parseDigestAuth)
 /* {{{ PhpRequest methods */
 static zend_function_entry PhpRequest_methods[] = {
     PHP_ME(PhpRequest, __construct, PhpRequest_construct_args, ZEND_ACC_PUBLIC)
-    PHP_ME(PhpRequest, parseAccepts, PhpRequest_parseAccepts_args, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+    PHP_ME(PhpRequest, parseAccept, PhpRequest_parseAccept_args, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
     PHP_ME(PhpRequest, parseContentType, PhpRequest_parseContentType_args, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
     PHP_ME(PhpRequest, parseDigestAuth, PhpRequest_parseDigestAuth_args, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
     PHP_FE_END
