@@ -11,7 +11,7 @@
 #include "Zend/zend_smart_str.h"
 
 #include "php_request.h"
-#include "request_scanners.h"
+#include "request_parsers.h"
 #include "request_utils.h"
 
 /* {{ php_request_detect_method */

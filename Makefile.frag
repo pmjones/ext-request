@@ -1,3 +1,3 @@
 
-$(srcdir)/request_scanners.c: $(srcdir)/request_scanners.re
-	(cd $(top_srcdir); $(RE2C) --no-generation-date -o request_scanners.c request_scanners.re)
+$(srcdir)/request_parsers.c: $(srcdir)/request_parsers.re
+	(cd $(top_srcdir); $(RE2C) --no-generation-date -o request_parsers.c request_parsers.re)
