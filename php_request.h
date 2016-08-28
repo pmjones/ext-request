@@ -2,8 +2,6 @@
 #ifndef PHP_REQUEST_H
 #define PHP_REQUEST_H
 
-#include "main/php.h"
-
 #define PHP_REQUEST_NAME "request"
 #define PHP_REQUEST_VERSION "0.0.0"
 
