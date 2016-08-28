@@ -17,9 +17,8 @@
 /* {{ php_request_detect_method */
 zend_bool php_request_detect_method(zval *return_value, zval *server)
 {
-    zval rv;
-    zend_string* tmp;
-    zval* val;
+    zend_string *tmp;
+    zval *val;
     zend_bool xhr = 0;
     zend_string *method;
 
@@ -50,11 +49,11 @@ zend_bool php_request_detect_method(zval *return_value, zval *server)
 /* }}} */
 
 /* {{{ php_request_detect_url */
-static inline const unsigned char * extract_port_from_host(const unsigned char * host, size_t len)
+static inline const unsigned char *extract_port_from_host(const unsigned char *host, size_t len)
 {
-    const unsigned char * right = host + len - 1;
-    const unsigned char * left = len > 6 ? right - 6 : host;
-    const unsigned char * pos = right;
+    const unsigned char *right = host + len - 1;
+    const unsigned char *left = len > 6 ? right - 6 : host;
+    const unsigned char *pos = right;
     for( ; pos > left; pos-- ) {
         if( !isdigit(*pos) ) {
             if( *pos == ':' ) {
@@ -69,7 +68,7 @@ static inline const unsigned char * extract_port_from_host(const unsigned char *
 static inline zend_string *extract_host_from_server(zval *server)
 {
     zval *tmp;
-    zend_string *host = NULL;
+    zend_string *host;
 
     // Get host
     if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_HOST"))) &&
@@ -78,6 +77,8 @@ static inline zend_string *extract_host_from_server(zval *server)
     } else if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("SERVER_NAME"))) &&
             Z_TYPE_P(tmp) == IS_STRING ) {
         host = Z_STR_P(tmp);
+    } else {
+        host = NULL;
     }
 
     return host;
@@ -112,13 +113,11 @@ static inline zend_string *extract_uri_from_server(zval *server)
 zend_string *php_request_detect_url(zval *server)
 {
     zval *tmp;
-    zend_bool is_secure = php_request_is_secure(server);
-    zend_string * host = NULL;
-    zend_long port = 0;
-    zend_string * uri = NULL;
+    zend_string *host;
+    zend_long port;
+    zend_string *uri;
     smart_str buf = {0};
-    php_url * url;
-    zval arr = {0};
+    zend_bool is_secure = php_request_is_secure(server);
 
     // Get host
     if( !(host = extract_host_from_server(server)) ) {
@@ -157,7 +156,7 @@ zend_bool php_request_is_secure(zval *server)
     zval *tmp;
 
     if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTPS"))) &&
-        Z_TYPE_P(tmp) == IS_STRING &&
+            Z_TYPE_P(tmp) == IS_STRING &&
         zend_string_equals_literal_ci(Z_STR_P(tmp), "on") ) {
         return 1;
     }
@@ -168,8 +167,8 @@ zend_bool php_request_is_secure(zval *server)
     }
 
     if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_X_FORWARDED_PROTO"))) &&
-               Z_TYPE_P(tmp) == IS_STRING &&
-               zend_string_equals_literal_ci(Z_STR_P(tmp), "https") ) {
+            Z_TYPE_P(tmp) == IS_STRING &&
+            zend_string_equals_literal_ci(Z_STR_P(tmp), "https") ) {
         return 1;
     }
 

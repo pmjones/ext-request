@@ -61,7 +61,7 @@ static zend_string *strip_slashes(const unsigned char *str, size_t len)
     register const YYCTYPE *end = str + len;
     smart_str buf = {0};
     smart_str_alloc(&buf, len, 0);
-    for(; pos != end; pos++ ) {
+    for( ; pos != end; pos++ ) {
         if( *pos != '\\' ) {
             smart_str_appendc_ex(&buf, *pos, 0);
         }
@@ -98,7 +98,7 @@ static struct scanner_token lex_quoted_str(struct scanner_input *in, YYCTYPE q)
 static struct scanner_token lex(struct scanner_input *in)
 {
     struct scanner_token tok = {0};
-    for (;;) {
+    for( ;; ) {
         in->tok = in->cur;
         /*!re2c
             *   { token1(&tok, TOKEN_UNKNOWN, in->tok, 1); break; }
@@ -364,7 +364,7 @@ void php_request_parse_digest_auth(zval *return_value, const YYCTYPE *str, size_
 
     // Parse digest auth
     array_init(return_value);
-    for(;;) {
+    for( ;; ) {
         // Read ID
         tok = lex(&in);
         if( tok.type != TOKEN_ID ) {
