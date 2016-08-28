@@ -4,7 +4,11 @@ PhpRequest::parseContentType
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --FILE--
 <?php
-var_dump(PhpRequest::parseContentType(null));
+try {
+    var_dump(PhpRequest::parseContentType(null));
+} catch( Throwable $e ) {
+    var_dump(get_class($e), $e->getMessage());
+}
 var_dump(PhpRequest::parseContentType(''));
 var_dump(PhpRequest::parseContentType('/'));
 var_dump(PhpRequest::parseContentType(';'));
@@ -15,7 +19,8 @@ var_dump(PhpRequest::parseContentType('text/plain;foo=bar'));
 var_dump(PhpRequest::parseContentType('text/plain;foo=bar;charset=utf-8;baz=dib'));
 var_dump(PhpRequest::parseContentType('image/x-tiff;baz = "bat"'));
 --EXPECT--
-NULL
+string(9) "TypeError"
+string(90) "Argument 1 passed to PhpRequest::parseContentType() must be of the type string, null given"
 NULL
 NULL
 NULL

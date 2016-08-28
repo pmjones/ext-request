@@ -4,15 +4,20 @@ PhpRequest::parseDigestAuth
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --FILE--
 <?php
-var_dump(PhpRequest::parseDigestAuth(null));
+try {
+    var_dump(PhpRequest::parseDigestAuth(null));
+} catch( Throwable $e ) {
+    var_dump(get_class($e), $e->getMessage());
+}
 var_dump(PhpRequest::parseDigestAuth(''));
 var_dump(PhpRequest::parseDigestAuth('nonce="foo",nc=\'bar\',cnonce=baz,qop="dib",username="zim",uri="gir",response="irk"'));
 var_dump(PhpRequest::parseDigestAuth(' nonce="foo\\"",nc=\'bar\' ,cnonce= baz , qop="dib",username="zim " , uri="gir" ,response= "irk" '));
 var_dump(PhpRequest::parseDigestAuth('nonce="foo",nc=\'bar\',cnonce=baz'));
---EXPECT--
+--EXPECTF--
+string(9) "TypeError"
+string(%d) "Argument 1 passed to PhpRequest::parseDigestAuth() must be of the type string, null given"
 NULL
-NULL
-object(stdClass)#1 (7) {
+object(stdClass)#%d (7) {
   ["nonce"]=>
   string(3) "foo"
   ["nc"]=>
@@ -28,7 +33,7 @@ object(stdClass)#1 (7) {
   ["response"]=>
   string(3) "irk"
 }
-object(stdClass)#1 (7) {
+object(stdClass)#%d (7) {
   ["nonce"]=>
   string(4) "foo""
   ["nc"]=>

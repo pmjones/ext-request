@@ -4,7 +4,12 @@ PhpRequest::parseAccept
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --FILE--
 <?php
-var_dump(PhpRequest::parseAccept(null));
+try {
+    var_dump(PhpRequest::parseAccept(null));
+} catch( Throwable $e ) {
+    var_dump(get_class($e), $e->getMessage());
+}
+
 var_dump(PhpRequest::parseAccept(''));
 
 // Accept
@@ -19,8 +24,8 @@ var_dump(PhpRequest::parseAccept('compress;q=0.5, gzip;q=1.0'));
 // Accept-Language
 var_dump(PhpRequest::parseAccept('en-US, en-GB, en, *'));
 --EXPECTF--
-array(0) {
-}
+string(9) "TypeError"
+string(%d) "Argument 1 passed to PhpRequest::parseAccept() must be of the type string, null given"
 array(0) {
 }
 array(4) {
