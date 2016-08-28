@@ -37,6 +37,10 @@ ZEND_BEGIN_ARG_INFO_EX(PhpRequest_parseAccepts_args, 0, 0, 0)
     ZEND_ARG_INFO(0, header)
 ZEND_END_ARG_INFO()
 
+ZEND_BEGIN_ARG_INFO_EX(PhpRequest_parseContentType_args, 0, 0, 0)
+    ZEND_ARG_INFO(0, header)
+ZEND_END_ARG_INFO()
+
 ZEND_BEGIN_ARG_INFO_EX(PhpRequest_parseDigestAuth_args, 0, 0, 0)
     ZEND_ARG_INFO(0, header)
 ZEND_END_ARG_INFO()
@@ -279,6 +283,7 @@ static inline void set_content(zval *object, zval *server)
     php_stream *stream;
     zend_string *str;
     zval zv = {0};
+    zval contentType = {0};
 
     // @todo read this when the property is read
     stream = php_stream_open_wrapper_ex("php://input", "rb", REPORT_ERRORS, NULL, NULL);
@@ -298,6 +303,21 @@ static inline void set_content(zval *object, zval *server)
         zend_update_property(Z_CE_P(object), object, ZEND_STRL("contentLength"), tmp);
     }
 
+    if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_CONTENT_TYPE"))) && Z_TYPE_P(tmp) == IS_STRING ) {
+        php_request_parse_content_type(&contentType, Z_STRVAL_P(tmp), Z_STRLEN_P(tmp));
+        if( Z_TYPE(contentType) == IS_ARRAY ) {
+            // contentType
+            tmp = zend_hash_str_find(Z_ARRVAL(contentType), ZEND_STRL("value"));
+            if( tmp ) {
+                zend_update_property(Z_CE_P(object), object, ZEND_STRL("contentType"), tmp);
+            }
+            // charset
+            tmp = zend_hash_str_find(Z_ARRVAL(contentType), ZEND_STRL("charset"));
+            if( tmp ) {
+                zend_update_property(Z_CE_P(object), object, ZEND_STRL("contentCharset"), tmp);
+            }
+        }
+    }
     // @todo content-type
 }
 
@@ -386,6 +406,19 @@ PHP_METHOD(PhpRequest, parseAccepts)
 }
 /* }}} PhpRequest::parseAccepts */
 
+/* {{{ proto PhpRequest::parseContentType([string $header]) */
+PHP_METHOD(PhpRequest, parseContentType)
+{
+    zend_string * header;
+
+    ZEND_PARSE_PARAMETERS_START(1, 1)
+        Z_PARAM_STR(header)
+    ZEND_PARSE_PARAMETERS_END();
+
+    php_request_parse_content_type(return_value, ZSTR_VAL(header), ZSTR_LEN(header));
+}
+/* }}} PhpRequest::parseContentType */
+
 /* {{{ proto PhpRequest::parseDigestAuth([string $header]) */
 PHP_METHOD(PhpRequest, parseDigestAuth)
 {
@@ -397,12 +430,13 @@ PHP_METHOD(PhpRequest, parseDigestAuth)
 
     php_request_parse_digest_auth(return_value, ZSTR_VAL(header), ZSTR_LEN(header));
 }
-/* }}} PhpRequest::parseAccepts */
+/* }}} PhpRequest::parseDigestAuth */
 
 /* {{{ PhpRequest methods */
 static zend_function_entry PhpRequest_methods[] = {
     PHP_ME(PhpRequest, __construct, PhpRequest_construct_args, ZEND_ACC_PUBLIC)
     PHP_ME(PhpRequest, parseAccepts, PhpRequest_parseAccepts_args, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+    PHP_ME(PhpRequest, parseContentType, PhpRequest_parseContentType_args, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
     PHP_ME(PhpRequest, parseDigestAuth, PhpRequest_parseDigestAuth_args, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
     PHP_FE_END
 };
