@@ -13,6 +13,7 @@
 #include "ext/standard/url.h"
 #include "ext/spl/spl_exceptions.h"
 #include "Zend/zend_API.h"
+#include "Zend/zend_exceptions.h"
 #include "Zend/zend_portability.h"
 #include "Zend/zend_smart_str.h"
 

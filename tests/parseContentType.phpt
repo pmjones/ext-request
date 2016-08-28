@@ -20,50 +20,34 @@ NULL
 NULL
 NULL
 NULL
-array(4) {
+array(2) {
   ["value"]=>
   string(10) "text/plain"
-  ["type"]=>
-  string(4) "text"
-  ["subtype"]=>
-  string(5) "plain"
   ["params"]=>
   array(0) {
   }
 }
-array(5) {
+array(3) {
   ["value"]=>
   string(10) "text/plain"
-  ["type"]=>
-  string(4) "text"
-  ["subtype"]=>
-  string(5) "plain"
   ["charset"]=>
   string(5) "utf-8"
   ["params"]=>
   array(0) {
   }
 }
-array(4) {
+array(2) {
   ["value"]=>
   string(10) "text/plain"
-  ["type"]=>
-  string(4) "text"
-  ["subtype"]=>
-  string(5) "plain"
   ["params"]=>
   array(1) {
     ["foo"]=>
     string(3) "bar"
   }
 }
-array(5) {
+array(3) {
   ["value"]=>
   string(10) "text/plain"
-  ["type"]=>
-  string(4) "text"
-  ["subtype"]=>
-  string(5) "plain"
   ["charset"]=>
   string(5) "utf-8"
   ["params"]=>
@@ -74,13 +58,9 @@ array(5) {
     string(3) "dib"
   }
 }
-array(4) {
+array(2) {
   ["value"]=>
   string(12) "image/x-tiff"
-  ["type"]=>
-  string(5) "image"
-  ["subtype"]=>
-  string(6) "x-tiff"
   ["params"]=>
   array(1) {
     ["baz"]=>

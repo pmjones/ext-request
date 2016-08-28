@@ -7,12 +7,13 @@
 #include <string.h>
 
 #include "main/php.h"
+#include "ext/standard/php_string.h"
 #include "Zend/zend_API.h"
 #include "Zend/zend_smart_str.h"
 
 /* Adapted from http://re2c.org/examples/example_07.html */
 
-#define YYCTYPE unsigned char
+typedef unsigned char YYCTYPE;
 
 /*!re2c
     re2c:define:YYCURSOR = in->cur;
@@ -41,23 +42,23 @@ enum scanner_token_type {
 };
 
 struct scanner_input {
-    unsigned char * buf;
-    unsigned char * tok;
-    unsigned char * cur;
-    unsigned char * mar;
-    unsigned char * lim;
+    const YYCTYPE *buf;
+    const YYCTYPE *tok;
+    const YYCTYPE *cur;
+    const YYCTYPE *mar;
+    const YYCTYPE *lim;
 };
 
 struct scanner_token {
     enum scanner_token_type type;
-    const unsigned char * yytext;
+    const YYCTYPE *yytext;
     size_t yyleng;
 };
 
 static zend_string *strip_slashes(const unsigned char *str, size_t len)
 {
-    register char * pos = str;
-    register char * end = str + len;
+    register const YYCTYPE *pos = str;
+    register const YYCTYPE *end = str + len;
     smart_str buf = {0};
     smart_str_alloc(&buf, len, 0);
     for(; pos != end; pos++ ) {
@@ -68,19 +69,19 @@ static zend_string *strip_slashes(const unsigned char *str, size_t len)
     return buf.s;
 }
 
-static inline void token1(struct scanner_token *tok, enum scanner_token_type type,  const unsigned char * yytext, size_t yyleng)
+static inline void token1(struct scanner_token *tok, enum scanner_token_type type,  const YYCTYPE *yytext, size_t yyleng)
 {
     tok->type = type;
     tok->yytext = yytext;
     tok->yyleng = yyleng;
 }
 
-static struct scanner_token lex_quoted_str(struct scanner_input *in, unsigned char q)
+static struct scanner_token lex_quoted_str(struct scanner_input *in, YYCTYPE q)
 {
     struct scanner_token tok = {0};
-    const unsigned char * start = in->cur;
+    const YYCTYPE *start = in->cur;
 
-    unsigned char u = q;
+    YYCTYPE u = q;
     for (;;) {
         in->tok = in->cur;
         /*!re2c
@@ -92,6 +93,40 @@ static struct scanner_token lex_quoted_str(struct scanner_input *in, unsigned ch
     token1(&tok, TOKEN_STRING, start, in->tok - start);
     return tok;
 }
+
+/* {{{ php_request_lex_generic */
+static struct scanner_token lex(struct scanner_input *in)
+{
+    struct scanner_token tok = {0};
+    for (;;) {
+        in->tok = in->cur;
+        /*!re2c
+            *   { token1(&tok, TOKEN_UNKNOWN, in->tok, 1); break; }
+            end { token1(&tok, TOKEN_END, "", 0); break; }
+
+            // whitespaces
+            [ \t\v\n\r] { continue; tok.type = TOKEN_WHITESPACE; break; }
+
+            // character and string literals
+            ['"] { tok = lex_quoted_str(in, *(in->cur - 1)); break; }
+            "''" { token1(&tok, TOKEN_STRING, "", 0); break; }
+
+            // operators
+            "=" { token1(&tok, TOKEN_EQUALS, "=", 1); break; }
+            "/" { token1(&tok, TOKEN_SLASH, "/", 1); break; }
+            ";" { token1(&tok, TOKEN_SEMICOLON, ";", 1); break; }
+            "," { token1(&tok, TOKEN_COMMA, ",", 1); break; }
+            "*" { token1(&tok, TOKEN_STAR, in->tok, 1); break; }
+
+            // identifiers
+            mime { token1(&tok, TOKEN_MIME, in->tok, in->cur - in->tok); break; }
+            id { token1(&tok, TOKEN_ID, in->tok, in->cur - in->tok); break; }
+        */
+    }
+    //fprintf(stderr, "TOKEN[%d] %.*s\n", tok.type, tok.yyleng, tok.yytext);
+    return tok;
+}
+/* }}} php_request_lex_generic */
 
 /* {{{ php_request_parse_accept */
 /* @see https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html */
@@ -116,40 +151,9 @@ static int php_request_accept_compare(const void *a, const void *b)
     return -1 * strnatcmp_ex(Z_STRVAL_P(first), Z_STRLEN_P(first), Z_STRVAL_P(second), Z_STRLEN_P(second), 0);
 }
 
-static struct scanner_token lex_accept(struct scanner_input *in)
-{
-    struct scanner_token tok = {0};
-    for (;;) {
-        in->tok = in->cur;
-        /*!re2c
-            *   { token1(&tok, TOKEN_UNKNOWN, in->tok, 1); break; }
-            end { token1(&tok, TOKEN_END, "", 0); break; }
-
-            // whitespaces
-            [ \t\v\n\r] { continue; tok.type = TOKEN_WHITESPACE; break; }
-
-            // character and string literals
-            ['"] { tok = lex_quoted_str(in, *(in->cur - 1)); break; }
-            "''" { token1(&tok, TOKEN_STRING, "", 0); break; }
-
-            "=" { token1(&tok, TOKEN_EQUALS, "=", 1); break; }
-            "/" { token1(&tok, TOKEN_SLASH, "/", 1); break; }
-            ";" { token1(&tok, TOKEN_SEMICOLON, ";", 1); break; }
-            "," { token1(&tok, TOKEN_COMMA, ",", 1); break; }
-            "*" { token1(&tok, TOKEN_STAR, in->tok, 1); break; }
-
-            // identifiers
-            mime { token1(&tok, TOKEN_MIME, in->tok, in->cur - in->tok); break; }
-            id { token1(&tok, TOKEN_ID, in->tok, in->cur - in->tok); break; }
-        */
-    }
-    //fprintf(stderr, "ARGGGG %d %.*s\n", tok.type, tok.yyleng, tok.yytext);
-    return tok;
-}
-
 static int parse_accept_params(struct scanner_input *in, zval *params)
 {
-    struct scanner_token tok = {0};
+    struct scanner_token tok;
     struct scanner_token left;
     struct scanner_token right;
     zend_string *value;
@@ -158,7 +162,7 @@ static int parse_accept_params(struct scanner_input *in, zval *params)
 
     for(;;) {
         // Check for semicolon or comma
-        tok = lex_accept(in);
+        tok = lex(in);
         if( tok.type == TOKEN_SEMICOLON ) {
             // there's another param
         } else if( tok.type == TOKEN_COMMA ) {
@@ -169,20 +173,20 @@ static int parse_accept_params(struct scanner_input *in, zval *params)
         }
 
         // ID
-        tok = lex_accept(in);
+        tok = lex(in);
         if( tok.type != TOKEN_ID ) {
             return 0; // err
         }
         left = tok;
 
         // Equals
-        tok = lex_accept(in);
+        tok = lex(in);
         if( tok.type != TOKEN_EQUALS ) {
             return 0; // err
         }
 
         // ID | string
-        tok = lex_accept(in);
+        tok = lex(in);
         if( tok.type != TOKEN_ID && tok.type != TOKEN_STRING ) {
             return 0; // err
         }
@@ -200,7 +204,7 @@ static int parse_accept_params(struct scanner_input *in, zval *params)
     return 1;
 }
 
-void php_request_parse_accept(zval *return_value, const char *str, size_t len)
+void php_request_parse_accept(zval *return_value, const YYCTYPE *str, size_t len)
 {
     struct scanner_input in = {
         str,
@@ -221,7 +225,7 @@ void php_request_parse_accept(zval *return_value, const char *str, size_t len)
         int ret;
 
         // MIME type
-        tok = lex_accept(&in);
+        tok = lex(&in);
         if( tok.type != TOKEN_MIME && tok.type != TOKEN_ID && tok.type != TOKEN_STAR ) {
             break;
         }
@@ -231,7 +235,7 @@ void php_request_parse_accept(zval *return_value, const char *str, size_t len)
 
         // Save
         array_init(&item);
-        add_assoc_stringl_ex(&item, ZEND_STRL("value"), tok.yytext, tok.yyleng);
+        add_assoc_stringl_ex(&item, ZEND_STRL("value"), (char *) tok.yytext, tok.yyleng);
 
         // Get quality
         qual = zend_hash_str_find(Z_ARRVAL(params), ZEND_STRL("q"));
@@ -255,34 +259,7 @@ void php_request_parse_accept(zval *return_value, const char *str, size_t len)
 /* {{{ php_request_parse_content_type */
 /* @see https://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.7 */
 /* @see https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html */
-
-static struct scanner_token lex_content_type(struct scanner_input *in, const char *str, size_t len)
-{
-    struct scanner_token tok = {0};
-    for (;;) {
-        in->tok = in->cur;
-        /*!re2c
-            *   { token1(&tok, TOKEN_UNKNOWN, in->tok, 1); return tok; }
-            end { token1(&tok, TOKEN_END, "", 0); return tok; }
-
-            // whitespaces
-            [ \t\v\n\r] { continue; tok.type = TOKEN_WHITESPACE; return tok; }
-
-            // character and string literals
-            ['"] { tok = lex_quoted_str(in, *(in->cur - 1)); return tok; }
-            "''" { token1(&tok, TOKEN_STRING, "", 0); return tok; }
-
-            "=" { token1(&tok, TOKEN_EQUALS, "=", 1); return tok; }
-            "/" { token1(&tok, TOKEN_SLASH, "/", 1); return tok; }
-            ";" { token1(&tok, TOKEN_SEMICOLON, ";", 1); return tok; }
-
-            // identifiers
-            id { token1(&tok, TOKEN_ID, in->tok, in->cur - in->tok); return tok; }
-        */
-    }
-}
-
-void php_request_parse_content_type(zval *return_value, const char *str, size_t len)
+void php_request_parse_content_type(zval *return_value, const YYCTYPE *str, size_t len)
 {
     struct scanner_input in = {
         str,
@@ -296,63 +273,40 @@ void php_request_parse_content_type(zval *return_value, const char *str, size_t 
     struct scanner_token right;
     zend_string *value;
     zval params;
-    smart_str buf = {0};
 
-
-    // Read type
-    tok = lex_content_type(&in, str, len);
-    if( tok.type != TOKEN_ID ) {
-        goto err;
-    }
-    left = tok;
-
-    // Read slash
-    tok = lex_content_type(&in, str, len);
-    if( tok.type != TOKEN_SLASH ) {
+    // Read mime
+    tok = lex(&in);
+    if( tok.type != TOKEN_MIME ) {
         goto err;
     }
 
-    // Read subtype
-    tok = lex_content_type(&in, str, len);
-    if( tok.type != TOKEN_ID ) {
-        goto err;
-    }
-    right = tok;
-
-    // Save
     array_init(return_value);
-    smart_str_appendl(&buf, left.yytext, left.yyleng);
-    smart_str_appendc(&buf, '/');
-    smart_str_appendl(&buf, right.yytext, right.yyleng);
-    smart_str_0(&buf);
-    add_assoc_str_ex(return_value, ZEND_STRL("value"), buf.s); // might not need to free this
-    add_assoc_stringl_ex(return_value, ZEND_STRL("type"), left.yytext, left.yyleng);
-    add_assoc_stringl_ex(return_value, ZEND_STRL("subtype"), right.yytext, right.yyleng);
+    add_assoc_stringl_ex(return_value, ZEND_STRL("value"), (char *) tok.yytext, tok.yyleng);
 
     // Read params
     array_init(&params);
     for(;;) {
         // Read comma
-        tok = lex_content_type(&in, str, len);
+        tok = lex(&in);
         if( tok.type != TOKEN_SEMICOLON ) {
             break;
         }
 
         // Read left
-        tok = lex_content_type(&in, str, len);
+        tok = lex(&in);
         if( tok.type != TOKEN_ID ) {
             break;
         }
         left = tok;
 
         // Read equals
-        tok = lex_content_type(&in, str, len);
+        tok = lex(&in);
         if( tok.type != TOKEN_EQUALS ) {
             break;
         }
 
         // Read right
-        tok = lex_content_type(&in, str, len);
+        tok = lex(&in);
         if( tok.type != TOKEN_ID && tok.type != TOKEN_STRING ) {
             break;
         }
@@ -383,34 +337,7 @@ err:
 /* @see: https://secure.php.net/manual/en/features.http-auth.php */
 /* @see: https://www.w3.org/Protocols/rfc2616/rfc2616-sec2.html */
 /* @see: https://en.wikipedia.org/wiki/Digest_access_authentication */
-
-static struct scanner_token lex_digest_auth(struct scanner_input *in, const char *str, size_t len)
-{
-    struct scanner_token tok = {0};
-
-    for (;;) {
-        in->tok = in->cur;
-        /*!re2c
-            *   { token1(&tok, TOKEN_UNKNOWN, in->tok, 1); return tok; }
-            end { token1(&tok, TOKEN_END, "", 0); return tok; }
-
-            // whitespaces
-            [ \t\v\n\r] { continue; tok.type = TOKEN_WHITESPACE; return tok; }
-
-            // character and string literals
-            ['"] { tok = lex_quoted_str(in, *(in->cur - 1)); return tok; }
-            "''" { token1(&tok, TOKEN_STRING, "", 0); return tok; }
-
-            "=" { token1(&tok, TOKEN_EQUALS, "=", 1); return tok; }
-            "," { token1(&tok, TOKEN_COMMA, ",", 1); return tok; }
-
-            // identifiers
-            id { token1(&tok, TOKEN_ID, in->tok, in->cur - in->tok); return tok; }
-        */
-    }
-}
-
-void php_request_parse_digest_auth(zval *return_value, const char *str, size_t len)
+void php_request_parse_digest_auth(zval *return_value, const YYCTYPE *str, size_t len)
 {
     struct scanner_input in = {
         str,
@@ -419,10 +346,10 @@ void php_request_parse_digest_auth(zval *return_value, const char *str, size_t l
         0,
         str + len
     };
-    struct scanner_token tok = {0};
+    struct scanner_token tok;
     struct scanner_token left;
     struct scanner_token right;
-    zval need = {0};
+    zval need;
     zend_string *value;
 
     // Build need array
@@ -439,20 +366,20 @@ void php_request_parse_digest_auth(zval *return_value, const char *str, size_t l
     array_init(return_value);
     for(;;) {
         // Read ID
-        tok = lex_digest_auth(&in, str, len);
+        tok = lex(&in);
         if( tok.type != TOKEN_ID ) {
             break;
         }
         left = tok;
 
         // Read equals
-        tok = lex_digest_auth(&in, str, len);
+        tok = lex(&in);
         if( tok.type != TOKEN_EQUALS ) {
             break;
         }
 
         // Read ID | string
-        tok = lex_digest_auth(&in, str, len);
+        tok = lex(&in);
         if( tok.type != TOKEN_ID && tok.type != TOKEN_STRING ) {
             break;
         }
@@ -468,7 +395,7 @@ void php_request_parse_digest_auth(zval *return_value, const char *str, size_t l
         zend_hash_str_del(Z_ARRVAL_P(&need), left.yytext, left.yyleng);
 
         // Read comma | end
-        tok = lex_digest_auth(&in, str, len);
+        tok = lex(&in);
         if( tok.type != TOKEN_COMMA ) {
             break;
         }

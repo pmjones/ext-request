@@ -4,9 +4,9 @@
 
 #include "main/php.h"
 
-PHPAPI void php_request_parse_accept(zval *return_value, const char *str, size_t len);
-PHPAPI void php_request_parse_content_type(zval *return_value, const char *str, size_t len);
-PHPAPI void php_request_parse_digest_auth(zval *return_value, const char *str, size_t len);
+PHPAPI void php_request_parse_accept(zval *return_value, const unsigned char *str, size_t len);
+PHPAPI void php_request_parse_content_type(zval *return_value, const unsigned char *str, size_t len);
+PHPAPI void php_request_parse_digest_auth(zval *return_value, const unsigned char *str, size_t len);
 
 #endif	/* REQUEST_SCANNERS_H */
 
