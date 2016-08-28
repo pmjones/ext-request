@@ -1,15 +1,11 @@
 --TEST--
-PhpRequest setter
+PhpRequest::__construct
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --FILE--
 <?php
 $_SERVER['HTTP_HOST'] = 'localhost';
 $request = new PhpRequest();
-try {
-    $request->undefinedProp = 'foo';
-} catch( \RuntimeException $e ) {
-    echo $e->getMessage();
-}
+var_dump(get_class($request));
 --EXPECT--
-PhpRequest is read-only.
+string(10) "PhpRequest"

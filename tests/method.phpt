@@ -4,16 +4,23 @@ PhpRequest::$method
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --FILE--
 <?php
-$_SERVER['HTTP_HOST'] = 'localhost';
-$_SERVER['REQUEST_METHOD'] = 'GET';
+unset($_SERVER['REQUEST_METHOD']); // not sure why this was set here
+$_SERVER['HTTP_HOST'] = 'example.com';
+
 $request = new PhpRequest();
-echo $request->method, "\n";
-try {
-    $request->method = 'PATCH';
-    echo 'fail';
-} catch( \RuntimeException $e ) {
-    echo $e->getMessage();
-}
+var_dump($request->method, $request->xhr);
+
+$_SERVER['REQUEST_METHOD'] = 'POST';
+$request = new PhpRequest();
+var_dump($request->method, $request->xhr);
+
+$_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE'] = 'PATCH';
+$request = new PhpRequest();
+var_dump($request->method, $request->xhr);
 --EXPECT--
-GET
-PhpRequest is read-only.
+string(0) ""
+bool(false)
+string(4) "POST"
+bool(false)
+string(5) "PATCH"
+bool(true)

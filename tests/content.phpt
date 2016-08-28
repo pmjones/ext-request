@@ -1,5 +1,5 @@
 --TEST--
-enable_post_data_reading: basic test
+PhpRequest::$content
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --POST_RAW--

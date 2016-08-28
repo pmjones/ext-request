@@ -1,5 +1,5 @@
 --TEST--
-PhpRequest unsetter
+PhpRequest::__unset
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --FILE--
@@ -8,8 +8,9 @@ $_SERVER['HTTP_HOST'] = 'localhost';
 $request = new PhpRequest();
 try {
     unset($request->method);
-} catch( \RuntimeException $e ) {
-    echo $e->getMessage();
+} catch( Exception $e ) {
+    var_dump(get_class($e), $e->getMessage());
 }
 --EXPECT--
-PhpRequest is read-only.
+string(16) "RuntimeException"
+string(24) "PhpRequest is read-only."
