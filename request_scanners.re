@@ -28,8 +28,7 @@ typedef unsigned char YYCTYPE;
 
 enum scanner_token_type {
     TOKEN_END = 0,
-    TOKEN_ERROR,
-    TOKEN_UNKNOWN,
+    TOKEN_INVALID,
     TOKEN_WHITESPACE,
     TOKEN_STRING,
     TOKEN_EQUALS,
@@ -85,9 +84,10 @@ static struct scanner_token lex_quoted_str(struct scanner_input *in, YYCTYPE q)
     for (;;) {
         in->tok = in->cur;
         /*!re2c
-            *                    { token1(&tok, TOKEN_ERROR, "", 0); return tok; }
+            *                    { token1(&tok, TOKEN_INVALID, "", 0); return tok; }
+            end                  { token1(&tok, TOKEN_INVALID, "", 0); return tok; }
             [^\x00]              { u = *in->tok; if (u == q) break; continue; }
-            "\\" .               { u = *(in->cur - 1); }
+            "\\" [^\x00]         { u = *(in->cur - 1); }
         */
     }
     token1(&tok, TOKEN_STRING, start, in->tok - start);
@@ -101,7 +101,7 @@ static struct scanner_token lex(struct scanner_input *in)
     for( ;; ) {
         in->tok = in->cur;
         /*!re2c
-            *   { token1(&tok, TOKEN_UNKNOWN, in->tok, 1); break; }
+            *   { token1(&tok, TOKEN_INVALID, in->tok, 1); break; }
             end { token1(&tok, TOKEN_END, "", 0); break; }
 
             // whitespaces
@@ -112,10 +112,10 @@ static struct scanner_token lex(struct scanner_input *in)
             "''" { token1(&tok, TOKEN_STRING, "", 0); break; }
 
             // operators
-            "=" { token1(&tok, TOKEN_EQUALS, "=", 1); break; }
-            "/" { token1(&tok, TOKEN_SLASH, "/", 1); break; }
-            ";" { token1(&tok, TOKEN_SEMICOLON, ";", 1); break; }
-            "," { token1(&tok, TOKEN_COMMA, ",", 1); break; }
+            "=" { token1(&tok, TOKEN_EQUALS, in->tok, 1); break; }
+            "/" { token1(&tok, TOKEN_SLASH, in->tok, 1); break; }
+            ";" { token1(&tok, TOKEN_SEMICOLON, in->tok, 1); break; }
+            "," { token1(&tok, TOKEN_COMMA, in->tok, 1); break; }
             "*" { token1(&tok, TOKEN_STAR, in->tok, 1); break; }
 
             // identifiers

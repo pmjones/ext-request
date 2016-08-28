@@ -22,8 +22,7 @@ typedef unsigned char YYCTYPE;
 
 enum scanner_token_type {
     TOKEN_END = 0,
-    TOKEN_ERROR,
-    TOKEN_UNKNOWN,
+    TOKEN_INVALID,
     TOKEN_WHITESPACE,
     TOKEN_STRING,
     TOKEN_EQUALS,
@@ -79,7 +78,7 @@ static struct scanner_token lex_quoted_str(struct scanner_input *in, YYCTYPE q)
     for (;;) {
         in->tok = in->cur;
         
-#line 83 "request_scanners.c"
+#line 82 "request_scanners.c"
 {
 	YYCTYPE yych;
 	yych = *in->cur;
@@ -91,25 +90,21 @@ static struct scanner_token lex_quoted_str(struct scanner_input *in, YYCTYPE q)
 yy2:
 	++in->cur;
 #line 88 "request_scanners.re"
-	{ token1(&tok, TOKEN_ERROR, "", 0); return tok; }
-#line 96 "request_scanners.c"
+	{ token1(&tok, TOKEN_INVALID, "", 0); return tok; }
+#line 95 "request_scanners.c"
 yy4:
 	++in->cur;
 yy5:
 #line 89 "request_scanners.re"
 	{ u = *in->tok; if (u == q) break; continue; }
-#line 102 "request_scanners.c"
+#line 101 "request_scanners.c"
 yy6:
 	yych = *++in->cur;
-	switch (yych) {
-	case '\n':	goto yy5;
-	default:	goto yy7;
-	}
-yy7:
+	if (yych <= 0x00) goto yy5;
 	++in->cur;
 #line 90 "request_scanners.re"
 	{ u = *(in->cur - 1); }
-#line 113 "request_scanners.c"
+#line 108 "request_scanners.c"
 }
 #line 91 "request_scanners.re"
 
@@ -125,7 +120,7 @@ static struct scanner_token lex(struct scanner_input *in)
     for( ;; ) {
         in->tok = in->cur;
         
-#line 129 "request_scanners.c"
+#line 124 "request_scanners.c"
 {
 	YYCTYPE yych;
 	unsigned int yyaccept = 0;
@@ -215,23 +210,23 @@ yy11:
 	++in->cur;
 #line 105 "request_scanners.re"
 	{ token1(&tok, TOKEN_END, "", 0); break; }
-#line 219 "request_scanners.c"
+#line 214 "request_scanners.c"
 yy13:
 	++in->cur;
 #line 104 "request_scanners.re"
-	{ token1(&tok, TOKEN_UNKNOWN, in->tok, 1); break; }
-#line 224 "request_scanners.c"
+	{ token1(&tok, TOKEN_INVALID, in->tok, 1); break; }
+#line 219 "request_scanners.c"
 yy15:
 	++in->cur;
 #line 108 "request_scanners.re"
 	{ continue; tok.type = TOKEN_WHITESPACE; break; }
-#line 229 "request_scanners.c"
+#line 224 "request_scanners.c"
 yy17:
 	++in->cur;
 yy18:
 #line 111 "request_scanners.re"
 	{ tok = lex_quoted_str(in, *(in->cur - 1)); break; }
-#line 235 "request_scanners.c"
+#line 230 "request_scanners.c"
 yy19:
 	yych = *++in->cur;
 	switch (yych) {
@@ -248,12 +243,12 @@ yy20:
 yy21:
 #line 119 "request_scanners.re"
 	{ token1(&tok, TOKEN_STAR, in->tok, 1); break; }
-#line 252 "request_scanners.c"
+#line 247 "request_scanners.c"
 yy22:
 	++in->cur;
 #line 118 "request_scanners.re"
-	{ token1(&tok, TOKEN_COMMA, ",", 1); break; }
-#line 257 "request_scanners.c"
+	{ token1(&tok, TOKEN_COMMA, in->tok, 1); break; }
+#line 252 "request_scanners.c"
 yy24:
 	yyaccept = 1;
 	in->mar = ++in->cur;
@@ -330,7 +325,7 @@ yy24:
 yy26:
 #line 123 "request_scanners.re"
 	{ token1(&tok, TOKEN_ID, in->tok, in->cur - in->tok); break; }
-#line 334 "request_scanners.c"
+#line 329 "request_scanners.c"
 yy27:
 	++in->cur;
 	yych = *in->cur;
@@ -405,23 +400,23 @@ yy27:
 yy29:
 	++in->cur;
 #line 116 "request_scanners.re"
-	{ token1(&tok, TOKEN_SLASH, "/", 1); break; }
-#line 410 "request_scanners.c"
+	{ token1(&tok, TOKEN_SLASH, in->tok, 1); break; }
+#line 405 "request_scanners.c"
 yy31:
 	++in->cur;
 #line 117 "request_scanners.re"
-	{ token1(&tok, TOKEN_SEMICOLON, ";", 1); break; }
-#line 415 "request_scanners.c"
+	{ token1(&tok, TOKEN_SEMICOLON, in->tok, 1); break; }
+#line 410 "request_scanners.c"
 yy33:
 	++in->cur;
 #line 115 "request_scanners.re"
-	{ token1(&tok, TOKEN_EQUALS, "=", 1); break; }
-#line 420 "request_scanners.c"
+	{ token1(&tok, TOKEN_EQUALS, in->tok, 1); break; }
+#line 415 "request_scanners.c"
 yy35:
 	++in->cur;
 #line 112 "request_scanners.re"
 	{ token1(&tok, TOKEN_STRING, "", 0); break; }
-#line 425 "request_scanners.c"
+#line 420 "request_scanners.c"
 yy37:
 	yych = *++in->cur;
 	switch (yych) {
@@ -503,7 +498,7 @@ yy39:
 yy40:
 #line 122 "request_scanners.re"
 	{ token1(&tok, TOKEN_MIME, in->tok, in->cur - in->tok); break; }
-#line 507 "request_scanners.c"
+#line 502 "request_scanners.c"
 yy41:
 	++in->cur;
 	yych = *in->cur;
