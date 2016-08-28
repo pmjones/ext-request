@@ -4,11 +4,14 @@ PhpRequest::parseDigestAuth
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --FILE--
 <?php
-$_SERVER['HTTP_HOST'] = 'localhost';
+var_dump(PhpRequest::parseDigestAuth(null));
+var_dump(PhpRequest::parseDigestAuth(''));
 var_dump(PhpRequest::parseDigestAuth('nonce="foo",nc=\'bar\',cnonce=baz,qop="dib",username="zim",uri="gir",response="irk"'));
 var_dump(PhpRequest::parseDigestAuth(' nonce="foo\\"",nc=\'bar\' ,cnonce= baz , qop="dib",username="zim " , uri="gir" ,response= "irk" '));
 var_dump(PhpRequest::parseDigestAuth('nonce="foo",nc=\'bar\',cnonce=baz'));
 --EXPECT--
+NULL
+NULL
 object(stdClass)#1 (7) {
   ["nonce"]=>
   string(3) "foo"

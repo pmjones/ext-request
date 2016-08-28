@@ -4,6 +4,8 @@ PhpRequest::parseContentType
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --FILE--
 <?php
+var_dump(PhpRequest::parseContentType(null));
+var_dump(PhpRequest::parseContentType(''));
 var_dump(PhpRequest::parseContentType('/'));
 var_dump(PhpRequest::parseContentType(';'));
 var_dump(PhpRequest::parseContentType('text/'));
@@ -13,6 +15,8 @@ var_dump(PhpRequest::parseContentType('text/plain;foo=bar'));
 var_dump(PhpRequest::parseContentType('text/plain;foo=bar;charset=utf-8;baz=dib'));
 var_dump(PhpRequest::parseContentType('image/x-tiff;baz = "bat"'));
 --EXPECT--
+NULL
+NULL
 NULL
 NULL
 NULL
