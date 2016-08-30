@@ -86,12 +86,18 @@ static int php_request_object_has_property(zval *object, zval *member, int has_s
 /* {{{ php_request_object_read_property */
 static zval *php_request_object_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv)
 {
+    zval *retval;
     if( !std_object_handlers.has_property(object, member, 2, cache_slot) ) {
         zend_throw_exception_ex(spl_ce_RuntimeException, 0, "PhpRequest::$%.*s does not exist.", Z_STRLEN_P(member), Z_STRVAL_P(member));
         return rv;
-    } else {
-        return std_object_handlers.read_property(object, member, type, cache_slot, rv);
     }
+    retval = std_object_handlers.read_property(object, member, type, cache_slot, rv);
+    // Make sure the property can't be modified
+    if( !Z_ISREF_P(rv) && (type == BP_VAR_W || type == BP_VAR_RW  || type == BP_VAR_UNSET) ) {
+        SEPARATE_ZVAL(rv);
+        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "PhpRequest is read-only.");
+    }
+    return retval;
 }
 /* }}} */
 
@@ -458,6 +464,7 @@ static PHP_MINIT_FUNCTION(request)
     PhpRequest_obj_handlers.read_property = php_request_object_read_property;
     PhpRequest_obj_handlers.write_property = php_request_object_write_property;
     PhpRequest_obj_handlers.unset_property = php_request_object_unset_property;
+    PhpRequest_obj_handlers.get_property_ptr_ptr = NULL;
 
     INIT_CLASS_ENTRY(ce, "PhpRequest", PhpRequest_methods);
     PhpRequest_ce_ptr = zend_register_internal_class(&ce);
