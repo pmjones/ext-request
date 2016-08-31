@@ -103,7 +103,7 @@ array(1) {
     ["dib1"]=>
     array(3) {
       ["dib1a"]=>
-      object(stdClass)#%d (5) {
+      array(5) {
         ["error"]=>
         int(4)
         ["name"]=>
@@ -116,7 +116,7 @@ array(1) {
         string(0) ""
       }
       ["dib1b"]=>
-      object(stdClass)#%d (5) {
+      array(5) {
         ["error"]=>
         int(4)
         ["name"]=>
@@ -129,7 +129,7 @@ array(1) {
         string(0) ""
       }
       ["dib1c"]=>
-      object(stdClass)#%d (5) {
+      array(5) {
         ["error"]=>
         int(4)
         ["name"]=>
@@ -145,7 +145,7 @@ array(1) {
     ["dib2"]=>
     array(3) {
       ["dib2a"]=>
-      object(stdClass)#%d (5) {
+      array(5) {
         ["error"]=>
         int(4)
         ["name"]=>
@@ -158,7 +158,7 @@ array(1) {
         string(0) ""
       }
       ["dib2b"]=>
-      object(stdClass)#%d (5) {
+      array(5) {
         ["error"]=>
         int(4)
         ["name"]=>
@@ -171,7 +171,7 @@ array(1) {
         string(0) ""
       }
       ["dib2c"]=>
-      object(stdClass)#%d (5) {
+      array(5) {
         ["error"]=>
         int(4)
         ["name"]=>
@@ -187,7 +187,7 @@ array(1) {
     ["dib3"]=>
     array(3) {
       ["dib3a"]=>
-      object(stdClass)#%d (5) {
+      array(5) {
         ["error"]=>
         int(4)
         ["name"]=>
@@ -200,7 +200,7 @@ array(1) {
         string(0) ""
       }
       ["dib3b"]=>
-      object(stdClass)#%d (5) {
+      array(5) {
         ["error"]=>
         int(4)
         ["name"]=>
@@ -213,7 +213,7 @@ array(1) {
         string(0) ""
       }
       ["dib3c"]=>
-      object(stdClass)#%d (5) {
+      array(5) {
         ["error"]=>
         int(4)
         ["name"]=>

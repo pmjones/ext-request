@@ -13,7 +13,7 @@ var_dump($request->acceptEncoding);
 --EXPECTF--
 array(2) {
   [0]=>
-  object(stdClass)#%d (3) {
+  array(3) {
     ["value"]=>
     string(4) "gzip"
     ["quality"]=>
@@ -23,7 +23,7 @@ array(2) {
     }
   }
   [1]=>
-  object(stdClass)#%d (3) {
+  array(3) {
     ["value"]=>
     string(8) "compress"
     ["quality"]=>

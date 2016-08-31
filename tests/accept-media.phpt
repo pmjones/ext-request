@@ -13,7 +13,7 @@ var_dump($request->acceptMedia);
 --EXPECTF--
 array(4) {
   [0]=>
-  object(stdClass)#%d (3) {
+  array(3) {
     ["value"]=>
     string(16) "application/json"
     ["quality"]=>
@@ -25,7 +25,7 @@ array(4) {
     }
   }
   [1]=>
-  object(stdClass)#%d (3) {
+  array(3) {
     ["value"]=>
     string(15) "application/xml"
     ["quality"]=>
@@ -35,7 +35,7 @@ array(4) {
     }
   }
   [2]=>
-  object(stdClass)#%d (3) {
+  array(3) {
     ["value"]=>
     string(6) "text/*"
     ["quality"]=>
@@ -45,7 +45,7 @@ array(4) {
     }
   }
   [3]=>
-  object(stdClass)#%d (3) {
+  array(3) {
     ["value"]=>
     string(3) "*/*"
     ["quality"]=>

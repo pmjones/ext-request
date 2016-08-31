@@ -31,7 +31,7 @@ var_dump($request->uploads);
 --EXPECTF--
 array(3) {
   ["file1"]=>
-  object(stdClass)#%d (5) {
+  array(5) {
     ["name"]=>
     string(9) "file1.txt"
     ["type"]=>
@@ -44,7 +44,7 @@ array(3) {
     int(1)
   }
   ["file2"]=>
-  object(stdClass)#%d (5) {
+  array(5) {
     ["name"]=>
     string(9) "file2.txt"
     ["type"]=>
@@ -57,7 +57,7 @@ array(3) {
     int(0)
   }
   ["file3"]=>
-  object(stdClass)#%d (5) {
+  array(5) {
     ["name"]=>
     string(9) "file3.txt"
     ["type"]=>

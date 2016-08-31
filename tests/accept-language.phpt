@@ -13,7 +13,7 @@ var_dump($request->acceptLanguage);
 --EXPECTF--
 array(4) {
   [0]=>
-  object(stdClass)#%d (5) {
+  array(5) {
     ["value"]=>
     string(5) "en-US"
     ["quality"]=>
@@ -27,7 +27,7 @@ array(4) {
     string(2) "US"
   }
   [1]=>
-  object(stdClass)#%d (5) {
+  array(5) {
     ["value"]=>
     string(5) "en-GB"
     ["quality"]=>
@@ -41,7 +41,7 @@ array(4) {
     string(2) "GB"
   }
   [2]=>
-  object(stdClass)#%d (5) {
+  array(5) {
     ["value"]=>
     string(2) "en"
     ["quality"]=>
@@ -55,7 +55,7 @@ array(4) {
     NULL
   }
   [3]=>
-  object(stdClass)#%d (5) {
+  array(5) {
     ["value"]=>
     string(1) "*"
     ["quality"]=>

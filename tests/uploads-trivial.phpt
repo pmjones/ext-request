@@ -87,7 +87,7 @@ var_dump($request->uploads);
 --EXPECTF--
 array(5) {
   ["foo1"]=>
-  object(stdClass)#%d (5) {
+  array(5) {
     ["error"]=>
     int(4)
     ["name"]=>
@@ -100,7 +100,7 @@ array(5) {
     string(0) ""
   }
   ["foo2"]=>
-  object(stdClass)#%d (5) {
+  array(5) {
     ["error"]=>
     int(4)
     ["name"]=>
@@ -113,7 +113,7 @@ array(5) {
     string(0) ""
   }
   ["foo3"]=>
-  object(stdClass)#%d (5) {
+  array(5) {
     ["error"]=>
     int(4)
     ["name"]=>
@@ -128,7 +128,7 @@ array(5) {
   ["bar"]=>
   array(3) {
     [0]=>
-    object(stdClass)#%d (5) {
+    array(5) {
       ["error"]=>
       int(4)
       ["name"]=>
@@ -141,7 +141,7 @@ array(5) {
       string(0) ""
     }
     [1]=>
-    object(stdClass)#%d (5) {
+    array(5) {
       ["error"]=>
       int(4)
       ["name"]=>
@@ -154,7 +154,7 @@ array(5) {
       string(0) ""
     }
     [2]=>
-    object(stdClass)#%d (5) {
+    array(5) {
       ["error"]=>
       int(4)
       ["name"]=>
@@ -170,7 +170,7 @@ array(5) {
   ["baz"]=>
   array(3) {
     ["baz1"]=>
-    object(stdClass)#%d (5) {
+    array(5) {
       ["error"]=>
       int(4)
       ["name"]=>
@@ -183,7 +183,7 @@ array(5) {
       string(0) ""
     }
     ["baz2"]=>
-    object(stdClass)#%d (5) {
+    array(5) {
       ["error"]=>
       int(4)
       ["name"]=>
@@ -196,7 +196,7 @@ array(5) {
       string(0) ""
     }
     ["baz3"]=>
-    object(stdClass)#%d (5) {
+    array(5) {
       ["error"]=>
       int(4)
       ["name"]=>

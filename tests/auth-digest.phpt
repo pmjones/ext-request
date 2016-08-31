@@ -34,7 +34,7 @@ $request = new PhpRequest();
 var_dump($request->authDigest);
 
 --EXPECTF--
-object(stdClass)#%d (7) {
+array(7) {
   ["nonce"]=>
   string(3) "foo"
   ["nc"]=>

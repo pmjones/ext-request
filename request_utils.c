@@ -286,7 +286,6 @@ static void upload_from_spec(zval *return_value, zval *file)
         upload_from_nested(return_value, file, tmp);
     } else {
         ZVAL_ZVAL(return_value, file, 0, 0);
-        convert_to_object(return_value);
     }
 }
 

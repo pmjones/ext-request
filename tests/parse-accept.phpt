@@ -30,7 +30,7 @@ array(0) {
 }
 array(4) {
   [0]=>
-  object(stdClass)#%d (3) {
+  array(3) {
     ["value"]=>
     string(16) "application/json"
     ["quality"]=>
@@ -42,7 +42,7 @@ array(4) {
     }
   }
   [1]=>
-  object(stdClass)#%d (3) {
+  array(3) {
     ["value"]=>
     string(15) "application/xml"
     ["quality"]=>
@@ -52,7 +52,7 @@ array(4) {
     }
   }
   [2]=>
-  object(stdClass)#%d (3) {
+  array(3) {
     ["value"]=>
     string(6) "text/*"
     ["quality"]=>
@@ -62,7 +62,7 @@ array(4) {
     }
   }
   [3]=>
-  object(stdClass)#%d (3) {
+  array(3) {
     ["value"]=>
     string(3) "*/*"
     ["quality"]=>
@@ -74,7 +74,7 @@ array(4) {
 }
 array(2) {
   [0]=>
-  object(stdClass)#%d (3) {
+  array(3) {
     ["value"]=>
     string(11) "unicode-1-1"
     ["quality"]=>
@@ -84,7 +84,7 @@ array(2) {
     }
   }
   [1]=>
-  object(stdClass)#%d (3) {
+  array(3) {
     ["value"]=>
     string(10) "iso-8859-5"
     ["quality"]=>
@@ -96,7 +96,7 @@ array(2) {
 }
 array(2) {
   [0]=>
-  object(stdClass)#%d (3) {
+  array(3) {
     ["value"]=>
     string(4) "gzip"
     ["quality"]=>
@@ -106,7 +106,7 @@ array(2) {
     }
   }
   [1]=>
-  object(stdClass)#%d (3) {
+  array(3) {
     ["value"]=>
     string(8) "compress"
     ["quality"]=>
@@ -118,7 +118,7 @@ array(2) {
 }
 array(4) {
   [0]=>
-  object(stdClass)#%d (3) {
+  array(3) {
     ["value"]=>
     string(5) "en-US"
     ["quality"]=>
@@ -128,7 +128,7 @@ array(4) {
     }
   }
   [1]=>
-  object(stdClass)#%d (3) {
+  array(3) {
     ["value"]=>
     string(5) "en-GB"
     ["quality"]=>
@@ -138,7 +138,7 @@ array(4) {
     }
   }
   [2]=>
-  object(stdClass)#%d (3) {
+  array(3) {
     ["value"]=>
     string(2) "en"
     ["quality"]=>
@@ -148,7 +148,7 @@ array(4) {
     }
   }
   [3]=>
-  object(stdClass)#%d (3) {
+  array(3) {
     ["value"]=>
     string(1) "*"
     ["quality"]=>

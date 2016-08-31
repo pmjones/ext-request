@@ -13,7 +13,7 @@ var_dump($request->acceptCharset);
 --EXPECTF--
 array(2) {
   [0]=>
-  object(stdClass)#%d (3) {
+  array(3) {
     ["value"]=>
     string(11) "unicode-1-1"
     ["quality"]=>
@@ -23,7 +23,7 @@ array(2) {
     }
   }
   [1]=>
-  object(stdClass)#%d (3) {
+  array(3) {
     ["value"]=>
     string(10) "iso-8859-5"
     ["quality"]=>

@@ -143,12 +143,12 @@ static int php_request_accept_compare(const void *a, const void *b)
     zval *first = &f->val;
     zval *second = &s->val;
 
-    if( Z_TYPE_P(first) != IS_OBJECT || Z_TYPE_P(second) != IS_OBJECT ) {
+    if( Z_TYPE_P(first) != IS_ARRAY || Z_TYPE_P(second) != IS_ARRAY ) {
         return 0;
     }
 
-    first = zend_read_property(Z_CE_P(first), first, ZEND_STRL("quality"), 0, NULL);
-    second = zend_read_property(Z_CE_P(second), second, ZEND_STRL("quality"), 0, NULL);
+    first = zend_hash_str_find(Z_ARRVAL_P(first), ZEND_STRL("quality"));
+    second = zend_hash_str_find(Z_ARRVAL_P(second), ZEND_STRL("quality"));
 
     if( !first || !second || Z_TYPE_P(first) != IS_STRING || Z_TYPE_P(second) != IS_STRING ) {
         return 0;
@@ -258,7 +258,6 @@ void php_request_parse_accept(zval *return_value, const YYCTYPE *str, size_t len
         }
 
         add_assoc_zval_ex(&item, ZEND_STRL("params"), &params);
-        convert_to_object(&item);
         add_next_index_zval(return_value, &item);
     };
 
@@ -427,8 +426,6 @@ void php_request_parse_digest_auth(zval *return_value, const YYCTYPE *str, size_
     if( zend_array_count(Z_ARRVAL_P(&need)) > 0 ) {
         // blow result away if invalid
         ZVAL_NULL(return_value);
-    } else {
-        convert_to_object(return_value);
     }
 
     zval_dtor(&need);

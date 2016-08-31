@@ -26,22 +26,22 @@ $_SERVER = [
     'HTTPS' => 'on',
 ];
 $request = new PhpRequest();
-var_dump($request->url->scheme);
+var_dump($request->url['scheme']);
 
 // hostn
 $_SERVER = [
     'SERVER_NAME' => 'example.com',
 ];
 $request = new PhpRequest();
-var_dump($request->url->host);
+var_dump($request->url['host']);
 
 // host/port
 $_SERVER = [
     'HTTP_HOST' => 'example.com:8080',
 ];
 $request = new PhpRequest();
-var_dump($request->url->host);
-var_dump($request->url->port);
+var_dump($request->url['host']);
+var_dump($request->url['port']);
 
 // server port
 $_SERVER = [
@@ -49,11 +49,11 @@ $_SERVER = [
     'SERVER_PORT' => '8080',
 ];
 $request = new PhpRequest();
-var_dump($request->url->host);
-var_dump($request->url->port);
+var_dump($request->url['host']);
+var_dump($request->url['port']);
 
 --EXPECTF--
-object(stdClass)#%d (8) {
+array(8) {
   ["scheme"]=>
   string(4) "http"
   ["host"]=>

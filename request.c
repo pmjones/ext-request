@@ -297,8 +297,6 @@ static inline void set_url(zval *object, zval *server)
         add_assoc_null(&arr, "fragment");
     }
 
-    convert_to_object(&arr);
-
     zend_update_property(Z_OBJCE_P(object), object, ZEND_STRL("url"), &arr);
 
     php_url_free(url);
@@ -330,7 +328,7 @@ static inline void parse_accept_language(zval *lang)
     zval subtype = {0};
 
     ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(lang), val) {
-        value = zend_read_property(Z_OBJCE_P(val), val, ZEND_STRL("value"), 0, &rv);
+        value = zend_hash_str_find(Z_ARRVAL_P(val), ZEND_STRL("value"));
         if( value ) {
             str = zval_get_string(value);
             r1 = ZSTR_VAL(str);
@@ -342,8 +340,8 @@ static inline void parse_accept_language(zval *lang)
                 ZVAL_STR(&type, str);
                 ZVAL_NULL(&subtype);
             }
-            zend_update_property(Z_OBJCE_P(val), val, ZEND_STRL("type"), &type);
-            zend_update_property(Z_OBJCE_P(val), val, ZEND_STRL("subtype"), &subtype);
+            add_assoc_zval_ex(val, ZEND_STRL("type"), &type);
+            add_assoc_zval_ex(val, ZEND_STRL("subtype"), &subtype);
         }
     } ZEND_HASH_FOREACH_END();
 }

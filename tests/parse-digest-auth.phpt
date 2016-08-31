@@ -17,7 +17,7 @@ var_dump(PhpRequest::parseDigestAuth('nonce="foo",nc=\'bar\',cnonce=baz'));
 string(9) "TypeError"
 string(%d) "Argument 1 passed to PhpRequest::parseDigestAuth() must be of the type string, null given"
 NULL
-object(stdClass)#%d (7) {
+array(7) {
   ["nonce"]=>
   string(3) "foo"
   ["nc"]=>
@@ -33,7 +33,7 @@ object(stdClass)#%d (7) {
   ["response"]=>
   string(3) "irk"
 }
-object(stdClass)#%d (7) {
+array(7) {
   ["nonce"]=>
   string(4) "foo""
   ["nc"]=>
