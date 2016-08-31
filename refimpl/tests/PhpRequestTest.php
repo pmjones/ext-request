@@ -179,7 +179,7 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
         ];
         $request = new PhpRequest();
 
-        $expect = (object) [
+        $expect = [
             'scheme' => 'http',
             'host' => 'example.com',
             'port' => 8080,
@@ -207,7 +207,7 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
         $_SERVER['HTTPS'] = 'on';
         $request = new PhpRequest();
 
-        $this->assertSame('https', $request->url->scheme);
+        $this->assertSame('https', $request->url['scheme']);
     }
 
     public function testUrl_serverName()
@@ -217,7 +217,7 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
         ];
 
         $request = new PhpRequest();
-        $this->assertSame('example.com', $request->url->host);
+        $this->assertSame('example.com', $request->url['host']);
     }
 
     public function testUrl_hostPort()
@@ -227,8 +227,8 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
         ];
 
         $request = new PhpRequest();
-        $this->assertSame('example.com', $request->url->host);
-        $this->assertSame(8080, $request->url->port);
+        $this->assertSame('example.com', $request->url['host']);
+        $this->assertSame(8080, $request->url['port']);
     }
 
     public function testUrl_serverPort()
@@ -238,8 +238,8 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
         ];
 
         $request = new PhpRequest();
-        $this->assertSame('example.com', $request->url->host);
-        $this->assertSame(8080, $request->url->port);
+        $this->assertSame('example.com', $request->url['host']);
+        $this->assertSame(8080, $request->url['port']);
     }
 
     public function testAcceptMedia()
@@ -251,22 +251,22 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
         $request = new PhpRequest();
 
         $expect = [
-            0 => (object) [
+            0 => [
                 'value' => 'application/json',
                 'quality' => '1.0',
                 'params' => ['foo' => 'bar'],
             ],
-            1 => (object) [
+            1 => [
                 'value' => 'application/xml',
                 'quality' => '0.8',
                 'params' => [],
             ],
-            2 => (object) [
+            2 => [
                 'value' => 'text/*',
                 'quality' => '0.2',
                 'params' => [],
             ],
-            3 => (object) [
+            3 => [
                 'value' => '*/*',
                 'quality' => '0.1',
                 'params' => [],
@@ -285,12 +285,12 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
         $request = new PhpRequest();
 
         $expect = [
-            0 => (object) [
+            0 => [
                 'value' => 'unicode-1-1',
                 'quality' => '1.0',
                 'params' => [],
             ],
-            1 => (object) [
+            1 => [
                 'value' => 'iso-8859-5',
                 'quality' => '0.8',
                 'params' => [],
@@ -309,12 +309,12 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
         $request = new PhpRequest();
 
         $expect = [
-            0 => (object) [
+            0 => [
                 'value' => 'gzip',
                 'quality' => '1.0',
                 'params' => [],
             ],
-            1 => (object) [
+            1 => [
                 'value' => 'compress',
                 'quality' => '0.5',
                 'params' => [],
@@ -333,28 +333,28 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
         $request = new PhpRequest();
 
         $expect = [
-            0 => (object) [
+            0 => [
                 'value' => 'en-US',
                 'quality' => '1.0',
                 'params' => [],
                 'type' => 'en',
                 'subtype' => 'US',
             ],
-            1 => (object) [
+            1 => [
                 'value' => 'en-GB',
                 'quality' => '1.0',
                 'params' => [],
                 'type' => 'en',
                 'subtype' => 'GB',
             ],
-            2 => (object) [
+            2 => [
                 'value' => 'en',
                 'quality' => '1.0',
                 'params' => [],
                 'type' => 'en',
                 'subtype' => null,
             ],
-            3 => (object) [
+            3 => [
                 'value' => '*',
                 'quality' => '1.0',
                 'params' => [],
@@ -398,7 +398,7 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
 
         $request = new PhpRequest();
 
-        $expect = (object) [
+        $expect = [
             'nonce' => 'foo',
             'nc' => 'bar',
             'cnonce' => 'baz',
@@ -576,21 +576,21 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
         $request = new PhpRequest();
 
         $expect = [
-          'foo1' => (object) [
+          'foo1' => [
             'error' => 4,
             'name' => '',
             'size' => 0,
             'tmp_name' => '',
             'type' => '',
           ],
-          'foo2' => (object) [
+          'foo2' => [
             'error' => 4,
             'name' => '',
             'size' => 0,
             'tmp_name' => '',
             'type' => '',
           ],
-          'foo3' => (object) [
+          'foo3' => [
             'error' => 4,
             'name' => '',
             'size' => 0,
@@ -598,21 +598,21 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
             'type' => '',
           ],
           'bar' => [
-            0 => (object) [
+            0 => [
               'error' => 4,
               'name' => '',
               'size' => 0,
               'tmp_name' => '',
               'type' => '',
             ],
-            1 => (object) [
+            1 => [
               'error' => 4,
               'name' => '',
               'size' => 0,
               'tmp_name' => '',
               'type' => '',
             ],
-            2 => (object) [
+            2 => [
               'error' => 4,
               'name' => '',
               'size' => 0,
@@ -621,21 +621,21 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
             ],
           ],
           'baz' => [
-            'baz1' => (object) [
+            'baz1' => [
               'error' => 4,
               'name' => '',
               'size' => 0,
               'tmp_name' => '',
               'type' => '',
             ],
-            'baz2' => (object) [
+            'baz2' => [
               'error' => 4,
               'name' => '',
               'size' => 0,
               'tmp_name' => '',
               'type' => '',
             ],
-            'baz3' => (object) [
+            'baz3' => [
               'error' => 4,
               'name' => '',
               'size' => 0,
@@ -745,21 +745,21 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
         $expect = [
           'dib' => [
             'dib1' => [
-              'dib1a' => (object) [
+              'dib1a' => [
                 'error' => 4,
                 'name' => '',
                 'size' => 0,
                 'tmp_name' => '',
                 'type' => '',
               ],
-              'dib1b' => (object) [
+              'dib1b' => [
                 'error' => 4,
                 'name' => '',
                 'size' => 0,
                 'tmp_name' => '',
                 'type' => '',
               ],
-              'dib1c' => (object) [
+              'dib1c' => [
                 'error' => 4,
                 'name' => '',
                 'size' => 0,
@@ -768,21 +768,21 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
               ],
             ],
             'dib2' => [
-              'dib2a' => (object) [
+              'dib2a' => [
                 'error' => 4,
                 'name' => '',
                 'size' => 0,
                 'tmp_name' => '',
                 'type' => '',
               ],
-              'dib2b' => (object) [
+              'dib2b' => [
                 'error' => 4,
                 'name' => '',
                 'size' => 0,
                 'tmp_name' => '',
                 'type' => '',
               ],
-              'dib2c' => (object) [
+              'dib2c' => [
                 'error' => 4,
                 'name' => '',
                 'size' => 0,
@@ -791,21 +791,21 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
               ],
             ],
             'dib3' => [
-              'dib3a' => (object) [
+              'dib3a' => [
                 'error' => 4,
                 'name' => '',
                 'size' => 0,
                 'tmp_name' => '',
                 'type' => '',
               ],
-              'dib3b' => (object) [
+              'dib3b' => [
                 'error' => 4,
                 'name' => '',
                 'size' => 0,
                 'tmp_name' => '',
                 'type' => '',
               ],
-              'dib3c' => (object) [
+              'dib3c' => [
                 'error' => 4,
                 'name' => '',
                 'size' => 0,

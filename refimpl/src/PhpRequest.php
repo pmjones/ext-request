@@ -203,7 +203,7 @@ class PhpRequest
             'query' => null,
             'fragment' => null,
         ];
-        $this->url = (object) array_merge($base, parse_url($url));
+        $this->url = array_merge($base, parse_url($url));
     }
 
     protected function setAccepts() // : void
@@ -223,9 +223,9 @@ class PhpRequest
         if (isset($this->headers['Accept-Language'])) {
             $language = $this->parseAccepts($this->headers['Accept-Language']);
             foreach ($language as $lang) {
-                $parts = explode('-', $lang->value);
-                $lang->type = array_shift($parts);
-                $lang->subtype = array_shift($parts);
+                $parts = explode('-', $lang['value']);
+                $lang['type'] = array_shift($parts);
+                $lang['subtype'] = array_shift($parts);
                 $this->acceptLanguage[] = $lang;
             }
         }
@@ -283,7 +283,7 @@ class PhpRequest
         $return = [];
         foreach ($buckets as $q => $accepts) {
             foreach ($accepts as $accept) {
-                $return[] = (object) $accept;
+                $return[] = $accept;
             }
         }
 
@@ -338,7 +338,7 @@ class PhpRequest
         }
 
         if (! $need) {
-            $this->authDigest = (object) $data;
+            $this->authDigest = $data;
         }
     }
 
@@ -381,13 +381,13 @@ class PhpRequest
         }
     }
 
-    protected function setUploadsFromSpec(array $spec) // : object|array
+    protected function setUploadsFromSpec(array $spec) // : array
     {
         if (is_array($spec['tmp_name'])) {
             return $this->setUploadsFromNested($spec);
         }
 
-        return (object) $spec;
+        return $spec;
     }
 
     protected function setUploadsFromNested(array $nested) // : array
