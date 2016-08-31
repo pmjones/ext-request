@@ -104,12 +104,14 @@ class PhpRequest
             return isset($this->$key);
         }
 
-        throw new RuntimeException("PhpRequest::\${$key} does not exist.");
+        return false;
     }
 
     public function __unset($key) // : void
     {
-        throw new RuntimeException("PhpRequest is read-only.");
+        if( property_exists($this, $key) ) {
+            throw new RuntimeException("PhpRequest is read-only.");
+        }
     }
 
     protected function setMethod() // : void
@@ -203,7 +205,7 @@ class PhpRequest
             'query' => null,
             'fragment' => null,
         ];
-        $this->url = (object) array_merge($base, parse_url($url));
+        $this->url = array_merge($base, parse_url($url));
     }
 
     protected function setAccepts() // : void
@@ -222,10 +224,10 @@ class PhpRequest
 
         if (isset($this->headers['Accept-Language'])) {
             $language = $this->parseAccepts($this->headers['Accept-Language']);
-            foreach ($language as $lang) {
-                $parts = explode('-', $lang->value);
-                $lang->type = array_shift($parts);
-                $lang->subtype = array_shift($parts);
+            foreach ($language as &$lang) {
+                $parts = explode('-', $lang['value']);
+                $lang['type'] = array_shift($parts);
+                $lang['subtype'] = array_shift($parts);
                 $this->acceptLanguage[] = $lang;
             }
         }
@@ -283,7 +285,7 @@ class PhpRequest
         $return = [];
         foreach ($buckets as $q => $accepts) {
             foreach ($accepts as $accept) {
-                $return[] = (object) $accept;
+                $return[] = $accept;
             }
         }
 
@@ -338,7 +340,7 @@ class PhpRequest
         }
 
         if (! $need) {
-            $this->authDigest = (object) $data;
+            $this->authDigest = $data;
         }
     }
 
@@ -387,7 +389,7 @@ class PhpRequest
             return $this->setUploadsFromNested($spec);
         }
 
-        return (object) $spec;
+        return $spec;
     }
 
     protected function setUploadsFromNested(array $nested) // : array
