@@ -7,554 +7,582 @@
  * @license   http://framework.zend.com/license/new-bsd New BSD License
  */
 
-namespace Zend\Http;
+namespace Zend\Http\PhpEnvironment;
 
+use Zend\Http\Header\Cookie;
+use Zend\Http\Request as HttpRequest;
 use Zend\Stdlib\Parameters;
 use Zend\Stdlib\ParametersInterface;
-use Zend\Stdlib\RequestInterface;
-use Zend\Uri\Exception as UriException;
 use Zend\Uri\Http as HttpUri;
+use Zend\Validator\Hostname as HostnameValidator;
 
 /**
- * HTTP Request
- *
- * @link      http://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html#sec5
+ * HTTP Request for current PHP environment
  */
-class Request extends AbstractMessage implements RequestInterface
+class Request extends HttpRequest
 {
-    /**#@+
-     * @const string METHOD constant names
-     */
-    const METHOD_OPTIONS  = 'OPTIONS';
-    const METHOD_GET      = 'GET';
-    const METHOD_HEAD     = 'HEAD';
-    const METHOD_POST     = 'POST';
-    const METHOD_PUT      = 'PUT';
-    const METHOD_DELETE   = 'DELETE';
-    const METHOD_TRACE    = 'TRACE';
-    const METHOD_CONNECT  = 'CONNECT';
-    const METHOD_PATCH    = 'PATCH';
-    const METHOD_PROPFIND = 'PROPFIND';
-    /**#@-*/
-
     /**
+     * Base URL of the application.
+     *
      * @var string
      */
-    protected $method = self::METHOD_GET;
+    protected $baseUrl;
 
     /**
-     * @var bool
-     */
-    protected $allowCustomMethods = true;
-
-    /**
-     * @var string|HttpUri
-     */
-    protected $uri = null;
-
-    /**
-     * @var ParametersInterface
-     */
-    protected $queryParams = null;
-
-    /**
-     * @var ParametersInterface
-     */
-    protected $postParams = null;
-
-    /**
-     * @var ParametersInterface
-     */
-    protected $fileParams = null;
-
-    /**
-     * A factory that produces a Request object from a well-formed Http Request string
+     * Base Path of the application.
      *
-     * @param  string $string
-     * @param  bool $allowCustomMethods
-     * @throws Exception\InvalidArgumentException
+     * @var string
+     */
+    protected $basePath;
+
+    /**
+     * Actual request URI, independent of the platform.
+     *
+     * @var string
+     */
+    protected $requestUri;
+
+    /**
+     * PHP server params ($_SERVER)
+     *
+     * @var ParametersInterface
+     */
+    protected $serverParams = null;
+
+    /**
+     * PHP environment params ($_ENV)
+     *
+     * @var ParametersInterface
+     */
+    protected $envParams = null;
+
+    /**
+     * Construct
+     * Instantiates request.
+     *
+     * @param bool $allowCustomMethods
+     */
+    public function __construct($allowCustomMethods = true)
+    {
+        $this->setAllowCustomMethods($allowCustomMethods);
+
+        $this->setEnv(new Parameters($_ENV));
+
+        if ($_GET) {
+            $this->setQuery(new Parameters($_GET));
+        }
+        if ($_POST) {
+            $this->setPost(new Parameters($_POST));
+        }
+        if ($_COOKIE) {
+            $this->setCookies(new Parameters($_COOKIE));
+        }
+        if ($_FILES) {
+            // convert PHP $_FILES superglobal
+            $files = $this->mapPhpFiles();
+            $this->setFiles(new Parameters($files));
+        }
+
+        $this->setServer(new Parameters($_SERVER));
+    }
+
+    /**
+     * Get raw request body
+     *
+     * @return string
+     */
+    public function getContent()
+    {
+        if (empty($this->content)) {
+            $requestBody = file_get_contents('php://input');
+            if (strlen($requestBody) > 0) {
+                $this->content = $requestBody;
+            }
+        }
+
+        return $this->content;
+    }
+
+    /**
+     * Set cookies
+     *
+     * Instantiate and set cookies.
+     *
+     * @param $cookie
      * @return Request
      */
-    public static function fromString($string, $allowCustomMethods = true)
+    public function setCookies($cookie)
     {
-        $request = new static();
-        $request->setAllowCustomMethods($allowCustomMethods);
+        $this->getHeaders()->addHeader(new Cookie((array) $cookie));
+        return $this;
+    }
 
-        $lines = explode("\r\n", $string);
+    /**
+     * Set the request URI.
+     *
+     * @param  string $requestUri
+     * @return self
+     */
+    public function setRequestUri($requestUri)
+    {
+        $this->requestUri = $requestUri;
+        return $this;
+    }
 
-        // first line must be Method/Uri/Version string
-        $matches   = null;
-        $methods   = $allowCustomMethods
-            ? '[\w-]+'
-            : implode(
-                '|',
-                [
-                    self::METHOD_OPTIONS,
-                    self::METHOD_GET,
-                    self::METHOD_HEAD,
-                    self::METHOD_POST,
-                    self::METHOD_PUT,
-                    self::METHOD_DELETE,
-                    self::METHOD_TRACE,
-                    self::METHOD_CONNECT,
-                    self::METHOD_PATCH
-                ]
-            );
+    /**
+     * Get the request URI.
+     *
+     * @return string
+     */
+    public function getRequestUri()
+    {
+        if ($this->requestUri === null) {
+            $this->requestUri = $this->detectRequestUri();
+        }
+        return $this->requestUri;
+    }
 
-        $regex     = '#^(?P<method>' . $methods . ')\s(?P<uri>[^ ]*)(?:\sHTTP\/(?P<version>\d+\.\d+)){0,1}#';
-        $firstLine = array_shift($lines);
-        if (!preg_match($regex, $firstLine, $matches)) {
-            throw new Exception\InvalidArgumentException(
-                'A valid request line was not found in the provided string'
-            );
+    /**
+     * Set the base URL.
+     *
+     * @param  string $baseUrl
+     * @return self
+     */
+    public function setBaseUrl($baseUrl)
+    {
+        $this->baseUrl = rtrim($baseUrl, '/');
+        return $this;
+    }
+
+    /**
+     * Get the base URL.
+     *
+     * @return string
+     */
+    public function getBaseUrl()
+    {
+        if ($this->baseUrl === null) {
+            $this->setBaseUrl($this->detectBaseUrl());
+        }
+        return $this->baseUrl;
+    }
+
+    /**
+     * Set the base path.
+     *
+     * @param  string $basePath
+     * @return self
+     */
+    public function setBasePath($basePath)
+    {
+        $this->basePath = rtrim($basePath, '/');
+        return $this;
+    }
+
+    /**
+     * Get the base path.
+     *
+     * @return string
+     */
+    public function getBasePath()
+    {
+        if ($this->basePath === null) {
+            $this->setBasePath($this->detectBasePath());
         }
 
-        $request->setMethod($matches['method']);
-        $request->setUri($matches['uri']);
+        return $this->basePath;
+    }
 
-        $parsedUri = parse_url($matches['uri']);
-        if (array_key_exists('query', $parsedUri)) {
-            $parsedQuery = [];
-            parse_str($parsedUri['query'], $parsedQuery);
-            $request->setQuery(new Parameters($parsedQuery));
-        }
+    /**
+     * Provide an alternate Parameter Container implementation for server parameters in this object,
+     * (this is NOT the primary API for value setting, for that see getServer())
+     *
+     * @param  ParametersInterface $server
+     * @return Request
+     */
+    public function setServer(ParametersInterface $server)
+    {
+        $this->serverParams = $server;
 
-        if (isset($matches['version'])) {
-            $request->setVersion($matches['version']);
-        }
-
-        if (count($lines) == 0) {
-            return $request;
-        }
-
-        $isHeader = true;
-        $headers = $rawBody = [];
-        while ($lines) {
-            $nextLine = array_shift($lines);
-            if ($nextLine == '') {
-                $isHeader = false;
-                continue;
-            }
-
-            if ($isHeader) {
-                if (preg_match("/[\r\n]/", $nextLine)) {
-                    throw new Exception\RuntimeException('CRLF injection detected');
+        // This seems to be the only way to get the Authorization header on Apache
+        if (function_exists('apache_request_headers')) {
+            $apacheRequestHeaders = apache_request_headers();
+            if (!isset($this->serverParams['HTTP_AUTHORIZATION'])) {
+                if (isset($apacheRequestHeaders['Authorization'])) {
+                    $this->serverParams->set('HTTP_AUTHORIZATION', $apacheRequestHeaders['Authorization']);
+                } elseif (isset($apacheRequestHeaders['authorization'])) {
+                    $this->serverParams->set('HTTP_AUTHORIZATION', $apacheRequestHeaders['authorization']);
                 }
-                $headers[] = $nextLine;
-                continue;
+            }
+        }
+
+        // set headers
+        $headers = [];
+
+        foreach ($server as $key => $value) {
+            if ($value || (!is_array($value) && strlen($value))) {
+                if (strpos($key, 'HTTP_') === 0) {
+                    if (strpos($key, 'HTTP_COOKIE') === 0) {
+                        // Cookies are handled using the $_COOKIE superglobal
+                        continue;
+                    }
+
+                    $headers[strtr(ucwords(strtolower(strtr(substr($key, 5), '_', ' '))), ' ', '-')] = $value;
+                } elseif (strpos($key, 'CONTENT_') === 0) {
+                    $name = substr($key, 8); // Remove "Content-"
+                    $headers['Content-' . (($name == 'MD5') ? $name : ucfirst(strtolower($name)))] = $value;
+                }
+            }
+        }
+
+        $this->getHeaders()->addHeaders($headers);
+
+        // set method
+        if (isset($this->serverParams['REQUEST_METHOD'])) {
+            $this->setMethod($this->serverParams['REQUEST_METHOD']);
+        }
+
+        // set HTTP version
+        if (isset($this->serverParams['SERVER_PROTOCOL'])
+            && strpos($this->serverParams['SERVER_PROTOCOL'], self::VERSION_10) !== false
+        ) {
+            $this->setVersion(self::VERSION_10);
+        }
+
+        // set URI
+        $uri = new HttpUri();
+
+        // URI scheme
+        if ((!empty($this->serverParams['HTTPS']) && strtolower($this->serverParams['HTTPS']) !== 'off')
+            || (!empty($this->serverParams['HTTP_X_FORWARDED_PROTO'])
+                 && $this->serverParams['HTTP_X_FORWARDED_PROTO'] == 'https')
+        ) {
+            $scheme = 'https';
+        } else {
+            $scheme = 'http';
+        }
+        $uri->setScheme($scheme);
+
+        // URI host & port
+        $host = null;
+        $port = null;
+
+        // Set the host
+        if ($this->getHeaders()->get('host')) {
+            $host = $this->getHeaders()->get('host')->getFieldValue();
+
+            // works for regname, IPv4 & IPv6
+            if (preg_match('|\:(\d+)$|', $host, $matches)) {
+                $host = substr($host, 0, -1 * (strlen($matches[1]) + 1));
+                $port = (int) $matches[1];
             }
 
-
-            if (empty($rawBody)
-                && preg_match('/^[a-z0-9!#$%&\'*+.^_`|~-]+:$/i', $nextLine)
-            ) {
-                throw new Exception\RuntimeException('CRLF injection detected');
+            // set up a validator that check if the hostname is legal (not spoofed)
+            $hostnameValidator = new HostnameValidator([
+                'allow'       => HostnameValidator::ALLOW_ALL,
+                'useIdnCheck' => false,
+                'useTldCheck' => false,
+            ]);
+            // If invalid. Reset the host & port
+            if (!$hostnameValidator->isValid($host)) {
+                $host = null;
+                $port = null;
             }
-
-            $rawBody[] = $nextLine;
         }
 
-        if ($headers) {
-            $request->headers = implode("\r\n", $headers);
+        if (!$host && isset($this->serverParams['SERVER_NAME'])) {
+            $host = $this->serverParams['SERVER_NAME'];
+            if (isset($this->serverParams['SERVER_PORT'])) {
+                $port = (int) $this->serverParams['SERVER_PORT'];
+            }
+            // Check for missinterpreted IPv6-Address
+            // Reported at least for Safari on Windows
+            if (isset($this->serverParams['SERVER_ADDR']) && preg_match('/^\[[0-9a-fA-F\:]+\]$/', $host)) {
+                $host = '[' . $this->serverParams['SERVER_ADDR'] . ']';
+                if ($port . ']' == substr($host, strrpos($host, ':')+1)) {
+                    // The last digit of the IPv6-Address has been taken as port
+                    // Unset the port so the default port can be used
+                    $port = null;
+                }
+            }
+        }
+        $uri->setHost($host);
+        $uri->setPort($port);
+
+        // URI path
+        $requestUri = $this->getRequestUri();
+        if (($qpos = strpos($requestUri, '?')) !== false) {
+            $requestUri = substr($requestUri, 0, $qpos);
         }
 
-        if ($rawBody) {
-            $request->setContent(implode("\r\n", $rawBody));
+        $uri->setPath($requestUri);
+
+        // URI query
+        if (isset($this->serverParams['QUERY_STRING'])) {
+            $uri->setQuery($this->serverParams['QUERY_STRING']);
         }
 
-        return $request;
-    }
+        $this->setUri($uri);
 
-    /**
-     * Set the method for this request
-     *
-     * @param  string $method
-     * @return Request
-     * @throws Exception\InvalidArgumentException
-     */
-    public function setMethod($method)
-    {
-        $method = strtoupper($method);
-        if (!defined('static::METHOD_' . $method) && ! $this->getAllowCustomMethods()) {
-            throw new Exception\InvalidArgumentException('Invalid HTTP method passed');
-        }
-        $this->method = $method;
         return $this;
     }
 
     /**
-     * Return the method for this request
+     * Return the parameter container responsible for server parameters or a single parameter value.
      *
-     * @return string
+     * @param string|null           $name            Parameter name to retrieve, or null to get the whole container.
+     * @param mixed|null            $default         Default value to use when the parameter is missing.
+     * @see http://www.faqs.org/rfcs/rfc3875.html
+     * @return \Zend\Stdlib\ParametersInterface|mixed
      */
-    public function getMethod()
+    public function getServer($name = null, $default = null)
     {
-        return $this->method;
+        if ($this->serverParams === null) {
+            $this->serverParams = new Parameters();
+        }
+
+        if ($name === null) {
+            return $this->serverParams;
+        }
+
+        return $this->serverParams->get($name, $default);
     }
 
     /**
-     * Set the URI/URL for this request, this can be a string or an instance of Zend\Uri\Http
+     * Provide an alternate Parameter Container implementation for env parameters in this object,
+     * (this is NOT the primary API for value setting, for that see env())
      *
-     * @throws Exception\InvalidArgumentException
-     * @param string|HttpUri $uri
+     * @param  ParametersInterface $env
      * @return Request
      */
-    public function setUri($uri)
+    public function setEnv(ParametersInterface $env)
     {
-        if (is_string($uri)) {
-            try {
-                $uri = new HttpUri($uri);
-            } catch (UriException\InvalidUriPartException $e) {
-                throw new Exception\InvalidArgumentException(
-                    sprintf('Invalid URI passed as string (%s)', (string) $uri),
-                    $e->getCode(),
-                    $e
-                );
-            }
-        } elseif (!($uri instanceof HttpUri)) {
-            throw new Exception\InvalidArgumentException(
-                'URI must be an instance of Zend\Uri\Http or a string'
-            );
-        }
-        $this->uri = $uri;
-
+        $this->envParams = $env;
         return $this;
     }
 
     /**
-     * Return the URI for this request object
-     *
-     * @return HttpUri
-     */
-    public function getUri()
-    {
-        if ($this->uri === null || is_string($this->uri)) {
-            $this->uri = new HttpUri($this->uri);
-        }
-        return $this->uri;
-    }
-
-    /**
-     * Return the URI for this request object as a string
-     *
-     * @return string
-     */
-    public function getUriString()
-    {
-        if ($this->uri instanceof HttpUri) {
-            return $this->uri->toString();
-        }
-        return $this->uri;
-    }
-
-    /**
-     * Provide an alternate Parameter Container implementation for query parameters in this object,
-     * (this is NOT the primary API for value setting, for that see getQuery())
-     *
-     * @param \Zend\Stdlib\ParametersInterface $query
-     * @return Request
-     */
-    public function setQuery(ParametersInterface $query)
-    {
-        $this->queryParams = $query;
-        return $this;
-    }
-
-    /**
-     * Return the parameter container responsible for query parameters or a single query parameter
+     * Return the parameter container responsible for env parameters or a single parameter value.
      *
      * @param string|null           $name            Parameter name to retrieve, or null to get the whole container.
      * @param mixed|null            $default         Default value to use when the parameter is missing.
      * @return \Zend\Stdlib\ParametersInterface|mixed
      */
-    public function getQuery($name = null, $default = null)
+    public function getEnv($name = null, $default = null)
     {
-        if ($this->queryParams === null) {
-            $this->queryParams = new Parameters();
+        if ($this->envParams === null) {
+            $this->envParams = new Parameters();
         }
 
         if ($name === null) {
-            return $this->queryParams;
+            return $this->envParams;
         }
 
-        return $this->queryParams->get($name, $default);
+        return $this->envParams->get($name, $default);
     }
 
     /**
-     * Provide an alternate Parameter Container implementation for post parameters in this object,
-     * (this is NOT the primary API for value setting, for that see getPost())
+     * Convert PHP superglobal $_FILES into more sane parameter=value structure
+     * This handles form file input with brackets (name=files[])
      *
-     * @param \Zend\Stdlib\ParametersInterface $post
-     * @return Request
+     * @return array
      */
-    public function setPost(ParametersInterface $post)
+    protected function mapPhpFiles()
     {
-        $this->postParams = $post;
-        return $this;
-    }
-
-    /**
-     * Return the parameter container responsible for post parameters or a single post parameter.
-     *
-     * @param string|null           $name            Parameter name to retrieve, or null to get the whole container.
-     * @param mixed|null            $default         Default value to use when the parameter is missing.
-     * @return \Zend\Stdlib\ParametersInterface|mixed
-     */
-    public function getPost($name = null, $default = null)
-    {
-        if ($this->postParams === null) {
-            $this->postParams = new Parameters();
+        $files = [];
+        foreach ($_FILES as $fileName => $fileParams) {
+            $files[$fileName] = [];
+            foreach ($fileParams as $param => $data) {
+                if (!is_array($data)) {
+                    $files[$fileName][$param] = $data;
+                } else {
+                    foreach ($data as $i => $v) {
+                        $this->mapPhpFileParam($files[$fileName], $param, $i, $v);
+                    }
+                }
+            }
         }
 
-        if ($name === null) {
-            return $this->postParams;
+        return $files;
+    }
+
+    /**
+     * @param array        $array
+     * @param string       $paramName
+     * @param int|string   $index
+     * @param string|array $value
+     */
+    protected function mapPhpFileParam(&$array, $paramName, $index, $value)
+    {
+        if (!is_array($value)) {
+            $array[$index][$paramName] = $value;
+        } else {
+            foreach ($value as $i => $v) {
+                $this->mapPhpFileParam($array[$index], $paramName, $i, $v);
+            }
         }
-
-        return $this->postParams->get($name, $default);
     }
 
     /**
-     * Return the Cookie header, this is the same as calling $request->getHeaders()->get('Cookie');
+     * Detect the base URI for the request
      *
-     * @convenience $request->getHeaders()->get('Cookie');
-     * @return Header\Cookie|bool
-     */
-    public function getCookie()
-    {
-        return $this->getHeaders()->get('Cookie');
-    }
-
-    /**
-     * Provide an alternate Parameter Container implementation for file parameters in this object,
-     * (this is NOT the primary API for value setting, for that see getFiles())
-     *
-     * @param  ParametersInterface $files
-     * @return Request
-     */
-    public function setFiles(ParametersInterface $files)
-    {
-        $this->fileParams = $files;
-        return $this;
-    }
-
-    /**
-     * Return the parameter container responsible for file parameters or a single file.
-     *
-     * @param string|null           $name            Parameter name to retrieve, or null to get the whole container.
-     * @param mixed|null            $default         Default value to use when the parameter is missing.
-     * @return ParametersInterface|mixed
-     */
-    public function getFiles($name = null, $default = null)
-    {
-        if ($this->fileParams === null) {
-            $this->fileParams = new Parameters();
-        }
-
-        if ($name === null) {
-            return $this->fileParams;
-        }
-
-        return $this->fileParams->get($name, $default);
-    }
-
-    /**
-     * Return the header container responsible for headers or all headers of a certain name/type
-     *
-     * @see \Zend\Http\Headers::get()
-     * @param string|null           $name            Header name to retrieve, or null to get the whole container.
-     * @param mixed|null            $default         Default value to use when the requested header is missing.
-     * @return \Zend\Http\Headers|bool|\Zend\Http\Header\HeaderInterface|\ArrayIterator
-     */
-    public function getHeaders($name = null, $default = false)
-    {
-        if ($this->headers === null || is_string($this->headers)) {
-            // this is only here for fromString lazy loading
-            $this->headers = (is_string($this->headers)) ? Headers::fromString($this->headers) : new Headers();
-        }
-
-        if ($name === null) {
-            return $this->headers;
-        }
-
-        if ($this->headers->has($name)) {
-            return $this->headers->get($name);
-        }
-
-        return $default;
-    }
-
-    /**
-     * Get all headers of a certain name/type.
-     *
-     * @see Request::getHeaders()
-     * @param string|null           $name            Header name to retrieve, or null to get the whole container.
-     * @param mixed|null            $default         Default value to use when the requested header is missing.
-     * @return \Zend\Http\Headers|bool|\Zend\Http\Header\HeaderInterface|\ArrayIterator
-     */
-    public function getHeader($name, $default = false)
-    {
-        return $this->getHeaders($name, $default);
-    }
-
-    /**
-     * Is this an OPTIONS method request?
-     *
-     * @return bool
-     */
-    public function isOptions()
-    {
-        return ($this->method === self::METHOD_OPTIONS);
-    }
-
-    /**
-     * Is this a PROPFIND method request?
-     *
-     * @return bool
-     */
-    public function isPropFind()
-    {
-        return ($this->method === self::METHOD_PROPFIND);
-    }
-
-    /**
-     * Is this a GET method request?
-     *
-     * @return bool
-     */
-    public function isGet()
-    {
-        return ($this->method === self::METHOD_GET);
-    }
-
-    /**
-     * Is this a HEAD method request?
-     *
-     * @return bool
-     */
-    public function isHead()
-    {
-        return ($this->method === self::METHOD_HEAD);
-    }
-
-    /**
-     * Is this a POST method request?
-     *
-     * @return bool
-     */
-    public function isPost()
-    {
-        return ($this->method === self::METHOD_POST);
-    }
-
-    /**
-     * Is this a PUT method request?
-     *
-     * @return bool
-     */
-    public function isPut()
-    {
-        return ($this->method === self::METHOD_PUT);
-    }
-
-    /**
-     * Is this a DELETE method request?
-     *
-     * @return bool
-     */
-    public function isDelete()
-    {
-        return ($this->method === self::METHOD_DELETE);
-    }
-
-    /**
-     * Is this a TRACE method request?
-     *
-     * @return bool
-     */
-    public function isTrace()
-    {
-        return ($this->method === self::METHOD_TRACE);
-    }
-
-    /**
-     * Is this a CONNECT method request?
-     *
-     * @return bool
-     */
-    public function isConnect()
-    {
-        return ($this->method === self::METHOD_CONNECT);
-    }
-
-    /**
-     * Is this a PATCH method request?
-     *
-     * @return bool
-     */
-    public function isPatch()
-    {
-        return ($this->method === self::METHOD_PATCH);
-    }
-
-    /**
-     * Is the request a Javascript XMLHttpRequest?
-     *
-     * Should work with Prototype/Script.aculo.us, possibly others.
-     *
-     * @return bool
-     */
-    public function isXmlHttpRequest()
-    {
-        $header = $this->getHeaders()->get('X_REQUESTED_WITH');
-        return false !== $header && $header->getFieldValue() == 'XMLHttpRequest';
-    }
-
-    /**
-     * Is this a Flash request?
-     *
-     * @return bool
-     */
-    public function isFlashRequest()
-    {
-        $header = $this->getHeaders()->get('USER_AGENT');
-        return false !== $header && stristr($header->getFieldValue(), ' flash');
-    }
-
-    /**
-     * Return the formatted request line (first line) for this http request
+     * Looks at a variety of criteria in order to attempt to autodetect a base
+     * URI, including rewrite URIs, proxy URIs, etc.
      *
      * @return string
      */
-    public function renderRequestLine()
+    protected function detectRequestUri()
     {
-        return $this->method . ' ' . (string) $this->uri . ' HTTP/' . $this->version;
+        $requestUri = null;
+        $server     = $this->getServer();
+
+        // Check this first so IIS will catch.
+        $httpXRewriteUrl = $server->get('HTTP_X_REWRITE_URL');
+        if ($httpXRewriteUrl !== null) {
+            $requestUri = $httpXRewriteUrl;
+        }
+
+        // Check for IIS 7.0 or later with ISAPI_Rewrite
+        $httpXOriginalUrl = $server->get('HTTP_X_ORIGINAL_URL');
+        if ($httpXOriginalUrl !== null) {
+            $requestUri = $httpXOriginalUrl;
+        }
+
+        // IIS7 with URL Rewrite: make sure we get the unencoded url
+        // (double slash problem).
+        $iisUrlRewritten = $server->get('IIS_WasUrlRewritten');
+        $unencodedUrl    = $server->get('UNENCODED_URL', '');
+        if ('1' == $iisUrlRewritten && '' !== $unencodedUrl) {
+            return $unencodedUrl;
+        }
+
+        // HTTP proxy requests setup request URI with scheme and host [and port]
+        // + the URL path, only use URL path.
+        if (!$httpXRewriteUrl) {
+            $requestUri = $server->get('REQUEST_URI');
+        }
+
+        if ($requestUri !== null) {
+            return preg_replace('#^[^/:]+://[^/]+#', '', $requestUri);
+        }
+
+        // IIS 5.0, PHP as CGI.
+        $origPathInfo = $server->get('ORIG_PATH_INFO');
+        if ($origPathInfo !== null) {
+            $queryString = $server->get('QUERY_STRING', '');
+            if ($queryString !== '') {
+                $origPathInfo .= '?' . $queryString;
+            }
+            return $origPathInfo;
+        }
+
+        return '/';
     }
 
     /**
+     * Auto-detect the base path from the request environment
+     *
+     * Uses a variety of criteria in order to detect the base URL of the request
+     * (i.e., anything additional to the document root).
+     *
+     *
      * @return string
      */
-    public function toString()
+    protected function detectBaseUrl()
     {
-        $str = $this->renderRequestLine() . "\r\n";
-        $str .= $this->getHeaders()->toString();
-        $str .= "\r\n";
-        $str .= $this->getContent();
-        return $str;
+        $filename       = $this->getServer()->get('SCRIPT_FILENAME', '');
+        $scriptName     = $this->getServer()->get('SCRIPT_NAME');
+        $phpSelf        = $this->getServer()->get('PHP_SELF');
+        $origScriptName = $this->getServer()->get('ORIG_SCRIPT_NAME');
+
+        if ($scriptName !== null && basename($scriptName) === $filename) {
+            $baseUrl = $scriptName;
+        } elseif ($phpSelf !== null && basename($phpSelf) === $filename) {
+            $baseUrl = $phpSelf;
+        } elseif ($origScriptName !== null && basename($origScriptName) === $filename) {
+            // 1and1 shared hosting compatibility.
+            $baseUrl = $origScriptName;
+        } else {
+            // Backtrack up the SCRIPT_FILENAME to find the portion
+            // matching PHP_SELF.
+
+            $baseUrl  = '/';
+            $basename = basename($filename);
+            if ($basename) {
+                $path     = ($phpSelf ? trim($phpSelf, '/') : '');
+                $basePos  = strpos($path, $basename) ?: 0;
+                $baseUrl .= substr($path, 0, $basePos) . $basename;
+            }
+        }
+
+        // If the baseUrl is empty, then simply return it.
+        if (empty($baseUrl)) {
+            return '';
+        }
+
+        // Does the base URL have anything in common with the request URI?
+        $requestUri = $this->getRequestUri();
+
+        // Full base URL matches.
+        if (0 === strpos($requestUri, $baseUrl)) {
+            return $baseUrl;
+        }
+
+        // Directory portion of base path matches.
+        $baseDir = str_replace('\\', '/', dirname($baseUrl));
+        if (0 === strpos($requestUri, $baseDir)) {
+            return $baseDir;
+        }
+
+        $truncatedRequestUri = $requestUri;
+
+        if (false !== ($pos = strpos($requestUri, '?'))) {
+            $truncatedRequestUri = substr($requestUri, 0, $pos);
+        }
+
+        $basename = basename($baseUrl);
+
+        // No match whatsoever
+        if (empty($basename) || false === strpos($truncatedRequestUri, $basename)) {
+            return '';
+        }
+
+        // If using mod_rewrite or ISAPI_Rewrite strip the script filename
+        // out of the base path. $pos !== 0 makes sure it is not matching a
+        // value from PATH_INFO or QUERY_STRING.
+        if (strlen($requestUri) >= strlen($baseUrl)
+            && (false !== ($pos = strpos($requestUri, $baseUrl)) && $pos !== 0)
+        ) {
+            $baseUrl = substr($requestUri, 0, $pos + strlen($baseUrl));
+        }
+
+        return $baseUrl;
     }
 
     /**
-     * @return boolean
+     * Autodetect the base path of the request
+     *
+     * Uses several criteria to determine the base path of the request.
+     *
+     * @return string
      */
-    public function getAllowCustomMethods()
+    protected function detectBasePath()
     {
-        return $this->allowCustomMethods;
-    }
+        $baseUrl  = $this->getBaseUrl();
 
-    /**
-     * @param boolean $strictMethods
-     */
-    public function setAllowCustomMethods($strictMethods)
-    {
-        $this->allowCustomMethods = (bool) $strictMethods;
+        // Empty base url detected
+        if ($baseUrl === '') {
+            return '';
+        }
+
+        $filename = basename($this->getServer()->get('SCRIPT_FILENAME', ''));
+
+        // basename() matches the script filename; return the directory
+        if (basename($baseUrl) === $filename) {
+            return str_replace('\\', '/', dirname($baseUrl));
+        }
+
+        // Base path is identical to base URL
+        return $baseUrl;
     }
 }
