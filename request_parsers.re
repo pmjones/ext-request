@@ -22,12 +22,15 @@ typedef unsigned char YYCTYPE;
     re2c:define:YYCURSOR = in->cur;
     re2c:define:YYMARKER = in->mar;
     re2c:define:YYLIMIT = in->lim;
-    re2c:yyfill:enable = 0;
+    re2c:yyfill:enable = 1;
+    re2c:define:YYFILL = "{ token1(&tok, TOKEN_INVALID, \"\", 0); return tok; }";
+    re2c:define:YYFILL:naked = 1;
 
     end = "\x00";
     id = [a-zA-Z0-9_\.-]+;
     mime = ("*" | [a-zA-Z0-9-]+) "/" ("*" | [a-zA-Z0-9-]+);
 */
+/*!max:re2c*/
 
 enum scanner_token_type {
     TOKEN_END = 0,
@@ -209,12 +212,17 @@ static int parse_accept_params(struct scanner_input *in, zval *params)
 
 void php_request_parse_accept(zval *return_value, const YYCTYPE *str, size_t len)
 {
+    // Pad the buffer
+    YYCTYPE *str2 = emalloc(len + YYMAXFILL + 1);
+    memcpy(str2, str, len);
+    memset(str2 + len, 0, YYMAXFILL + 1);
+
     struct scanner_input in = {
-        str,
-        str,
-        str,
+        str2,
+        str2,
+        str2,
         0,
-        str + len
+        str2 + len + YYMAXFILL
     };
     struct scanner_token tok = {0};
     zval *qual;
@@ -256,6 +264,8 @@ void php_request_parse_accept(zval *return_value, const YYCTYPE *str, size_t len
 
     // Sort
     zend_hash_sort(Z_ARRVAL_P(return_value), php_request_accept_compare, 1);
+
+    efree(str2);
 }
 /* }}} php_request_parse_accept */
 
@@ -264,12 +274,17 @@ void php_request_parse_accept(zval *return_value, const YYCTYPE *str, size_t len
 /* @see https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html */
 void php_request_parse_content_type(zval *return_value, const YYCTYPE *str, size_t len)
 {
+    // Pad the buffer
+    YYCTYPE *str2 = emalloc(len + YYMAXFILL + 1);
+    memcpy(str2, str, len);
+    memset(str2 + len, 0, YYMAXFILL + 1);
+
     struct scanner_input in = {
-        str,
-        str,
-        str,
+        str2,
+        str2,
+        str2,
         0,
-        str + len
+        str2 + len + YYMAXFILL
     };
     struct scanner_token tok = {0};
     struct scanner_token left;
@@ -332,7 +347,7 @@ void php_request_parse_content_type(zval *return_value, const YYCTYPE *str, size
     add_assoc_zval_ex(return_value, ZEND_STRL("params"), &params);
 
 err:
-    return;
+    efree(str2);
 }
 /* }}} php_request_parse_content_type */
 
@@ -342,12 +357,17 @@ err:
 /* @see: https://en.wikipedia.org/wiki/Digest_access_authentication */
 void php_request_parse_digest_auth(zval *return_value, const YYCTYPE *str, size_t len)
 {
+    // Pad the buffer
+    YYCTYPE *str2 = emalloc(len + YYMAXFILL + 1);
+    memcpy(str2, str, len);
+    memset(str2 + len, 0, YYMAXFILL + 1);
+
     struct scanner_input in = {
-        str,
-        str,
-        str,
+        str2,
+        str2,
+        str2,
         0,
-        str + len
+        str2 + len + YYMAXFILL
     };
     struct scanner_token tok;
     struct scanner_token left;
@@ -412,5 +432,6 @@ void php_request_parse_digest_auth(zval *return_value, const YYCTYPE *str, size_
     }
 
     zval_dtor(&need);
+    efree(str2);
 }
 /* }}} php_request_parse_digest_auth */

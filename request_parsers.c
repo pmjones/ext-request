@@ -20,8 +20,9 @@
 
 typedef unsigned char YYCTYPE;
 
-#line 30 "request_parsers.re"
+#line 32 "request_parsers.re"
 
+#define YYMAXFILL 3
 
 enum scanner_token_type {
     TOKEN_END = 0,
@@ -81,9 +82,10 @@ static struct scanner_token lex_quoted_str(struct scanner_input *in, YYCTYPE q)
     for (;;) {
         in->tok = in->cur;
         
-#line 85 "request_parsers.c"
+#line 86 "request_parsers.c"
 {
 	YYCTYPE yych;
+	if ((in->lim - in->cur) < 2) { token1(&tok, TOKEN_INVALID, "", 0); return tok; }
 	yych = *in->cur;
 	switch (yych) {
 	case 0x00:	goto yy2;
@@ -92,24 +94,24 @@ static struct scanner_token lex_quoted_str(struct scanner_input *in, YYCTYPE q)
 	}
 yy2:
 	++in->cur;
-#line 91 "request_parsers.re"
+#line 94 "request_parsers.re"
 	{ token1(&tok, TOKEN_INVALID, "", 0); return tok; }
-#line 98 "request_parsers.c"
+#line 100 "request_parsers.c"
 yy4:
 	++in->cur;
 yy5:
-#line 92 "request_parsers.re"
+#line 95 "request_parsers.re"
 	{ u = *in->tok; if (u == q) break; continue; }
-#line 104 "request_parsers.c"
+#line 106 "request_parsers.c"
 yy6:
 	yych = *++in->cur;
 	if (yych <= 0x00) goto yy5;
 	++in->cur;
-#line 93 "request_parsers.re"
+#line 96 "request_parsers.re"
 	{ u = *(in->cur - 1); }
-#line 111 "request_parsers.c"
+#line 113 "request_parsers.c"
 }
-#line 94 "request_parsers.re"
+#line 97 "request_parsers.re"
 
     }
     token1(&tok, TOKEN_STRING, start, in->tok - start);
@@ -123,10 +125,11 @@ static struct scanner_token lex(struct scanner_input *in)
     for( ;; ) {
         in->tok = in->cur;
         
-#line 127 "request_parsers.c"
+#line 129 "request_parsers.c"
 {
 	YYCTYPE yych;
 	unsigned int yyaccept = 0;
+	if ((in->lim - in->cur) < 3) { token1(&tok, TOKEN_INVALID, "", 0); return tok; }
 	yych = *in->cur;
 	switch (yych) {
 	case 0x00:	goto yy11;
@@ -211,25 +214,25 @@ static struct scanner_token lex(struct scanner_input *in)
 	}
 yy11:
 	++in->cur;
-#line 108 "request_parsers.re"
+#line 111 "request_parsers.re"
 	{ token1(&tok, TOKEN_END, "", 0); break; }
-#line 217 "request_parsers.c"
+#line 220 "request_parsers.c"
 yy13:
 	++in->cur;
-#line 107 "request_parsers.re"
+#line 110 "request_parsers.re"
 	{ token1(&tok, TOKEN_INVALID, in->tok, 1); break; }
-#line 222 "request_parsers.c"
+#line 225 "request_parsers.c"
 yy15:
 	++in->cur;
-#line 111 "request_parsers.re"
+#line 114 "request_parsers.re"
 	{ continue; tok.type = TOKEN_WHITESPACE; break; }
-#line 227 "request_parsers.c"
+#line 230 "request_parsers.c"
 yy17:
 	++in->cur;
 yy18:
-#line 114 "request_parsers.re"
+#line 117 "request_parsers.re"
 	{ tok = lex_quoted_str(in, *(in->cur - 1)); break; }
-#line 233 "request_parsers.c"
+#line 236 "request_parsers.c"
 yy19:
 	yych = *++in->cur;
 	switch (yych) {
@@ -244,17 +247,18 @@ yy20:
 	default:	goto yy21;
 	}
 yy21:
-#line 122 "request_parsers.re"
+#line 125 "request_parsers.re"
 	{ token1(&tok, TOKEN_STAR, in->tok, 1); break; }
-#line 250 "request_parsers.c"
+#line 253 "request_parsers.c"
 yy22:
 	++in->cur;
-#line 121 "request_parsers.re"
+#line 124 "request_parsers.re"
 	{ token1(&tok, TOKEN_COMMA, in->tok, 1); break; }
-#line 255 "request_parsers.c"
+#line 258 "request_parsers.c"
 yy24:
 	yyaccept = 1;
 	in->mar = ++in->cur;
+	if ((in->lim - in->cur) < 2) { token1(&tok, TOKEN_INVALID, "", 0); return tok; }
 	yych = *in->cur;
 	switch (yych) {
 	case '-':
@@ -326,11 +330,12 @@ yy24:
 	default:	goto yy26;
 	}
 yy26:
-#line 126 "request_parsers.re"
+#line 129 "request_parsers.re"
 	{ token1(&tok, TOKEN_ID, in->tok, in->cur - in->tok); break; }
-#line 332 "request_parsers.c"
+#line 336 "request_parsers.c"
 yy27:
 	++in->cur;
+	if (in->lim <= in->cur) { token1(&tok, TOKEN_INVALID, "", 0); return tok; }
 	yych = *in->cur;
 	switch (yych) {
 	case '-':
@@ -402,24 +407,24 @@ yy27:
 	}
 yy29:
 	++in->cur;
-#line 119 "request_parsers.re"
+#line 122 "request_parsers.re"
 	{ token1(&tok, TOKEN_SLASH, in->tok, 1); break; }
-#line 408 "request_parsers.c"
+#line 413 "request_parsers.c"
 yy31:
 	++in->cur;
-#line 120 "request_parsers.re"
+#line 123 "request_parsers.re"
 	{ token1(&tok, TOKEN_SEMICOLON, in->tok, 1); break; }
-#line 413 "request_parsers.c"
+#line 418 "request_parsers.c"
 yy33:
 	++in->cur;
-#line 118 "request_parsers.re"
+#line 121 "request_parsers.re"
 	{ token1(&tok, TOKEN_EQUALS, in->tok, 1); break; }
-#line 418 "request_parsers.c"
+#line 423 "request_parsers.c"
 yy35:
 	++in->cur;
-#line 115 "request_parsers.re"
+#line 118 "request_parsers.re"
 	{ token1(&tok, TOKEN_STRING, "", 0); break; }
-#line 423 "request_parsers.c"
+#line 428 "request_parsers.c"
 yy37:
 	yych = *++in->cur;
 	switch (yych) {
@@ -499,11 +504,12 @@ yy38:
 yy39:
 	++in->cur;
 yy40:
-#line 125 "request_parsers.re"
+#line 128 "request_parsers.re"
 	{ token1(&tok, TOKEN_MIME, in->tok, in->cur - in->tok); break; }
-#line 505 "request_parsers.c"
+#line 510 "request_parsers.c"
 yy41:
 	++in->cur;
+	if (in->lim <= in->cur) { token1(&tok, TOKEN_INVALID, "", 0); return tok; }
 	yych = *in->cur;
 	switch (yych) {
 	case '-':
@@ -572,7 +578,7 @@ yy41:
 	default:	goto yy40;
 	}
 }
-#line 127 "request_parsers.re"
+#line 130 "request_parsers.re"
 
     }
     //fprintf(stderr, "TOKEN[%d] %.*s\n", tok.type, tok.yyleng, tok.yytext);
@@ -658,12 +664,17 @@ static int parse_accept_params(struct scanner_input *in, zval *params)
 
 void php_request_parse_accept(zval *return_value, const YYCTYPE *str, size_t len)
 {
+    // Pad the buffer
+    YYCTYPE *str2 = emalloc(len + YYMAXFILL + 1);
+    memcpy(str2, str, len);
+    memset(str2 + len, 0, YYMAXFILL + 1);
+
     struct scanner_input in = {
-        str,
-        str,
-        str,
+        str2,
+        str2,
+        str2,
         0,
-        str + len
+        str2 + len + YYMAXFILL
     };
     struct scanner_token tok = {0};
     zval *qual;
@@ -705,6 +716,8 @@ void php_request_parse_accept(zval *return_value, const YYCTYPE *str, size_t len
 
     // Sort
     zend_hash_sort(Z_ARRVAL_P(return_value), php_request_accept_compare, 1);
+
+    efree(str2);
 }
 /* }}} php_request_parse_accept */
 
@@ -713,12 +726,17 @@ void php_request_parse_accept(zval *return_value, const YYCTYPE *str, size_t len
 /* @see https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html */
 void php_request_parse_content_type(zval *return_value, const YYCTYPE *str, size_t len)
 {
+    // Pad the buffer
+    YYCTYPE *str2 = emalloc(len + YYMAXFILL + 1);
+    memcpy(str2, str, len);
+    memset(str2 + len, 0, YYMAXFILL + 1);
+
     struct scanner_input in = {
-        str,
-        str,
-        str,
+        str2,
+        str2,
+        str2,
         0,
-        str + len
+        str2 + len + YYMAXFILL
     };
     struct scanner_token tok = {0};
     struct scanner_token left;
@@ -781,7 +799,7 @@ void php_request_parse_content_type(zval *return_value, const YYCTYPE *str, size
     add_assoc_zval_ex(return_value, ZEND_STRL("params"), &params);
 
 err:
-    return;
+    efree(str2);
 }
 /* }}} php_request_parse_content_type */
 
@@ -791,12 +809,17 @@ err:
 /* @see: https://en.wikipedia.org/wiki/Digest_access_authentication */
 void php_request_parse_digest_auth(zval *return_value, const YYCTYPE *str, size_t len)
 {
+    // Pad the buffer
+    YYCTYPE *str2 = emalloc(len + YYMAXFILL + 1);
+    memcpy(str2, str, len);
+    memset(str2 + len, 0, YYMAXFILL + 1);
+
     struct scanner_input in = {
-        str,
-        str,
-        str,
+        str2,
+        str2,
+        str2,
         0,
-        str + len
+        str2 + len + YYMAXFILL
     };
     struct scanner_token tok;
     struct scanner_token left;
@@ -861,5 +884,6 @@ void php_request_parse_digest_auth(zval *return_value, const YYCTYPE *str, size_
     }
 
     zval_dtor(&need);
+    efree(str2);
 }
 /* }}} php_request_parse_digest_auth */
