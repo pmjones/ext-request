@@ -7,12 +7,16 @@ PhpRequest::__isset
 $_SERVER['HTTP_HOST'] = 'localhost';
 $request = new PhpRequest();
 var_dump(isset($request->method));
+var_dump(isset($request->noSuchProperty));
+/*
+string(16) "RuntimeException"
+string(43) "PhpRequest::$noSuchProperty does not exist."
 try {
     isset($request->noSuchProperty);
 } catch( Exception $e ) {
     var_dump(get_class($e), $e->getMessage());
 }
+*/
 --EXPECT--
 bool(true)
-string(16) "RuntimeException"
-string(43) "PhpRequest::$noSuchProperty does not exist."
+bool(false)

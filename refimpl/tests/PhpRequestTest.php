@@ -37,6 +37,7 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
     public function test__unset()
     {
         $request = new PhpRequest();
+        unset($request->noSuchProperty); // not set - shouldn't cause error
 
         $this->setExpectedException(
             RuntimeException::CLASS,
@@ -50,12 +51,7 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
     {
         $request = new PhpRequest();
         $this->assertTrue(isset($request->method));
-
-        $this->setExpectedException(
-            RuntimeException::CLASS,
-            'PhpRequest::$noSuchProperty does not exist.'
-        );
-        isset($request->noSuchProperty);
+        $this->assertFalse(isset($request->noSuchProperty));
     }
 
     public function test__set()
