@@ -122,7 +122,7 @@ class PhpResponseTest extends PHPUnit_Framework_TestCase
                 'httponly' => false,
             ],
         ];
-        $this->assertSame($expect, $this->response->getCookies());
+        $this->assertEquals($expect, $this->response->getCookies());
     }
 
     public function testContent()

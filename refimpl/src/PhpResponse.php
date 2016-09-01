@@ -107,12 +107,12 @@ class PhpResponse
     {
         $this->cookies[$name] = [
             'raw' => false,
-            'value' => $value,
-            'expire' => $expire,
-            'path' => $path,
-            'domain' => $domain,
-            'secure' => $secure,
-            'httponly' => $httponly,
+            'value' => (string) $value,
+            'expire' => (integer) $expire,
+            'path' => (string) $path,
+            'domain' => (string) $domain,
+            'secure' => (boolean) $secure,
+            'httponly' => (boolean) $httponly,
         ];
     }
 
@@ -129,12 +129,12 @@ class PhpResponse
     {
         $this->cookies[$name] = [
             'raw' => true,
-            'value' => $value,
-            'expire' => $expire,
-            'path' => $path,
-            'domain' => $domain,
-            'secure' => $secure,
-            'httponly' => $httponly,
+            'value' => (string) $value,
+            'expire' => (integer) $expire,
+            'path' => (string) $path,
+            'domain' => (string) $domain,
+            'secure' => (boolean) $secure,
+            'httponly' => (boolean) $httponly,
         ];
     }
 

@@ -5,7 +5,9 @@
 
 #include "main/php.h"
 #include "main/php_streams.h"
+#include "ext/spl/spl_exceptions.h"
 #include "Zend/zend_API.h"
+#include "Zend/zend_exceptions.h"
 #include "Zend/zend_types.h"
 
 #include "php_request.h"
@@ -89,8 +91,16 @@ ZEND_END_ARG_INFO()
 /* {{{ proto PhpResponse::__construct() */
 PHP_METHOD(PhpResponse, __construct)
 {
+    zval *_this_zval = getThis();
+    zval arr;
+
     ZEND_PARSE_PARAMETERS_START(0, 0)
     ZEND_PARSE_PARAMETERS_END();
+
+    array_init(&arr);
+    zend_update_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("headers"), &arr);
+    array_init(&arr);
+    zend_update_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("cookies"), &arr);
 }
 /* }}} PhpResponse::getVersion */
 
@@ -214,7 +224,7 @@ PHP_METHOD(PhpResponse, getCookies)
 /* }}} PhpResponse::getCookies */
 
 /* {{{ proto void PhpResponse::setCookie(string name [, string value [, int expires [, string path [, string domain [, bool secure[, bool httponly]]]]]]) */
-void php_response_setcookie(INTERNAL_FUNCTION_PARAMETERS, zend_bool raw)
+static void php_response_setcookie(INTERNAL_FUNCTION_PARAMETERS, zend_bool raw)
 {
     zend_string *name;
     zend_string *value = NULL;
@@ -223,6 +233,11 @@ void php_response_setcookie(INTERNAL_FUNCTION_PARAMETERS, zend_bool raw)
     zend_string *domain = NULL;
     zend_bool secure = 0;
     zend_bool httponly = 0;
+
+    zval *_this_zval = getThis();
+    zval *ptr;
+    zval member;
+    zval cookie;
 
     ZEND_PARSE_PARAMETERS_START(1, 7)
         Z_PARAM_STR(name)
@@ -235,6 +250,52 @@ void php_response_setcookie(INTERNAL_FUNCTION_PARAMETERS, zend_bool raw)
         Z_PARAM_BOOL(httponly)
     ZEND_PARSE_PARAMETERS_END();
 
+    if( !Z_OBJ_HT_P(_this_zval)->get_property_ptr_ptr ) {
+        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "PhpResponse::setCookie requires get_property_ptr_ptr");
+        return;
+    }
+
+    // Read property pointer
+    ZVAL_STRING(&member, "cookies");
+    ptr = Z_OBJ_HT_P(_this_zval)->get_property_ptr_ptr(_this_zval, &member, BP_VAR_RW, NULL);
+
+    if( !ptr ) {
+        // fall-through
+    } else if( Z_TYPE_P(ptr) != IS_ARRAY ) {
+        convert_to_array(ptr);
+    }
+
+    // Make cookies array
+    array_init(&cookie);
+    add_assoc_bool_ex(&cookie, ZEND_STRL("raw"), raw);
+    if( value ) {
+        add_assoc_str_ex(&cookie, ZEND_STRL("value"), value);
+    } else {
+        add_assoc_stringl_ex(&cookie, ZEND_STRL("value"), ZEND_STRL(""));
+    }
+    add_assoc_long_ex(&cookie, ZEND_STRL("expire"), expires);
+    if( path ) {
+        add_assoc_str_ex(&cookie, ZEND_STRL("path"), path);
+    } else {
+        add_assoc_stringl_ex(&cookie, ZEND_STRL("path"), ZEND_STRL(""));
+    }
+    if( domain ) {
+        add_assoc_str_ex(&cookie, ZEND_STRL("domain"), domain);
+    } else {
+        add_assoc_stringl_ex(&cookie, ZEND_STRL("domain"), ZEND_STRL(""));
+    }
+    add_assoc_bool_ex(&cookie, ZEND_STRL("secure"), secure);
+    add_assoc_bool_ex(&cookie, ZEND_STRL("httponly"), httponly);
+
+    // Update property
+    if( ptr ) {
+        add_assoc_zval_ex(ptr, ZSTR_VAL(name), ZSTR_LEN(name), &cookie);
+    } else {
+        zend_update_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("cookies"), &cookie);
+    }
+
+    // Cleanup
+    zval_dtor(&member);
 }
 
 PHP_METHOD(PhpResponse, setCookie)
