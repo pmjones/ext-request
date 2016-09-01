@@ -24,6 +24,7 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
 
     public function test__get()
     {
+        $_SERVER['REQUEST_METHOD'] = 'PATCH';
         $request = new PhpRequest();
         $this->assertTrue(isset($request->method));
 
@@ -36,6 +37,7 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
 
     public function test__unset()
     {
+        $_SERVER['REQUEST_METHOD'] = 'PATCH';
         $request = new PhpRequest();
         unset($request->noSuchProperty); // not set - shouldn't cause error
 
@@ -49,6 +51,7 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
 
     public function test__isset()
     {
+        $_SERVER['REQUEST_METHOD'] = 'PATCH';
         $request = new PhpRequest();
         $this->assertTrue(isset($request->method));
         $this->assertFalse(isset($request->noSuchProperty));
@@ -56,6 +59,7 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
 
     public function test__set()
     {
+        $_SERVER['REQUEST_METHOD'] = 'PATCH';
         $request = new PhpRequest();
 
         $this->setExpectedException(

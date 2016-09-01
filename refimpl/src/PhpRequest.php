@@ -224,7 +224,7 @@ class PhpRequest
 
         if (isset($this->headers['Accept-Language'])) {
             $language = $this->parseAccepts($this->headers['Accept-Language']);
-            foreach ($language as &$lang) {
+            foreach ($language as $lang) {
                 $parts = explode('-', $lang['value']);
                 $lang['type'] = array_shift($parts);
                 $lang['subtype'] = array_shift($parts);
@@ -383,7 +383,7 @@ class PhpRequest
         }
     }
 
-    protected function setUploadsFromSpec(array $spec) // : object|array
+    protected function setUploadsFromSpec(array $spec) // : array
     {
         if (is_array($spec['tmp_name'])) {
             return $this->setUploadsFromNested($spec);
