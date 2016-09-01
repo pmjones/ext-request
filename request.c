@@ -37,6 +37,8 @@ struct prop_handlers {
     zend_object_unset_property_t unset_property;
 };
 
+extern PHP_MINIT_FUNCTION(response);
+
 /* {{{ Argument Info */
 ZEND_BEGIN_ARG_INFO_EX(PhpRequest_construct_args, 0, 0, 0)
 ZEND_END_ARG_INFO()
