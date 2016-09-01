@@ -6,6 +6,7 @@
 #include "main/php.h"
 #include "main/php_streams.h"
 #include "Zend/zend_API.h"
+#include "Zend/zend_types.h"
 
 #include "php_request.h"
 
@@ -96,46 +97,76 @@ PHP_METHOD(PhpResponse, __construct)
 /* {{{ proto string PhpResponse::getVersion() */
 PHP_METHOD(PhpResponse, getVersion)
 {
+    zval *_this_zval = getThis();
+    zval *retval;
+
     ZEND_PARSE_PARAMETERS_START(0, 0)
     ZEND_PARSE_PARAMETERS_END();
+
+    retval = zend_read_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("version"), 0, NULL);
+    RETVAL_ZVAL(retval, 1, 0);
 }
 /* }}} PhpResponse::getVersion */
 
 /* {{{ proto void PhpResponse::setVersion(string $version) */
 PHP_METHOD(PhpResponse, setVersion)
 {
+    zval *_this_zval = getThis();
     zend_string *version;
 
     ZEND_PARSE_PARAMETERS_START(1, 1)
         Z_PARAM_STR(version)
     ZEND_PARSE_PARAMETERS_END();
+
+    zend_update_property_str(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("version"), version);
 }
 /* }}} PhpResponse::setVersion */
 
 /* {{{ proto int PhpResponse::getStatus() */
 PHP_METHOD(PhpResponse, getStatus)
 {
+    zval *_this_zval = getThis();
+    zval *retval;
+
     ZEND_PARSE_PARAMETERS_START(0, 0)
     ZEND_PARSE_PARAMETERS_END();
+
+    retval = zend_read_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("status"), 0, NULL);
+    if( retval ) {
+        RETVAL_ZVAL(retval, 1, 0);
+    }
+    convert_to_long(return_value);
 }
 /* }}} PhpResponse::getStatus */
 
 /* {{{ proto void PhpResponse::setStatus(int $version) */
 PHP_METHOD(PhpResponse, setStatus)
 {
+    zval *_this_zval = getThis();
     zend_long status;
 
     ZEND_PARSE_PARAMETERS_START(1, 1)
         Z_PARAM_LONG(status)
     ZEND_PARSE_PARAMETERS_END();
+
+    zend_update_property_long(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("status"), status);
 }
 /* }}} PhpResponse::setStatus */
 
 /* {{{ proto array PhpResponse::getHeaders() */
 PHP_METHOD(PhpResponse, getHeaders)
 {
+    zval *_this_zval = getThis();
+    zval *retval;
+
     ZEND_PARSE_PARAMETERS_START(0, 0)
     ZEND_PARSE_PARAMETERS_END();
+
+    retval = zend_read_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("status"), 0, NULL);
+    if( retval ) {
+        RETVAL_ZVAL(retval, 1, 0);
+    }
+    convert_to_array(return_value);
 }
 /* }}} PhpResponse::getHeaders */
 
@@ -168,8 +199,17 @@ PHP_METHOD(PhpResponse, addHeader)
 /* {{{ proto array PhpResponse::getCookies() */
 PHP_METHOD(PhpResponse, getCookies)
 {
+    zval *_this_zval = getThis();
+    zval *retval;
+
     ZEND_PARSE_PARAMETERS_START(0, 0)
     ZEND_PARSE_PARAMETERS_END();
+
+    retval = zend_read_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("cookies"), 0, NULL);
+    if( retval ) {
+        RETVAL_ZVAL(retval, 1, 0);
+    }
+    convert_to_array(return_value);
 }
 /* }}} PhpResponse::getCookies */
 
@@ -213,19 +253,30 @@ PHP_METHOD(PhpResponse, setRawCookie)
 /* {{{ proto mixed PhpResponse::getContent() */
 PHP_METHOD(PhpResponse, getContent)
 {
+    zval *_this_zval = getThis();
+    zval *retval;
+
     ZEND_PARSE_PARAMETERS_START(0, 0)
     ZEND_PARSE_PARAMETERS_END();
+
+    retval = zend_read_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("content"), 0, NULL);
+    if( retval ) {
+        RETVAL_ZVAL(retval, 1, 0);
+    }
 }
 /* }}} PhpResponse::getContent */
 
 /* {{{ proto void PhpResponse::setContent(mixed $content) */
 PHP_METHOD(PhpResponse, setContent)
 {
+    zval *_this_zval = getThis();
     zval *content;
 
     ZEND_PARSE_PARAMETERS_START(1, 1)
         Z_PARAM_ZVAL(content)
     ZEND_PARSE_PARAMETERS_END();
+
+    zend_update_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("content"), content);
 }
 /* }}} PhpResponse::setContent */
 
@@ -344,6 +395,12 @@ PHP_MINIT_FUNCTION(response)
 
     INIT_CLASS_ENTRY(ce, "PhpResponse", PhpResponse_methods);
     PhpResponse_ce_ptr = zend_register_internal_class(&ce);
+
+    zend_declare_property_stringl(PhpResponse_ce_ptr, ZEND_STRL("version"), ZEND_STRL("1.1"), ZEND_ACC_PROTECTED);
+    zend_declare_property_long(PhpResponse_ce_ptr, ZEND_STRL("status"), 200, ZEND_ACC_PROTECTED);
+    zend_declare_property_null(PhpResponse_ce_ptr, ZEND_STRL("headers"), ZEND_ACC_PROTECTED);
+    zend_declare_property_null(PhpResponse_ce_ptr, ZEND_STRL("cookies"), ZEND_ACC_PROTECTED);
+    zend_declare_property_null(PhpResponse_ce_ptr, ZEND_STRL("content"), ZEND_ACC_PROTECTED);
 
     return SUCCESS;
 }
