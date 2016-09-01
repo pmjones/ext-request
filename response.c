@@ -326,6 +326,8 @@ static zend_function_entry PhpResponse_methods[] = {
     PHP_ME(PhpResponse, setCookie, AI(setCookie), ZEND_ACC_PUBLIC)
     PHP_ME(PhpResponse, setRawCookie, AI(setCookie), ZEND_ACC_PUBLIC)
     PHP_ME(PhpResponse, getContent, AI(getContent), ZEND_ACC_PUBLIC)
+    PHP_ME(PhpResponse, setContent, AI(setContent), ZEND_ACC_PUBLIC)
+    PHP_ME(PhpResponse, setContentJson, AI(setContentJson), ZEND_ACC_PUBLIC)
     PHP_ME(PhpResponse, setContentResource, AI(setContentResource), ZEND_ACC_PUBLIC)
     PHP_ME(PhpResponse, setDownload, AI(setDownload), ZEND_ACC_PUBLIC)
     PHP_ME(PhpResponse, setDownloadInline, AI(setDownload), ZEND_ACC_PUBLIC)

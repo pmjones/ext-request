@@ -625,6 +625,8 @@ static PHP_MINIT_FUNCTION(request)
     zend_declare_property_bool(PhpRequest_ce_ptr, ZEND_STRL("xhr"), 0, ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("xhr"));
 
+    PHP_MINIT(response)(INIT_FUNC_ARGS_PASSTHRU);
+
     return SUCCESS;
 }
 /* }}} */
