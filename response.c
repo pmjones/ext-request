@@ -266,7 +266,7 @@ static void php_response_setcookie(INTERNAL_FUNCTION_PARAMETERS, zend_bool raw)
     }
 
     // Make cookies array
-    array_init(&cookie);
+    array_init_size(&cookie, 7);
     add_assoc_bool_ex(&cookie, ZEND_STRL("raw"), raw);
     if( value ) {
         add_assoc_str_ex(&cookie, ZEND_STRL("value"), value);

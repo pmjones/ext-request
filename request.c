@@ -260,7 +260,7 @@ static inline void set_url(zval *object, zval *server)
     }
 
     // Form array
-    array_init(&arr);
+    array_init_size(&arr, 8);
     if( url->scheme ) {
         add_assoc_string(&arr, "scheme", url->scheme);
     } else {
