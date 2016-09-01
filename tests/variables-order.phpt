@@ -1,18 +1,20 @@
 --TEST--
-PhpRequest::$post
+PhpRequest - variables_order
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
+--INI--
+variables_order=G
 --POST--
 foo=bar&baz=bat
 --FILE--
 <?php
+// Currently if a variable is missing from variables_order, it's not available
 $_SERVER['HTTP_HOST'] = 'example.com';
+var_dump($_POST);
 $request = new PhpRequest();
 var_dump($request->post);
 --EXPECT--
-array(2) {
-  ["foo"]=>
-  string(3) "bar"
-  ["baz"]=>
-  string(3) "bat"
+array(0) {
+}
+array(0) {
 }

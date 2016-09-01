@@ -228,6 +228,9 @@ static inline void register_default_prop_handlers(const char *name, size_t name_
 /* {{{ proto PhpRequest::__construct() */
 static inline void copy_global(zval* obj, const char* key, size_t key_len, const char* sg, size_t sg_len)
 {
+    if( PG(auto_globals_jit) ) {
+        zend_is_auto_global_str(sg, sg_len);
+    }
     zval *tmp = zend_hash_str_find(&EG(symbol_table), sg, sg_len);
     if( tmp ) {
         zend_update_property(Z_OBJCE_P(obj), obj, key, key_len, tmp);

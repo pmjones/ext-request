@@ -6,6 +6,7 @@ PhpRequest::$cookie
 foo=bar; baz=bat
 --FILE--
 <?php
+$_SERVER['HTTP_HOST'] = 'example.com';
 $request = new PhpRequest();
 var_dump($request->cookie['foo']);
 var_dump($request->cookie['baz']);

@@ -26,6 +26,7 @@ Content-Type: text/plain-file3;
 -----------------------------20896060251896012921717172737--
 --FILE--
 <?php
+$_SERVER['HTTP_HOST'] = 'example.com';
 $request = new PhpRequest();
 var_dump($request->uploads);
 --EXPECTF--
