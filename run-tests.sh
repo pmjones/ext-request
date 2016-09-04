@@ -2,4 +2,4 @@
 
 set -ex
 
-php -d extension=modules/request.so `which phpunit` refimpl
+php -d extension=modules/request.so `which phpunit` refimpl $@

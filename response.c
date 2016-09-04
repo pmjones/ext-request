@@ -1,16 +1,20 @@
 
 #ifdef HAVE_CONFIG_H
+
 #include "config.h"
 #endif
 
 #include "main/php.h"
 #include "main/php_streams.h"
 #include "ext/spl/spl_exceptions.h"
+#include "ext/standard/php_string.h"
 #include "Zend/zend_API.h"
 #include "Zend/zend_exceptions.h"
 #include "Zend/zend_types.h"
+#include "Zend/zend_smart_str.h"
 
 #include "php_request.h"
+#include "request_utils.h"
 
 zend_class_entry * PhpResponse_ce_ptr;
 
@@ -87,6 +91,80 @@ ZEND_END_ARG_INFO()
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(AI(send), 0, 0, IS_NULL, NULL, 0)
 ZEND_END_ARG_INFO()
 /* }}} Argument Info */
+
+/* {{{ Array to CSV */
+static inline void _array_to_semicsv(smart_str *str, zval *arr)
+{
+    zend_string *key;
+    zend_ulong index;
+    zval *val;
+    zend_bool first = 1;
+    zend_string *tmp;
+
+    ZEND_HASH_FOREACH_KEY_VAL(Z_ARRVAL_P(arr), index, key, val) {
+        if( first ) {
+            first = 0;
+        } else {
+            smart_str_appendc(str, ';');
+        }
+        tmp = zval_get_string(val);
+        if( key ) {
+            smart_str_append(str, key);
+            smart_str_appendc(str, '=');
+        }
+        smart_str_append(str, tmp);
+        zend_string_release(tmp);
+    } ZEND_HASH_FOREACH_END();
+}
+
+static inline void _array_to_csv(smart_str *str, zval *arr)
+{
+    zend_string *key;
+    zend_ulong index;
+    zval *val;
+    zend_bool first = 1;
+    zend_string *tmp;
+
+    ZEND_HASH_FOREACH_KEY_VAL(Z_ARRVAL_P(arr), index, key, val) {
+        if( first ) {
+            first = 0;
+        } else {
+            smart_str_appendl_ex(str, ZEND_STRL(", "), 0);
+        }
+        if( !key ) {
+            tmp = zval_get_string(val);
+            smart_str_append(str, tmp);
+            zend_string_release(tmp);
+        } else if( Z_TYPE_P(val) == IS_ARRAY ) {
+            smart_str_append(str, key);
+            smart_str_appendc(str, ';');
+            _array_to_semicsv(str, val);
+        } else {
+            tmp = zval_get_string(val);
+            smart_str_append(str, key);
+            smart_str_appendc(str, '=');
+            smart_str_append(str, tmp);
+            zend_string_release(tmp);
+        }
+    } ZEND_HASH_FOREACH_END();
+}
+
+static inline zend_string *array_to_semicsv(zval *arr)
+{
+    smart_str str = {0};
+    _array_to_semicsv(&str, arr);
+    smart_str_0(&str);
+    return str.s;
+}
+
+static inline zend_string *array_to_csv(zval *arr)
+{
+    smart_str str = {0};
+    _array_to_csv(&str, arr);
+    smart_str_0(&str);
+    return str.s;
+}
+/* }}} */
 
 /* {{{ proto PhpResponse::__construct() */
 PHP_METHOD(PhpResponse, __construct)
@@ -172,7 +250,7 @@ PHP_METHOD(PhpResponse, getHeaders)
     ZEND_PARSE_PARAMETERS_START(0, 0)
     ZEND_PARSE_PARAMETERS_END();
 
-    retval = zend_read_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("status"), 0, NULL);
+    retval = zend_read_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("headers"), 0, NULL);
     if( retval ) {
         RETVAL_ZVAL(retval, 1, 0);
     }
@@ -186,10 +264,62 @@ PHP_METHOD(PhpResponse, setHeader)
     zend_string *label;
     zval *value;
 
+    zval *_this_zval = getThis();
+    zval member;
+    zval *prop_ptr;
+    zend_string *tmp;
+    zend_string *value_str;
+    zval arr;
+
     ZEND_PARSE_PARAMETERS_START(2, 2)
         Z_PARAM_STR(label)
         Z_PARAM_ZVAL(value)
     ZEND_PARSE_PARAMETERS_END();
+
+    // Read property pointer
+    if( !Z_OBJ_HT_P(_this_zval)->get_property_ptr_ptr ) {
+        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "PhpResponse::setHeader requires get_property_ptr_ptr");
+        return;
+    }
+    ZVAL_STRING(&member, "headers");
+    prop_ptr = Z_OBJ_HT_P(_this_zval)->get_property_ptr_ptr(_this_zval, &member, BP_VAR_RW, NULL);
+    if( !prop_ptr || Z_TYPE_P(prop_ptr) != IS_ARRAY ) {
+        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "PhpResponse::$headers must be an array");
+        return;
+    }
+
+    // Dup and mutate string
+    tmp = zend_string_dup(label, 0);
+    php_request_normalize_header_name(ZSTR_VAL(tmp), ZSTR_LEN(tmp));
+    zend_string_forget_hash_val(tmp);
+    label = tmp;
+
+    tmp = php_trim(label, ZEND_STRL(" \t\r\n\v"), 3);
+    zend_string_release(label);
+    label = tmp;
+
+    if( ZSTR_LEN(label) ) {
+        // Convert to string and trim
+        if( Z_TYPE_P(value) == IS_ARRAY ) {
+            tmp = array_to_csv(value);
+        } else {
+            tmp = zval_get_string(value);
+        }
+        value_str = php_trim(tmp, ZEND_STRL(" \t\r\n\v"), 3);
+        zend_string_release(tmp);
+
+        // Add to headers array
+        if( ZSTR_LEN(value_str) ) {
+            array_init_size(&arr, 1);
+            add_next_index_str(&arr, value_str);
+            add_assoc_zval_ex(prop_ptr, ZSTR_VAL(label), ZSTR_LEN(label), &arr);
+        } else {
+            // @todo unset
+            zend_string_release(value_str);
+        }
+    }
+
+    zend_string_release(label);
 }
 /* }}} PhpResponse::setHeader */
 
@@ -199,10 +329,67 @@ PHP_METHOD(PhpResponse, addHeader)
     zend_string *label;
     zval *value;
 
+    zval *_this_zval = getThis();
+    zval member;
+    zval *prop_ptr;
+    zend_string *tmp;
+    zend_string *value_str;
+    zval arr;
+    zval *header_arr;
+
     ZEND_PARSE_PARAMETERS_START(2, 2)
         Z_PARAM_STR(label)
         Z_PARAM_ZVAL(value)
     ZEND_PARSE_PARAMETERS_END();
+
+    // Read property pointer
+    if( !Z_OBJ_HT_P(_this_zval)->get_property_ptr_ptr ) {
+        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "PhpResponse::setHeader requires get_property_ptr_ptr");
+        return;
+    }
+    ZVAL_STRING(&member, "headers");
+    prop_ptr = Z_OBJ_HT_P(_this_zval)->get_property_ptr_ptr(_this_zval, &member, BP_VAR_RW, NULL);
+    if( !prop_ptr || Z_TYPE_P(prop_ptr) != IS_ARRAY ) {
+        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "PhpResponse::$headers must be an array");
+        return;
+    }
+
+    // Dup and mutate string
+    tmp = zend_string_dup(label, 0);
+    php_request_normalize_header_name(ZSTR_VAL(tmp), ZSTR_LEN(tmp));
+    zend_string_forget_hash_val(tmp);
+    label = tmp;
+
+    tmp = php_trim(label, ZEND_STRL(" \t\r\n\v"), 3);
+    zend_string_release(label);
+    label = tmp;
+
+    if( ZSTR_LEN(label) ) {
+        // Convert to string and trim
+        if( Z_TYPE_P(value) == IS_ARRAY ) {
+            tmp = array_to_csv(value);
+        } else {
+            tmp = zval_get_string(value);
+        }
+        value_str = php_trim(tmp, ZEND_STRL(" \t\r\n\v"), 3);
+        zend_string_release(tmp);
+
+        // Add to headers array
+        if( ZSTR_LEN(value_str) ) {
+            header_arr = zend_hash_find(Z_ARRVAL_P(prop_ptr), label);
+            if( header_arr ) {
+                add_next_index_str(header_arr, value_str);
+            } else {
+                array_init_size(&arr, 1);
+                add_next_index_str(&arr, value_str);
+                zend_hash_update(Z_ARRVAL_P(prop_ptr), label, &arr);
+            }
+        } else {
+            zend_string_release(value_str);
+        }
+    }
+
+    zend_string_release(label);
 }
 /* }}} PhpResponse::addHeader */
 

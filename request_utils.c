@@ -183,7 +183,7 @@ static const size_t http_len = sizeof(http_str) - 1;
 void php_request_normalize_header_name(char *key, size_t key_length)
 {
     register char *r = key;
-    register char *r_end = r_end = r + key_length - 1;
+    register char *r_end = r + key_length - 1;
 
     *r = toupper((unsigned char) *r);
     r++;

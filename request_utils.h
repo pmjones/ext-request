@@ -7,6 +7,7 @@
 PHPAPI zend_bool php_request_is_secure(zval *server);
 PHPAPI zend_bool php_request_detect_method(zval *return_value, zval *server);
 PHPAPI zend_string *php_request_detect_url(zval *server);
+PHPAPI void php_request_normalize_header_name(char *key, size_t key_length);
 PHPAPI void php_request_normalize_headers(zval *return_value, zval *server);
 PHPAPI void php_request_normalize_files(zval *return_value, zval *files);
 
