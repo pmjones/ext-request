@@ -1,6 +1,5 @@
 
 #ifdef HAVE_CONFIG_H
-
 #include "config.h"
 #endif
 
@@ -166,6 +165,73 @@ static inline zend_string *array_to_csv(zval *arr)
 }
 /* }}} */
 
+/* {{{ php_response_header */
+static void php_response_header(zval *object, zend_string *label, zval *value, zend_bool replace)
+{
+    zval member;
+    zval *prop_ptr;
+    zval arr;
+    zend_string *normal_label;
+    zend_string *value_str;
+    zend_string *tmp;
+    zval *header_arr = NULL;
+
+    // Read property pointer
+    if( !Z_OBJ_HT_P(object)->get_property_ptr_ptr ) {
+        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "PhpResponse::setHeader requires get_property_ptr_ptr");
+        return;
+    }
+
+    ZVAL_STRING(&member, "headers");
+    prop_ptr = Z_OBJ_HT_P(object)->get_property_ptr_ptr(object, &member, BP_VAR_RW, NULL);
+    if( !prop_ptr || Z_TYPE_P(prop_ptr) != IS_ARRAY ) {
+        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "PhpResponse::$headers must be an array");
+        return;
+    }
+
+    // Normalize label
+    normal_label = php_trim(label, ZEND_STRL(" \t\r\n\v"), 3);
+    php_request_normalize_header_name(ZSTR_VAL(normal_label), ZSTR_LEN(normal_label));
+    zend_string_forget_hash_val(normal_label);
+    zend_string_hash_val(normal_label);
+
+    if( !ZSTR_LEN(label) ) {
+        zend_string_release(normal_label);
+        return;
+    }
+
+    // Convert value to string
+    if( Z_TYPE_P(value) == IS_ARRAY ) {
+        tmp = array_to_csv(value);
+    } else {
+        tmp = zval_get_string(value);
+    }
+    value_str = php_trim(tmp, ZEND_STRL(" \t\r\n\v"), 3);
+    zend_string_release(tmp);
+
+    if( !ZSTR_LEN(value_str) ) {
+        zend_string_release(normal_label);
+        zend_string_release(value_str);
+        return;
+    }
+
+    // Set value
+    if( !replace ) {
+        header_arr = zend_hash_find(Z_ARRVAL_P(prop_ptr), normal_label);
+    }
+
+    if( header_arr ) {
+        add_next_index_str(header_arr, value_str);
+    } else {
+        array_init_size(&arr, 1);
+        add_next_index_str(&arr, value_str);
+        zend_hash_update(Z_ARRVAL_P(prop_ptr), normal_label, &arr);
+    }
+
+    zend_string_release(normal_label);
+}
+/* }}} */
+
 /* {{{ proto PhpResponse::__construct() */
 PHP_METHOD(PhpResponse, __construct)
 {
@@ -264,62 +330,12 @@ PHP_METHOD(PhpResponse, setHeader)
     zend_string *label;
     zval *value;
 
-    zval *_this_zval = getThis();
-    zval member;
-    zval *prop_ptr;
-    zend_string *tmp;
-    zend_string *value_str;
-    zval arr;
-
     ZEND_PARSE_PARAMETERS_START(2, 2)
         Z_PARAM_STR(label)
         Z_PARAM_ZVAL(value)
     ZEND_PARSE_PARAMETERS_END();
 
-    // Read property pointer
-    if( !Z_OBJ_HT_P(_this_zval)->get_property_ptr_ptr ) {
-        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "PhpResponse::setHeader requires get_property_ptr_ptr");
-        return;
-    }
-    ZVAL_STRING(&member, "headers");
-    prop_ptr = Z_OBJ_HT_P(_this_zval)->get_property_ptr_ptr(_this_zval, &member, BP_VAR_RW, NULL);
-    if( !prop_ptr || Z_TYPE_P(prop_ptr) != IS_ARRAY ) {
-        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "PhpResponse::$headers must be an array");
-        return;
-    }
-
-    // Dup and mutate string
-    tmp = zend_string_dup(label, 0);
-    php_request_normalize_header_name(ZSTR_VAL(tmp), ZSTR_LEN(tmp));
-    zend_string_forget_hash_val(tmp);
-    label = tmp;
-
-    tmp = php_trim(label, ZEND_STRL(" \t\r\n\v"), 3);
-    zend_string_release(label);
-    label = tmp;
-
-    if( ZSTR_LEN(label) ) {
-        // Convert to string and trim
-        if( Z_TYPE_P(value) == IS_ARRAY ) {
-            tmp = array_to_csv(value);
-        } else {
-            tmp = zval_get_string(value);
-        }
-        value_str = php_trim(tmp, ZEND_STRL(" \t\r\n\v"), 3);
-        zend_string_release(tmp);
-
-        // Add to headers array
-        if( ZSTR_LEN(value_str) ) {
-            array_init_size(&arr, 1);
-            add_next_index_str(&arr, value_str);
-            add_assoc_zval_ex(prop_ptr, ZSTR_VAL(label), ZSTR_LEN(label), &arr);
-        } else {
-            // @todo unset
-            zend_string_release(value_str);
-        }
-    }
-
-    zend_string_release(label);
+    php_response_header(getThis(), label, value, 1);
 }
 /* }}} PhpResponse::setHeader */
 
@@ -329,67 +345,12 @@ PHP_METHOD(PhpResponse, addHeader)
     zend_string *label;
     zval *value;
 
-    zval *_this_zval = getThis();
-    zval member;
-    zval *prop_ptr;
-    zend_string *tmp;
-    zend_string *value_str;
-    zval arr;
-    zval *header_arr;
-
     ZEND_PARSE_PARAMETERS_START(2, 2)
         Z_PARAM_STR(label)
         Z_PARAM_ZVAL(value)
     ZEND_PARSE_PARAMETERS_END();
 
-    // Read property pointer
-    if( !Z_OBJ_HT_P(_this_zval)->get_property_ptr_ptr ) {
-        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "PhpResponse::setHeader requires get_property_ptr_ptr");
-        return;
-    }
-    ZVAL_STRING(&member, "headers");
-    prop_ptr = Z_OBJ_HT_P(_this_zval)->get_property_ptr_ptr(_this_zval, &member, BP_VAR_RW, NULL);
-    if( !prop_ptr || Z_TYPE_P(prop_ptr) != IS_ARRAY ) {
-        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "PhpResponse::$headers must be an array");
-        return;
-    }
-
-    // Dup and mutate string
-    tmp = zend_string_dup(label, 0);
-    php_request_normalize_header_name(ZSTR_VAL(tmp), ZSTR_LEN(tmp));
-    zend_string_forget_hash_val(tmp);
-    label = tmp;
-
-    tmp = php_trim(label, ZEND_STRL(" \t\r\n\v"), 3);
-    zend_string_release(label);
-    label = tmp;
-
-    if( ZSTR_LEN(label) ) {
-        // Convert to string and trim
-        if( Z_TYPE_P(value) == IS_ARRAY ) {
-            tmp = array_to_csv(value);
-        } else {
-            tmp = zval_get_string(value);
-        }
-        value_str = php_trim(tmp, ZEND_STRL(" \t\r\n\v"), 3);
-        zend_string_release(tmp);
-
-        // Add to headers array
-        if( ZSTR_LEN(value_str) ) {
-            header_arr = zend_hash_find(Z_ARRVAL_P(prop_ptr), label);
-            if( header_arr ) {
-                add_next_index_str(header_arr, value_str);
-            } else {
-                array_init_size(&arr, 1);
-                add_next_index_str(&arr, value_str);
-                zend_hash_update(Z_ARRVAL_P(prop_ptr), label, &arr);
-            }
-        } else {
-            zend_string_release(value_str);
-        }
-    }
-
-    zend_string_release(label);
+    php_response_header(getThis(), label, value, 0);
 }
 /* }}} PhpResponse::addHeader */
 
@@ -529,11 +490,39 @@ PHP_METHOD(PhpResponse, setContent)
 /* }}} PhpResponse::setContent */
 
 /* {{{ proto void PhpResponse::setContentJson(mixed $value [, int $options [, int $depth = 512]]) */
+static inline void throw_json_exception()
+{
+    zval func_name;
+    zval json_errmsg = {0};
+    zval json_errno = {0};
+
+    ZVAL_STRING(&func_name, "json_last_error_msg");
+    call_user_function(EG(function_table), NULL, &func_name, &json_errmsg, 0, NULL);
+
+    ZVAL_STRING(&func_name, "json_last_error");
+    call_user_function(EG(function_table), NULL, &func_name, &json_errno, 0, NULL);
+
+    convert_to_string(&json_errmsg);
+    zend_throw_exception_ex(spl_ce_RuntimeException, zval_get_long(&json_errno),
+                            "JSON encoding failed: %.*s", Z_STRLEN(json_errmsg), Z_STRVAL(json_errmsg));
+
+    zval_ptr_dtor(&func_name);
+    zval_ptr_dtor(&json_errmsg);
+    zval_ptr_dtor(&json_errno);
+}
+
 PHP_METHOD(PhpResponse, setContentJson)
 {
     zval *value;
     zend_long options = 0;
     zend_long depth = 512;
+
+    zval *_this_zval = getThis();
+    zval func_name;
+    zval json_value = {0};
+    zval params[3];
+    zend_bool failed = 0;
+
 
     ZEND_PARSE_PARAMETERS_START(1, 3)
         Z_PARAM_ZVAL(value)
@@ -541,6 +530,42 @@ PHP_METHOD(PhpResponse, setContentJson)
         Z_PARAM_LONG(options)
         Z_PARAM_LONG(depth)
     ZEND_PARSE_PARAMETERS_END();
+
+    // Call json_encode
+    ZVAL_STRING(&func_name, "json_encode");
+    ZVAL_ZVAL(&params[0], value, 1, 0);
+    ZVAL_LONG(&params[1], options);
+    ZVAL_LONG(&params[2], depth);
+
+    call_user_function(EG(function_table), NULL, &func_name, &json_value, 3, params);
+
+    if( Z_TYPE(json_value) == IS_FALSE ) {
+        failed = 1;
+    } else {
+        zend_update_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("content"), &json_value);
+    }
+
+    zval_ptr_dtor(&json_value);
+    zval_ptr_dtor(&params[0]);
+    zval_ptr_dtor(&params[1]);
+    zval_ptr_dtor(&params[2]);
+    zval_ptr_dtor(&func_name);
+
+    if( failed ) {
+        throw_json_exception();
+        return;
+    }
+
+    // Set header
+    zend_string *header_key = zend_string_init(ZEND_STRL("Content-Type"), 0);
+    zval header_val;
+
+    ZVAL_STRING(&header_val, "application/json");
+
+    php_response_header(_this_zval, header_key, &header_val, 1);
+
+    zval_ptr_dtor(&header_val);
+    zend_string_release(header_key);
 }
 /* }}} PhpResponse::setContentJson */
 

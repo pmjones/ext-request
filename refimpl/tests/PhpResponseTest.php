@@ -136,6 +136,7 @@ class PhpResponseTest extends PHPUnit_Framework_TestCase
         $value = ['foo' => 'bar'];
         $this->response->setContentJson($value);
         $this->assertSame('{"foo":"bar"}', $this->response->getContent());
+        $this->assertSame(array('application/json'), $this->response->getHeaders()['Content-Type']);
     }
 
     public function testSetContentJson_failed()
