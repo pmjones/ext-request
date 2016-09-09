@@ -230,6 +230,22 @@ static void php_response_header(zval *object, zend_string *label, zval *value, z
 
     zend_string_release(normal_label);
 }
+static inline void php_response_header_stringl(
+    zval *object,
+    const char *label, size_t label_len,
+    const char *value, size_t value_len,
+    zend_bool replace
+) {
+    zend_string *header_key = zend_string_init(label, label_len, 0);
+    zval header_val = {0};
+
+    ZVAL_STRINGL(&header_val, value, value_len);
+
+    php_response_header(object, header_key, &header_val, 1);
+
+    zval_ptr_dtor(&header_val);
+    zend_string_release(header_key);
+}
 /* }}} */
 
 /* {{{ proto PhpResponse::__construct() */
@@ -557,15 +573,7 @@ PHP_METHOD(PhpResponse, setContentJson)
     }
 
     // Set header
-    zend_string *header_key = zend_string_init(ZEND_STRL("Content-Type"), 0);
-    zval header_val;
-
-    ZVAL_STRING(&header_val, "application/json");
-
-    php_response_header(_this_zval, header_key, &header_val, 1);
-
-    zval_ptr_dtor(&header_val);
-    zend_string_release(header_key);
+    php_response_header_stringl(_this_zval, ZEND_STRL("Content-Type"), ZEND_STRL("application/json"), 1);
 }
 /* }}} PhpResponse::setContentJson */
 
@@ -576,12 +584,36 @@ PHP_METHOD(PhpResponse, setContentResource)
     zend_string *disposition = NULL;
     zval *params = NULL;
 
+    zval *_this_zval = getThis();
+
     ZEND_PARSE_PARAMETERS_START(1, 3)
         Z_PARAM_RESOURCE(zstream)
         Z_PARAM_OPTIONAL
         Z_PARAM_STR(disposition)
         Z_PARAM_ARRAY(params)
     ZEND_PARSE_PARAMETERS_END();
+
+    // Set headers
+    php_response_header_stringl(_this_zval, ZEND_STRL("Content-Type"), ZEND_STRL("application/octet-stream"), 1);
+    php_response_header_stringl(_this_zval, ZEND_STRL("Content-Transfer-Encoding"), ZEND_STRL("binary"), 1);
+
+    // Set disposition
+    if( disposition ) {
+        if( Z_TYPE_P(params) == IS_ARRAY && zend_hash_num_elements(Z_ARRVAL_P(params)) ) {
+            smart_str buf = {0};
+            smart_str_append(&buf, disposition);
+            smart_str_appendc(&buf, ';');
+            _array_to_semicsv(&buf, params);
+            smart_str_0(&buf);
+            php_response_header_stringl(_this_zval, ZEND_STRL("Content-Disposition"), ZSTR_VAL(buf.s), ZSTR_LEN(buf.s), 1);
+            smart_str_free(&buf);
+        } else {
+            php_response_header_stringl(_this_zval, ZEND_STRL("Content-Disposition"), ZSTR_VAL(disposition), ZSTR_LEN(disposition), 1);
+        }
+    }
+
+    // Update content
+    zend_update_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("content"), zstream);
 }
 /* }}} PhpResponse::setContentResource */
 

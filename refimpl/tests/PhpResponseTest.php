@@ -170,8 +170,8 @@ class PhpResponseTest extends PHPUnit_Framework_TestCase
     public function testSetContentResource_notResource()
     {
         $this->setExpectedException(
-            'RuntimeException',
-            'Content must be a resource.'
+            'TypeError',
+            'Argument 1 passed to PhpResponse::setContentResource() must be of the type resource, string given'
         );
         $this->response->setContentResource('not-a-resource', 'disposition');
     }

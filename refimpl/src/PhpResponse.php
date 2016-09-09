@@ -166,7 +166,7 @@ class PhpResponse
     public function setContentResource($fh, $disposition, array $params = []) // : void
     {
         if (! is_resource($fh)) {
-            throw new RuntimeException("Content must be a resource.");
+            throw new TypeError("Argument 1 passed to PhpResponse::setContentResource() must be of the type resource, string given");
         }
         $this->setHeader('Content-Type', 'application/octet-stream');
         $this->setHeader('Content-Transfer-Encoding',  'binary');
