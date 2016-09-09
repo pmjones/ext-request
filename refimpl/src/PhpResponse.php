@@ -248,6 +248,7 @@ class PhpResponse
         // if headers_sent() then fail?
         $this->sendStatus();
         $this->sendHeaders();
+        $this->sendCookies();
         $this->sendContent();
     }
 
@@ -264,7 +265,10 @@ class PhpResponse
                 header("{$label}: {$value}", false);
             }
         }
+    }
 
+    protected function sendCookies() // : void
+    {
         foreach ($this->cookies as $name => $args) {
             if ($args['raw']) {
                 setrawcookie(

@@ -1,13 +1,18 @@
 
 #ifdef HAVE_CONFIG_H
+
+#include <main/SAPI.h>
 #include "config.h"
 #endif
 
 #include "main/php.h"
+#include "main/php_output.h"
 #include "main/php_streams.h"
 #include "main/SAPI.h"
+#include "main/snprintf.h"
 #include "ext/spl/spl_exceptions.h"
 #include "ext/date/php_date.h"
+#include "ext/standard/head.h"
 #include "ext/standard/php_string.h"
 #include "ext/standard/url.h"
 #include "Zend/zend_API.h"
@@ -740,10 +745,231 @@ PHP_METHOD(PhpResponse, date)
 /* {{{ proto void PhpResponse::send() */
 PHP_METHOD(PhpResponse, send)
 {
+    zval *_this_zval = getThis();
+    zval rv = {0};
+
     ZEND_PARSE_PARAMETERS_START(0, 0)
     ZEND_PARSE_PARAMETERS_END();
+
+    zend_call_method_with_0_params(_this_zval, NULL, NULL, "sendStatus", &rv);
+    zend_call_method_with_0_params(_this_zval, NULL, NULL, "sendHeaders", &rv);
+    zend_call_method_with_0_params(_this_zval, NULL, NULL, "sendCookies", &rv);
+    zend_call_method_with_0_params(_this_zval, NULL, NULL, "sendContent", &rv);
+
+    zval_ptr_dtor(&rv);
 }
 /* }}} PhpResponse::send */
+
+/* {{{ proto void PhpResponse::sendStatus() */
+PHP_METHOD(PhpResponse, sendStatus)
+{
+    zval *_this_zval = getThis();
+    sapi_header_line ctr = {0};
+    zval *tmp;
+    smart_str buf = {0};
+
+    ZEND_PARSE_PARAMETERS_START(0, 0)
+    ZEND_PARSE_PARAMETERS_END();
+
+    // Make status
+    tmp = zend_read_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("status"), 0, NULL);
+    if( tmp ) {
+        ctr.response_code = zval_get_long(tmp);
+    } else {
+        ctr.response_code = 200;
+    }
+
+    // Make header
+    smart_str_appendl_ex(&buf, ZEND_STRL("HTTP/"), 0);
+
+    tmp = zend_read_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("status"), 0, NULL);
+    if( tmp ) {
+        convert_to_string(tmp);
+        smart_str_append_ex(&buf, Z_STR_P(tmp), 0);
+    } else {
+        smart_str_appendl_ex(&buf, ZEND_STRL("1.1"), 0);
+    }
+
+    smart_str_appendc_ex(&buf, ' ', 0);
+    smart_str_append_long_ex(&buf, ctr.response_code, 0);
+    smart_str_0(&buf);
+
+    ctr.line = ZSTR_VAL(buf.s);
+    ctr.line_len = ZSTR_LEN(buf.s);
+
+    sapi_header_op(SAPI_HEADER_REPLACE, &ctr);
+
+    smart_str_free(&buf);
+}
+/* }}} PhpResponse::sendStatus */
+
+/* {{{ proto void PhpResponse::sendHeaders() */
+static inline void send_header(zend_string *header, zval *arr)
+{
+    zval *val;
+    sapi_header_line ctr = {0};
+    zend_string *tmp_str;
+
+    ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(arr), val) {
+        smart_str buf = {0};
+
+        tmp_str = zval_get_string(val);
+        smart_str_append(&buf, header);
+        smart_str_appendl_ex(&buf, ZEND_STRL(": "), 0);
+        smart_str_append(&buf, tmp_str);
+        smart_str_0(&buf);
+        zend_string_release(tmp_str);
+
+        ctr.response_code = 0;
+        ctr.line = ZSTR_VAL(buf.s);
+        ctr.line_len = ZSTR_LEN(buf.s);
+        sapi_header_op(SAPI_HEADER_ADD, &ctr);
+
+        smart_str_free(&buf);
+    } ZEND_HASH_FOREACH_END();
+}
+PHP_METHOD(PhpResponse, sendHeaders)
+{
+    zval *_this_zval = getThis();
+    zval *tmp;
+    zend_string *key;
+    zend_ulong index;
+    zval *val;
+
+    ZEND_PARSE_PARAMETERS_START(0, 0)
+    ZEND_PARSE_PARAMETERS_END();
+
+    tmp = zend_read_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("headers"), 0, NULL);
+
+    if( !tmp || Z_TYPE_P(tmp) != IS_ARRAY ) {
+        return;
+    }
+
+    ZEND_HASH_FOREACH_KEY_VAL(Z_ARRVAL_P(tmp), index, key, val) {
+        if( key && Z_TYPE_P(val) == IS_ARRAY ) {
+            send_header(key, val);
+        }
+    } ZEND_HASH_FOREACH_END();
+}
+/* }}} PhpResponse::sendHeaders */
+
+/* {{{ proto void PhpResponse::sendCookies() */
+static inline void send_cookie(zend_string *name, zval *arr)
+{
+    zval *tmp;
+    zend_string *value;
+    zend_long expires = 0;
+    zend_string *path = NULL;
+    zend_string *domain = NULL;
+    zend_bool secure = 0;
+    zend_bool httponly = 0;
+    zend_bool raw = 0;
+
+    //fprintf(stdout, "ARGGGGG %d\n", __LINE__);
+
+    if( (tmp = zend_hash_str_find(Z_ARRVAL_P(arr), ZEND_STRL("value"))) ) {
+        value = zval_get_string(tmp);
+    } else {
+        return;
+    }
+
+    if( (tmp = zend_hash_str_find(Z_ARRVAL_P(arr), ZEND_STRL("expire"))) ) {
+        expires = zval_get_long(tmp);
+    }
+
+    if( (tmp = zend_hash_str_find(Z_ARRVAL_P(arr), ZEND_STRL("path"))) ) {
+        path = zval_get_string(tmp);
+    }
+
+    if( (tmp = zend_hash_str_find(Z_ARRVAL_P(arr), ZEND_STRL("domain"))) ) {
+        domain = zval_get_string(tmp);
+    }
+
+    if( (tmp = zend_hash_str_find(Z_ARRVAL_P(arr), ZEND_STRL("secure"))) ) {
+        secure = zval_is_true(tmp);
+    }
+
+    if( (tmp = zend_hash_str_find(Z_ARRVAL_P(arr), ZEND_STRL("httponly"))) ) {
+        httponly = zval_is_true(tmp);
+    }
+
+    if( (tmp = zend_hash_str_find(Z_ARRVAL_P(arr), ZEND_STRL("raw"))) ) {
+        raw = zval_is_true(tmp);
+    }
+
+    php_setcookie(name, value, expires, path, domain, secure, !raw, httponly);
+}
+PHP_METHOD(PhpResponse, sendCookies)
+{
+    zval *_this_zval = getThis();
+    zval *tmp;
+    zend_string *key;
+    zend_ulong index;
+    zval *val;
+
+    ZEND_PARSE_PARAMETERS_START(0, 0)
+    ZEND_PARSE_PARAMETERS_END();
+
+    tmp = zend_read_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("cookies"), 0, NULL);
+
+    if( !tmp || Z_TYPE_P(tmp) != IS_ARRAY ) {
+        return;
+    }
+
+    ZEND_HASH_FOREACH_KEY_VAL(Z_ARRVAL_P(tmp), index, key, val) {
+        if( key && Z_TYPE_P(val) == IS_ARRAY ) {
+            send_cookie(key, val);
+        }
+    } ZEND_HASH_FOREACH_END();
+}
+/* }}} PhpResponse::sendCookies */
+
+/* {{{ proto void PhpResponse::sendContent() */
+PHP_METHOD(PhpResponse, sendContent)
+{
+    zval *_this_zval = getThis();
+    zval *tmp;
+    php_stream *stream;
+    char *error;
+
+    ZEND_PARSE_PARAMETERS_START(0, 0)
+    ZEND_PARSE_PARAMETERS_END();
+
+    tmp = zend_read_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("content"), 0, NULL);
+
+    if( !tmp ) {
+        return;
+    }
+
+    switch( Z_TYPE_P(tmp) ) {
+        case IS_RESOURCE:
+            php_stream_from_res(stream, Z_RES_P(tmp)); // this macro can return
+            php_stream_seek(stream, 0, SEEK_SET);
+            php_stream_passthru(stream);
+            break;
+
+        case IS_STRING:
+            php_output_write(Z_STRVAL_P(tmp), Z_STRLEN_P(tmp));
+            break;
+
+        case IS_OBJECT:
+            if( zend_is_callable_ex(tmp, NULL, 0, NULL, NULL, &error) ) {
+                zval func_name = {0};
+                zval rv = {0};
+                ZVAL_STRING(&func_name, "__invoke");
+                call_user_function(&Z_OBJCE_P(tmp)->function_table, tmp, &func_name, &rv, 0, NULL);
+                zval_ptr_dtor(&func_name);
+                zval_ptr_dtor(&rv);
+                break;
+            }
+            // fall-through
+        default:
+            convert_to_string(tmp);
+            php_output_write(Z_STRVAL_P(tmp), Z_STRLEN_P(tmp));
+            break;
+    }
+}
+/* }}} PhpResponse::sendContent */
 
 /* {{{ PhpResponse methods */
 static zend_function_entry PhpResponse_methods[] = {
@@ -766,6 +992,10 @@ static zend_function_entry PhpResponse_methods[] = {
     PHP_ME(PhpResponse, setDownloadInline, AI(setDownload), ZEND_ACC_PUBLIC)
     PHP_ME(PhpResponse, date, AI(date), ZEND_ACC_PUBLIC)
     PHP_ME(PhpResponse, send, AI(send), ZEND_ACC_PUBLIC)
+    PHP_ME(PhpResponse, sendStatus, AI(send), ZEND_ACC_PROTECTED)
+    PHP_ME(PhpResponse, sendHeaders, AI(send), ZEND_ACC_PROTECTED)
+    PHP_ME(PhpResponse, sendCookies, AI(send), ZEND_ACC_PROTECTED)
+    PHP_ME(PhpResponse, sendContent, AI(send), ZEND_ACC_PROTECTED)
     PHP_FE_END
 };
 /* }}} PhpResponse methods */
