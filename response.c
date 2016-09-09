@@ -7,6 +7,7 @@
 #include "main/php_streams.h"
 #include "ext/spl/spl_exceptions.h"
 #include "ext/standard/php_string.h"
+#include "ext/standard/url.h"
 #include "Zend/zend_API.h"
 #include "Zend/zend_exceptions.h"
 #include "Zend/zend_types.h"
@@ -274,7 +275,9 @@ PHP_METHOD(PhpResponse, getVersion)
     ZEND_PARSE_PARAMETERS_END();
 
     retval = zend_read_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("version"), 0, NULL);
-    RETVAL_ZVAL(retval, 1, 0);
+    if( retval ) {
+        RETVAL_ZVAL(retval, 1, 0);
+    }
 }
 /* }}} PhpResponse::getVersion */
 
@@ -336,7 +339,6 @@ PHP_METHOD(PhpResponse, getHeaders)
     if( retval ) {
         RETVAL_ZVAL(retval, 1, 0);
     }
-    convert_to_array(return_value);
 }
 /* }}} PhpResponse::getHeaders */
 
@@ -383,7 +385,6 @@ PHP_METHOD(PhpResponse, getCookies)
     if( retval ) {
         RETVAL_ZVAL(retval, 1, 0);
     }
-    convert_to_array(return_value);
 }
 /* }}} PhpResponse::getCookies */
 
@@ -617,35 +618,74 @@ PHP_METHOD(PhpResponse, setContentResource)
 }
 /* }}} PhpResponse::setContentResource */
 
-/* {{{ proto void PhpResponse::setDownload(resource $fh [, string $name [, array $params = array()]]) */
-PHP_METHOD(PhpResponse, setDownload)
+/* {{{ php_response_set_download */
+static inline void php_response_set_download(INTERNAL_FUNCTION_PARAMETERS, zend_bool is_inline)
 {
     zval *zstream;
     zend_string *name = NULL;
     zval *params = NULL;
 
-    ZEND_PARSE_PARAMETERS_START(1, 3)
-        Z_PARAM_RESOURCE(zstream)
-        Z_PARAM_OPTIONAL
-        Z_PARAM_STR(name)
-        Z_PARAM_ARRAY(params)
+    zval *_this_zval = getThis();
+    zval func_name = {0};
+    zval func_params[3] = {0};
+    zval retval = {0};
+    zend_string *tmp_filename;
+
+    ZEND_PARSE_PARAMETERS_START(2, 3)
+            Z_PARAM_RESOURCE(zstream)
+            Z_PARAM_STR(name)
+            Z_PARAM_OPTIONAL
+            Z_PARAM_ARRAY_EX(params, 1, 0)
     ZEND_PARSE_PARAMETERS_END();
+
+    // Make filename param
+    tmp_filename = php_raw_url_encode(ZSTR_VAL(name), ZSTR_LEN(name));
+    smart_str buf = {0};
+    smart_str_appendc(&buf, '"');
+    smart_str_append(&buf, tmp_filename);
+    smart_str_appendc(&buf, '"');
+    smart_str_0(&buf);
+
+    // Make params
+    ZVAL_ZVAL(&func_params[0], zstream, 1, 0);
+    if( is_inline ) {
+        ZVAL_STRING(&func_params[1], "inline");
+    } else {
+        ZVAL_STRING(&func_params[1], "attachment");
+    }
+    if( params ) {
+        ZVAL_ZVAL(&func_params[2], params, 1, 0);
+    } else {
+        array_init(&func_params[2]);
+    }
+    add_assoc_str_ex(&func_params[2], ZEND_STRL("filename"), buf.s);
+
+    // Call
+    ZVAL_STRING(&func_name, "setContentResource");
+    call_user_function(NULL, _this_zval, &func_name, &retval, 3, func_params);
+
+    // Release
+    zval_ptr_dtor(&func_name);
+    zval_ptr_dtor(&func_params[2]);
+    zval_ptr_dtor(&func_params[1]);
+    zval_ptr_dtor(&func_params[0]);
+    smart_str_free(&buf);
+    zval_ptr_dtor(&retval);
+    zend_string_release(tmp_filename);
+}
+/* }}} */
+
+/* {{{ proto void PhpResponse::setDownload(resource $fh [, string $name [, array $params = array()]]) */
+PHP_METHOD(PhpResponse, setDownload)
+{
+    php_response_set_download(INTERNAL_FUNCTION_PARAM_PASSTHRU, 0);
 }
 /* }}} PhpResponse::setDownload */
 
 /* {{{ proto void PhpResponse::setDownloadInline(resource $fh [, string $name [, array $params = array()]]) */
 PHP_METHOD(PhpResponse, setDownloadInline)
 {
-    zval *zstream;
-    zend_string *name = NULL;
-    zval *params = NULL;
-
-    ZEND_PARSE_PARAMETERS_START(1, 3)
-        Z_PARAM_RESOURCE(zstream)
-        Z_PARAM_OPTIONAL
-        Z_PARAM_STR(name)
-        Z_PARAM_ARRAY(params)
-    ZEND_PARSE_PARAMETERS_END();
+    php_response_set_download(INTERNAL_FUNCTION_PARAM_PASSTHRU, 1);
 }
 /* }}} PhpResponse::setDownloadInline */
 
