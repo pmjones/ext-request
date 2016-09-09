@@ -682,7 +682,7 @@ static inline void php_response_set_download(INTERNAL_FUNCTION_PARAMETERS, zend_
     zval_ptr_dtor(&func_params[2]);
     zval_ptr_dtor(&func_params[1]);
     zval_ptr_dtor(&func_params[0]);
-    smart_str_free(&buf);
+    //smart_str_free(&buf); freed as part of zval
     zval_ptr_dtor(&retval);
     zend_string_release(tmp_filename);
 }
