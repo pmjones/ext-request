@@ -649,8 +649,18 @@ static PHP_MSHUTDOWN_FUNCTION(request)
 }
 /* }}} */
 
+/* {{{ request_deps */
+static const zend_module_dep request_deps[] = {
+    ZEND_MOD_REQUIRED("spl")
+    ZEND_MOD_OPTIONAL("date")
+    ZEND_MOD_OPTIONAL("json")
+    ZEND_MOD_END
+};
+/* }}} */
+
 zend_module_entry request_module_entry = {
-    STANDARD_MODULE_HEADER,
+    STANDARD_MODULE_HEADER_EX, NULL,
+    request_deps,                       /* Deps */
     PHP_REQUEST_NAME,                   /* Name */
     NULL,                               /* Functions */
     PHP_MINIT(request),                 /* MINIT */
