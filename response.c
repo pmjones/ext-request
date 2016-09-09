@@ -5,6 +5,7 @@
 
 #include "main/php.h"
 #include "main/php_streams.h"
+#include "main/SAPI.h"
 #include "ext/spl/spl_exceptions.h"
 #include "ext/date/php_date.h"
 #include "ext/standard/php_string.h"
@@ -537,11 +538,10 @@ PHP_METHOD(PhpResponse, setContentJson)
     zend_long depth = 512;
 
     zval *_this_zval = getThis();
-    zval func_name;
+    zval func_name = {0};
     zval json_value = {0};
     zval params[3];
     zend_bool failed = 0;
-
 
     ZEND_PARSE_PARAMETERS_START(1, 3)
         Z_PARAM_ZVAL(value)
@@ -549,6 +549,12 @@ PHP_METHOD(PhpResponse, setContentJson)
         Z_PARAM_LONG(options)
         Z_PARAM_LONG(depth)
     ZEND_PARSE_PARAMETERS_END();
+
+    // Check
+    if( !zend_hash_str_exists(EG(function_table), "json_encode", sizeof("json_encode") - 1) ) {
+        zend_throw_exception(spl_ce_RuntimeException, "json_encode() not available", 0);
+        return;
+    }
 
     // Call json_encode
     ZVAL_STRING(&func_name, "json_encode");
@@ -558,7 +564,7 @@ PHP_METHOD(PhpResponse, setContentJson)
 
     call_user_function(EG(function_table), NULL, &func_name, &json_value, 3, params);
 
-    if( Z_TYPE(json_value) == IS_FALSE ) {
+    if( Z_TYPE(json_value) != IS_STRING ) {
         failed = 1;
     } else {
         zend_update_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("content"), &json_value);
