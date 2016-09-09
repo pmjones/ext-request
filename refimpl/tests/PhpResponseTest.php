@@ -211,6 +211,14 @@ class PhpResponseTest extends PHPUnit_Framework_TestCase
 
         $date = new DateTime('1979-11-07 +0000');
         $this->assertSame($expect, $this->response->date($date));
+
+        $this->assertSame($expect, $this->response->date('1979-11-07 03:00:00 +0300'));
+    }
+
+    public function testDateInvalid()
+    {
+        $this->setExpectedException('Exception');
+        $this->response->date(true);
     }
 
     /**

@@ -6,10 +6,12 @@
 #include "main/php.h"
 #include "main/php_streams.h"
 #include "ext/spl/spl_exceptions.h"
+#include "ext/date/php_date.h"
 #include "ext/standard/php_string.h"
 #include "ext/standard/url.h"
 #include "Zend/zend_API.h"
 #include "Zend/zend_exceptions.h"
+#include "Zend/zend_interfaces.h"
 #include "Zend/zend_types.h"
 #include "Zend/zend_smart_str.h"
 
@@ -692,11 +694,40 @@ PHP_METHOD(PhpResponse, setDownloadInline)
 /* {{{ proto string PhpResponse::date(mixed $date) */
 PHP_METHOD(PhpResponse, date)
 {
+    zval *date_arg;
     zval *date;
+    zval tmp = {0};
+    zval ts = {0};
+    zend_string *date_str;
 
     ZEND_PARSE_PARAMETERS_START(1, 1)
-        Z_PARAM_ZVAL(date)
+        Z_PARAM_ZVAL(date_arg)
     ZEND_PARSE_PARAMETERS_END();
+
+    // Create date object
+    if( Z_TYPE_P(date_arg) == IS_OBJECT && instanceof_function(Z_OBJCE_P(date_arg), php_date_get_date_ce()) ) {
+        date = date_arg;
+    } else {
+        object_init_ex(&tmp, php_date_get_date_ce());
+        zend_call_method_with_1_params(&tmp, NULL, NULL, "__construct", NULL, date_arg);
+        date = &tmp;
+        if( EG(exception) ) {
+            zend_object_store_ctor_failed(Z_OBJ(tmp));
+            return;
+        }
+    }
+
+    // Get timestamp
+    zend_call_method_with_0_params(date, php_date_get_date_ce(), NULL, "gettimestamp", &ts);
+
+    if( Z_TYPE(ts) == IS_LONG ) {
+        // Format
+        date_str = php_format_date(ZEND_STRL("D, d M Y H:i:s O"), Z_LVAL(ts), 0);
+        RETVAL_STR(date_str);
+    }
+
+    zval_ptr_dtor(&tmp);
+    zval_ptr_dtor(&ts);
 }
 /* }}} PhpResponse::date */
 

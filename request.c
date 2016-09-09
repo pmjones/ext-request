@@ -652,7 +652,7 @@ static PHP_MSHUTDOWN_FUNCTION(request)
 /* {{{ request_deps */
 static const zend_module_dep request_deps[] = {
     ZEND_MOD_REQUIRED("spl")
-    ZEND_MOD_OPTIONAL("date")
+    ZEND_MOD_REQUIRED("date")
     ZEND_MOD_OPTIONAL("json")
     ZEND_MOD_END
 };
