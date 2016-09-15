@@ -409,8 +409,8 @@ static void php_response_setcookie(INTERNAL_FUNCTION_PARAMETERS, zend_bool raw)
 
     zval *_this_zval = getThis();
     zval *ptr;
-    zval member;
-    zval cookie;
+    zval member = {0};
+    zval cookie = {0};
 
     ZEND_PARSE_PARAMETERS_START(1, 7)
         Z_PARAM_STR(name)
@@ -442,7 +442,7 @@ static void php_response_setcookie(INTERNAL_FUNCTION_PARAMETERS, zend_bool raw)
     array_init_size(&cookie, 7);
     add_assoc_bool_ex(&cookie, ZEND_STRL("raw"), raw);
     if( value ) {
-        add_assoc_str_ex(&cookie, ZEND_STRL("value"), value);
+        add_assoc_stringl_ex(&cookie, ZEND_STRL("value"), ZSTR_VAL(value), ZSTR_LEN(value));
     } else {
         add_assoc_stringl_ex(&cookie, ZEND_STRL("value"), ZEND_STRL(""));
     }
@@ -755,7 +755,6 @@ PHP_METHOD(PhpResponse, send)
     zend_call_method_with_0_params(_this_zval, NULL, NULL, "sendHeaders", &rv);
     zend_call_method_with_0_params(_this_zval, NULL, NULL, "sendCookies", &rv);
     zend_call_method_with_0_params(_this_zval, NULL, NULL, "sendContent", &rv);
-
     zval_ptr_dtor(&rv);
 }
 /* }}} PhpResponse::send */
@@ -864,8 +863,6 @@ static inline void send_cookie(zend_string *name, zval *arr)
     zend_bool secure = 0;
     zend_bool httponly = 0;
     zend_bool raw = 0;
-
-    //fprintf(stdout, "ARGGGGG %d\n", __LINE__);
 
     if( (tmp = zend_hash_str_find(Z_ARRVAL_P(arr), ZEND_STRL("value"))) ) {
         value = zval_get_string(tmp);
