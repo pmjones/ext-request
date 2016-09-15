@@ -37,6 +37,8 @@ struct prop_handlers {
     zend_object_unset_property_t unset_property;
 };
 
+extern PHP_MINIT_FUNCTION(response);
+
 /* {{{ Argument Info */
 ZEND_BEGIN_ARG_INFO_EX(PhpRequest_construct_args, 0, 0, 0)
 ZEND_END_ARG_INFO()
@@ -258,7 +260,7 @@ static inline void set_url(zval *object, zval *server)
     }
 
     // Form array
-    array_init(&arr);
+    array_init_size(&arr, 8);
     if( url->scheme ) {
         add_assoc_string(&arr, "scheme", url->scheme);
     } else {
@@ -623,6 +625,8 @@ static PHP_MINIT_FUNCTION(request)
     zend_declare_property_bool(PhpRequest_ce_ptr, ZEND_STRL("xhr"), 0, ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("xhr"));
 
+    PHP_MINIT(response)(INIT_FUNC_ARGS_PASSTHRU);
+
     return SUCCESS;
 }
 /* }}} */
@@ -645,8 +649,18 @@ static PHP_MSHUTDOWN_FUNCTION(request)
 }
 /* }}} */
 
+/* {{{ request_deps */
+static const zend_module_dep request_deps[] = {
+    ZEND_MOD_REQUIRED("spl")
+    ZEND_MOD_REQUIRED("date")
+    ZEND_MOD_OPTIONAL("json")
+    ZEND_MOD_END
+};
+/* }}} */
+
 zend_module_entry request_module_entry = {
-    STANDARD_MODULE_HEADER,
+    STANDARD_MODULE_HEADER_EX, NULL,
+    request_deps,                       /* Deps */
     PHP_REQUEST_NAME,                   /* Name */
     NULL,                               /* Functions */
     PHP_MINIT(request),                 /* MINIT */

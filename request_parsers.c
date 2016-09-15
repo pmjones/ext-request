@@ -697,7 +697,7 @@ void php_request_parse_accept(zval *return_value, const YYCTYPE *str, size_t len
         con = parse_accept_params(&in, &params);
 
         // Save
-        array_init(&item);
+        array_init_size(&item, 3);
         add_assoc_stringl_ex(&item, ZEND_STRL("value"), (char *) tok.yytext, tok.yyleng);
 
         // Get quality
@@ -827,7 +827,7 @@ void php_request_parse_digest_auth(zval *return_value, const YYCTYPE *str, size_
     zend_string *value;
 
     // Build need array
-    array_init(&need);
+    array_init_size(&need, 7);
     add_assoc_bool_ex(&need, ZEND_STRL("nonce"), 1);
     add_assoc_bool_ex(&need, ZEND_STRL("nc"), 1);
     add_assoc_bool_ex(&need, ZEND_STRL("cnonce"), 1);

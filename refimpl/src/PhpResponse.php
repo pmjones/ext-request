@@ -107,12 +107,12 @@ class PhpResponse
     {
         $this->cookies[$name] = [
             'raw' => false,
-            'value' => $value,
-            'expire' => $expire,
-            'path' => $path,
-            'domain' => $domain,
-            'secure' => $secure,
-            'httponly' => $httponly,
+            'value' => (string) $value,
+            'expire' => (integer) $expire,
+            'path' => (string) $path,
+            'domain' => (string) $domain,
+            'secure' => (boolean) $secure,
+            'httponly' => (boolean) $httponly,
         ];
     }
 
@@ -129,12 +129,12 @@ class PhpResponse
     {
         $this->cookies[$name] = [
             'raw' => true,
-            'value' => $value,
-            'expire' => $expire,
-            'path' => $path,
-            'domain' => $domain,
-            'secure' => $secure,
-            'httponly' => $httponly,
+            'value' => (string) $value,
+            'expire' => (integer) $expire,
+            'path' => (string) $path,
+            'domain' => (string) $domain,
+            'secure' => (boolean) $secure,
+            'httponly' => (boolean) $httponly,
         ];
     }
 
@@ -166,7 +166,7 @@ class PhpResponse
     public function setContentResource($fh, $disposition, array $params = []) // : void
     {
         if (! is_resource($fh)) {
-            throw new RuntimeException("Content must be a resource.");
+            throw new TypeError("Argument 1 passed to PhpResponse::setContentResource() must be of the type resource, string given");
         }
         $this->setHeader('Content-Type', 'application/octet-stream');
         $this->setHeader('Content-Transfer-Encoding',  'binary');
@@ -248,6 +248,7 @@ class PhpResponse
         // if headers_sent() then fail?
         $this->sendStatus();
         $this->sendHeaders();
+        $this->sendCookies();
         $this->sendContent();
     }
 
@@ -264,7 +265,10 @@ class PhpResponse
                 header("{$label}: {$value}", false);
             }
         }
+    }
 
+    protected function sendCookies() // : void
+    {
         foreach ($this->cookies as $name => $args) {
             if ($args['raw']) {
                 setrawcookie(
