@@ -436,6 +436,7 @@ static void php_response_setcookie(INTERNAL_FUNCTION_PARAMETERS, zend_bool raw)
         // fall-through
     } else if( Z_TYPE_P(ptr) != IS_ARRAY ) {
         convert_to_array(ptr);
+        //ptr = NULL;
     }
 
     // Make cookies array
@@ -468,7 +469,7 @@ static void php_response_setcookie(INTERNAL_FUNCTION_PARAMETERS, zend_bool raw)
     }
 
     // Cleanup
-    zval_dtor(&member);
+    zval_ptr_dtor(&member);
 }
 
 PHP_METHOD(PhpResponse, setCookie)
@@ -517,7 +518,7 @@ PHP_METHOD(PhpResponse, setContent)
 /* {{{ proto void PhpResponse::setContentJson(mixed $value [, int $options [, int $depth = 512]]) */
 static inline void throw_json_exception()
 {
-    zval func_name;
+    zval func_name = {0};
     zval json_errmsg = {0};
     zval json_errno = {0};
 
@@ -545,7 +546,7 @@ PHP_METHOD(PhpResponse, setContentJson)
     zval *_this_zval = getThis();
     zval func_name = {0};
     zval json_value = {0};
-    zval params[3];
+    zval params[3] = {0};
     zend_bool failed = 0;
 
     ZEND_PARSE_PARAMETERS_START(1, 3)
@@ -658,6 +659,7 @@ static inline void php_response_set_download(INTERNAL_FUNCTION_PARAMETERS, zend_
     smart_str_append(&buf, tmp_filename);
     smart_str_appendc(&buf, '"');
     smart_str_0(&buf);
+    zend_string_release(tmp_filename);
 
     // Make params
     ZVAL_ZVAL(&func_params[0], zstream, 1, 0);
@@ -682,9 +684,8 @@ static inline void php_response_set_download(INTERNAL_FUNCTION_PARAMETERS, zend_
     zval_ptr_dtor(&func_params[2]);
     zval_ptr_dtor(&func_params[1]);
     zval_ptr_dtor(&func_params[0]);
-    //smart_str_free(&buf); freed as part of zval
+    //smart_str_free(&buf); should be freed as part of zval
     zval_ptr_dtor(&retval);
-    zend_string_release(tmp_filename);
 }
 /* }}} */
 
@@ -755,6 +756,7 @@ PHP_METHOD(PhpResponse, send)
     zend_call_method_with_0_params(_this_zval, NULL, NULL, "sendHeaders", &rv);
     zend_call_method_with_0_params(_this_zval, NULL, NULL, "sendCookies", &rv);
     zend_call_method_with_0_params(_this_zval, NULL, NULL, "sendContent", &rv);
+
     zval_ptr_dtor(&rv);
 }
 /* }}} PhpResponse::send */
@@ -926,6 +928,7 @@ PHP_METHOD(PhpResponse, sendContent)
 {
     zval *_this_zval = getThis();
     zval *tmp;
+    zend_string *tmp_str;
     php_stream *stream;
     char *error;
 
@@ -961,8 +964,9 @@ PHP_METHOD(PhpResponse, sendContent)
             }
             // fall-through
         default:
-            convert_to_string(tmp);
-            php_output_write(Z_STRVAL_P(tmp), Z_STRLEN_P(tmp));
+            tmp_str = zval_get_string(tmp);
+            php_output_write(ZSTR_VAL(tmp_str), ZSTR_LEN(tmp_str));
+            zend_string_release(tmp_str);
             break;
     }
 }
