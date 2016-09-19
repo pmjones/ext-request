@@ -38,7 +38,7 @@ array(3) {
     ["type"]=>
     string(16) "text/plain-file1"
     ["tmp_name"]=>
-    string(14) "%s"
+    string(%d) "%s"
     ["error"]=>
     int(0)
     ["size"]=>
@@ -64,7 +64,7 @@ array(3) {
     ["type"]=>
     string(16) "text/plain-file3"
     ["tmp_name"]=>
-    string(14) "%s"
+    string(%d) "%s"
     ["error"]=>
     int(0)
     ["size"]=>
