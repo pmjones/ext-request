@@ -3,6 +3,9 @@
 #include "config.h"
 #endif
 
+#include <ctype.h>
+#include <string.h>
+
 #include "main/php.h"
 #include "main/php_ini.h"
 #include "ext/standard/info.h"
@@ -12,6 +15,26 @@
 extern PHP_MINIT_FUNCTION(stdrequest);
 extern PHP_MINIT_FUNCTION(stdresponse);
 extern PHP_MSHUTDOWN_FUNCTION(stdrequest);
+
+/* {{{ php_request_normalize_header_name */
+void php_request_normalize_header_name(char *key, size_t key_length)
+{
+    register char *r = key;
+    register char *r_end = r + key_length - 1;
+
+    *r = toupper((unsigned char) *r);
+    r++;
+    for( ; r <= r_end; r++ ) {
+        if( (unsigned char)*(r - 1) == '-' ) {
+            *r = toupper((unsigned char) *r);
+        } else if( *r == '_' ) {
+            *r = '-';
+        } else {
+            *r = tolower((unsigned char) *r);
+        }
+    }
+}
+/* }}} php_request_normalize_header_name */
 
 /* {{{ PHP_MINIT_FUNCTION */
 static PHP_MINIT_FUNCTION(request)

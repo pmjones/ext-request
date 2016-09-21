@@ -14,7 +14,7 @@
 #include "Zend/zend_smart_str.h"
 
 #include "php_request.h"
-#include "request_parsers.h"
+#include "parsers.h"
 
 /* Adapted from http://re2c.org/examples/example_07.html */
 
@@ -85,7 +85,7 @@ static struct scanner_token lex_quoted_str(struct scanner_input *in, YYCTYPE q)
     YYCTYPE u = q;
     for (;;) {
         in->tok = in->cur;
-        
+
 #line 90 "request_parsers.c"
 {
 	YYCTYPE yych;
@@ -128,7 +128,7 @@ static struct scanner_token lex(struct scanner_input *in)
     struct scanner_token tok = {0};
     for( ;; ) {
         in->tok = in->cur;
-        
+
 #line 133 "request_parsers.c"
 {
 	YYCTYPE yych;

@@ -18,8 +18,10 @@
 #include "Zend/zend_smart_str.h"
 
 #include "php_request.h"
-#include "request_parsers.h"
-#include "request_utils.h"
+
+extern void php_request_parse_accept(zval *return_value, const unsigned char *str, size_t len);
+extern void php_request_parse_content_type(zval *return_value, const unsigned char *str, size_t len);
+extern void php_request_parse_digest_auth(zval *return_value, const unsigned char *str, size_t len);
 
 zend_class_entry * PhpRequest_ce_ptr;
 static zend_object_handlers PhpRequest_obj_handlers;
@@ -53,6 +55,283 @@ ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO(PhpRequest_parseDigestAuth_args, IS_ARRAY, 
     ZEND_ARG_TYPE_INFO(0, header, IS_STRING, 0)
 ZEND_END_ARG_INFO()
 /* }}} Argument Info */
+
+/* {{ php_request_detect_method */
+static zend_bool php_request_detect_method(zval *return_value, zval *server)
+{
+    zend_string *tmp;
+    zval *val;
+    zend_bool xhr = 0;
+    zend_string *method;
+
+    // determine method from request
+    val = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("REQUEST_METHOD"));
+    if( !val || Z_TYPE_P(val) != IS_STRING ) {
+        return xhr;
+    }
+    method = Z_STR_P(val);
+
+    // XmlHttpRequest method override?
+    if( zend_string_equals_literal_ci(method, "POST") ) {
+        val = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_X_HTTP_METHOD_OVERRIDE"));
+        if( val && Z_TYPE_P(val) == IS_STRING ) {
+            method = Z_STR_P(val);
+            xhr = 1;
+        }
+    }
+
+    if( method ) {
+        tmp = zend_string_dup(method, 0);
+        php_strtoupper(ZSTR_VAL(tmp), ZSTR_LEN(tmp));
+        ZVAL_STR(return_value, tmp);
+    }
+
+    return xhr;
+}
+/* }}} */
+
+/* {{{ php_request_is_secure */
+static zend_bool php_request_is_secure(zval *server)
+{
+    zval *tmp;
+
+    if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTPS"))) &&
+        Z_TYPE_P(tmp) == IS_STRING &&
+        zend_string_equals_literal_ci(Z_STR_P(tmp), "on") ) {
+        return 1;
+    }
+
+    if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("SERVER_PORT"))) &&
+        443 == zval_get_long(tmp) ) {
+        return 1;
+    }
+
+    if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_X_FORWARDED_PROTO"))) &&
+        Z_TYPE_P(tmp) == IS_STRING &&
+        zend_string_equals_literal_ci(Z_STR_P(tmp), "https") ) {
+        return 1;
+    }
+
+    return 0;
+}
+/* }}} */
+
+/* {{{ php_request_detect_url */
+static inline const unsigned char *extract_port_from_host(const unsigned char *host, size_t len)
+{
+    const unsigned char *right = host + len - 1;
+    const unsigned char *left = len > 6 ? right - 6 : host;
+    const unsigned char *pos = right;
+    for( ; pos > left; pos-- ) {
+        if( !isdigit(*pos) ) {
+            if( *pos == ':' ) {
+                return pos + 1;
+            }
+            break;
+        }
+    }
+    return NULL;
+}
+
+static inline zend_string *extract_host_from_server(zval *server)
+{
+    zval *tmp;
+    zend_string *host;
+
+    // Get host
+    if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_HOST"))) &&
+        Z_TYPE_P(tmp) == IS_STRING ) {
+        host = Z_STR_P(tmp);
+    } else if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("SERVER_NAME"))) &&
+               Z_TYPE_P(tmp) == IS_STRING ) {
+        host = Z_STR_P(tmp);
+    } else {
+        host = NULL;
+    }
+
+    return host;
+}
+
+static inline zend_long extract_port_from_server(zval *server, zend_string * host)
+{
+    zval *tmp;
+
+    // Get port
+    if( NULL != extract_port_from_host(ZSTR_VAL(host), ZSTR_LEN(host)) ) {
+        // no need to extract
+    } else if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("SERVER_PORT"))) ) {
+        return zval_get_long(tmp);
+    }
+
+    return 0;
+}
+
+static inline zend_string *extract_uri_from_server(zval *server)
+{
+    zval *tmp;
+
+    if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("REQUEST_URI"))) &&
+        Z_TYPE_P(tmp) == IS_STRING ) {
+        return Z_STR_P(tmp);
+    }
+
+    return NULL;
+}
+
+static zend_string *php_request_detect_url(zval *server)
+{
+    zval *tmp;
+    zend_string *host;
+    zend_long port;
+    zend_string *uri;
+    smart_str buf = {0};
+    zend_bool is_secure = php_request_is_secure(server);
+
+    // Get host
+    if( !(host = extract_host_from_server(server)) ) {
+        return NULL;
+    }
+
+    port = extract_port_from_server(server, host);
+
+    // Get uri
+    uri = extract_uri_from_server(server);
+
+    // Form URL
+    smart_str_alloc(&buf, 1024, 0);
+    if( is_secure ) {
+        smart_str_appendl_ex(&buf, ZEND_STRL("https://"), 0);
+    } else {
+        smart_str_appendl_ex(&buf, ZEND_STRL("http://"), 0);
+    }
+    smart_str_append_ex(&buf, host, 0);
+    if( port > 0 ) {
+        smart_str_appendc_ex(&buf, ':', 0);
+        smart_str_append_long(&buf, port);
+    }
+    if( uri ) {
+        smart_str_append_ex(&buf, uri, 0);
+    }
+    smart_str_0(&buf);
+
+    return buf.s;
+}
+/* }}} */
+
+/* {{{ php_request_normalize_headers */
+static const char http_str[] = "HTTP_";
+static const size_t http_len = sizeof(http_str) - 1;
+
+static void php_request_normalize_headers(zval *return_value, zval *server)
+{
+    zend_string *key;
+    zend_ulong index;
+    zval *val;
+    zend_string *tmp;
+
+    array_init(return_value);
+
+    // Main headers
+    ZEND_HASH_FOREACH_KEY_VAL(Z_ARRVAL_P(server), index, key, val) {
+        if( key && ZSTR_LEN(key) > 5 && strncmp(ZSTR_VAL(key), http_str, http_len) == 0 ) {
+            tmp = zend_string_init(ZSTR_VAL(key) + http_len, ZSTR_LEN(key) - http_len, 0);
+            php_request_normalize_header_name(ZSTR_VAL(tmp), ZSTR_LEN(tmp));
+            add_assoc_zval_ex(return_value, ZSTR_VAL(tmp), ZSTR_LEN(tmp), val);
+            zend_string_release(tmp);
+        }
+    } ZEND_HASH_FOREACH_END();
+
+    // RFC 3875 headers not prefixed with HTTP_*
+    if( val = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("CONTENT_LENGTH")) ) {
+        add_assoc_zval_ex(return_value, ZEND_STRL("Content-Length"), val);
+    }
+    if( val = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("CONTENT_TYPE")) ) {
+        add_assoc_zval_ex(return_value, ZEND_STRL("Content-Type"), val);
+    }
+}
+/* }}} */
+
+/* {{{ php_request_normalize_files */
+static void php_request_upload_from_spec(zval *return_value, zval *file);
+
+static inline void php_request_copy_upload_key(zval *return_value, zval *nested, const char *key1, size_t key1_len, zend_ulong index2, zend_string *key2)
+{
+    zval *tmp = zend_hash_str_find(Z_ARRVAL_P(nested), key1, key1_len);
+    if( !tmp ) {
+        goto err;
+    }
+
+    if( Z_TYPE_P(tmp) == IS_ARRAY ) {
+        if( key2 ) {
+            tmp = zend_hash_find(Z_ARRVAL_P(tmp), key2);
+        } else {
+            tmp = zend_hash_index_find(Z_ARRVAL_P(tmp), index2);
+        }
+    }
+
+    if( tmp ) {
+        add_assoc_zval_ex(return_value, key1, key1_len, tmp);
+    } else {
+        err:
+        add_assoc_null_ex(return_value, key1, key1_len);
+    }
+}
+
+static inline void php_request_upload_from_nested(zval *return_value, zval *nested, zval *tmp_name)
+{
+    zend_string *key;
+    zend_ulong index;
+    zval tmp = {0};
+    zval tmp2 = {0};
+
+    array_init(return_value);
+
+    ZEND_HASH_FOREACH_KEY(Z_ARRVAL_P(tmp_name), index, key) {
+        array_init(&tmp);
+        php_request_copy_upload_key(&tmp, nested, ZEND_STRL("error"), index, key);
+        php_request_copy_upload_key(&tmp, nested, ZEND_STRL("name"), index, key);
+        php_request_copy_upload_key(&tmp, nested, ZEND_STRL("size"), index, key);
+        php_request_copy_upload_key(&tmp, nested, ZEND_STRL("tmp_name"), index, key);
+        php_request_copy_upload_key(&tmp, nested, ZEND_STRL("type"), index, key);
+
+        php_request_upload_from_spec(&tmp2, &tmp);
+        if( key ) {
+            add_assoc_zval_ex(return_value, ZSTR_VAL(key), ZSTR_LEN(key), &tmp2);
+        } else {
+            add_index_zval(return_value, index, &tmp2);
+        }
+    } ZEND_HASH_FOREACH_END();
+}
+
+static void php_request_upload_from_spec(zval *return_value, zval *file)
+{
+    zval *tmp = zend_hash_str_find(Z_ARRVAL_P(file), ZEND_STRL("tmp_name"));
+    if( tmp && Z_TYPE_P(tmp) == IS_ARRAY ) {
+        php_request_upload_from_nested(return_value, file, tmp);
+    } else {
+        ZVAL_ZVAL(return_value, file, 0, 0);
+    }
+}
+
+void php_request_normalize_files(zval *return_value, zval *files)
+{
+    zend_string *key;
+    zend_ulong index;
+    zval *val;
+    zval tmp = {0};
+
+    ZEND_HASH_FOREACH_KEY_VAL(Z_ARRVAL_P(files), index, key, val) {
+        if( Z_TYPE_P(val) == IS_ARRAY ) {
+            php_request_upload_from_spec(&tmp, val);
+            if( key ) {
+                add_assoc_zval_ex(return_value, ZSTR_VAL(key), ZSTR_LEN(key), &tmp);
+            } else {
+                add_index_zval(return_value, index, &tmp);
+            }
+        }
+    } ZEND_HASH_FOREACH_END();
+}
+/* }}} */
 
 /* {{{ Z_REQUEST_P */
 static inline struct php_request_obj *php_request_fetch_object(zend_object *obj)
@@ -226,7 +505,7 @@ static inline void register_default_prop_handlers(const char *name, size_t name_
 /* }}} */
 
 /* {{{ proto PhpRequest::__construct() */
-static inline void copy_global(zval* obj, const char* key, size_t key_len, const char* sg, size_t sg_len)
+static inline void php_request_copy_global(zval* obj, const char* key, size_t key_len, const char* sg, size_t sg_len)
 {
     if( PG(auto_globals_jit) ) {
         zend_is_auto_global_str(sg, sg_len);
@@ -237,9 +516,9 @@ static inline void copy_global(zval* obj, const char* key, size_t key_len, const
         Z_TRY_ADDREF_P(tmp);
     }
 }
-#define copy_global_lit(obj, glob, key) copy_global(obj, ZEND_STRL(glob), ZEND_STRL(key))
+#define php_request_copy_global_lit(obj, glob, key) php_request_copy_global(obj, ZEND_STRL(glob), ZEND_STRL(key))
 
-static inline void set_url(zval *object, zval *server)
+static inline void php_request_set_url(zval *object, zval *server)
 {
     zend_string *tmp;
     php_url *url;
@@ -305,7 +584,7 @@ static inline void set_url(zval *object, zval *server)
     php_url_free(url);
 }
 
-static inline void set_accept_by_name(zval *object, zval *server, const char *src, size_t src_length, const char *dest, size_t dest_length)
+static inline void php_request_set_accept_by_name(zval *object, zval *server, const char *src, size_t src_length, const char *dest, size_t dest_length)
 {
     zval val;
     zval *tmp;
@@ -317,7 +596,7 @@ static inline void set_accept_by_name(zval *object, zval *server, const char *sr
     zend_update_property(Z_OBJCE_P(object), object, dest, dest_length, &val);
 }
 
-static inline void parse_accept_language(zval *lang)
+static inline void php_request_parse_accept_language(zval *lang)
 {
     zend_string *key;
     zend_ulong index;
@@ -349,7 +628,7 @@ static inline void parse_accept_language(zval *lang)
     } ZEND_HASH_FOREACH_END();
 }
 
-static inline void set_accept_language(zval *object, zval *server)
+static inline void php_request_set_accept_language(zval *object, zval *server)
 {
     zval val;
     zval *tmp;
@@ -357,12 +636,12 @@ static inline void set_accept_language(zval *object, zval *server)
     array_init(&val);
     if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_ACCEPT_LANGUAGE"))) ) {
         php_request_parse_accept(&val, Z_STRVAL_P(tmp), Z_STRLEN_P(tmp));
-        parse_accept_language(&val);
+        php_request_parse_accept_language(&val);
     }
     zend_update_property(Z_OBJCE_P(object), object, ZEND_STRL("acceptLanguage"), &val);
 }
 
-static inline void set_auth(zval *object, zval *server)
+static inline void php_request_set_auth(zval *object, zval *server)
 {
     zval *tmp;
     zval digest = {0};
@@ -387,7 +666,7 @@ static inline void set_auth(zval *object, zval *server)
 
 }
 
-static inline void set_content(zval *object, zval *server)
+static inline void php_request_set_content(zval *object, zval *server)
 {
     zval *tmp;
     zval zv = {0};
@@ -441,13 +720,13 @@ PHP_METHOD(PhpRequest, __construct)
     intern->locked = 0;
 
     // Copy superglobals
-    copy_global_lit(_this_zval, "env", "_ENV");
-    copy_global_lit(_this_zval, "server", "_SERVER");
+    php_request_copy_global_lit(_this_zval, "env", "_ENV");
+    php_request_copy_global_lit(_this_zval, "server", "_SERVER");
 
-    copy_global_lit(_this_zval, "cookie", "_COOKIE");
-    copy_global_lit(_this_zval, "files", "_FILES");
-    copy_global_lit(_this_zval, "get", "_GET");
-    copy_global_lit(_this_zval, "post", "_POST");
+    php_request_copy_global_lit(_this_zval, "cookie", "_COOKIE");
+    php_request_copy_global_lit(_this_zval, "files", "_FILES");
+    php_request_copy_global_lit(_this_zval, "get", "_GET");
+    php_request_copy_global_lit(_this_zval, "post", "_POST");
 
     // Read back server property
     server = zend_read_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("server"), 0, &rv);
@@ -469,17 +748,17 @@ PHP_METHOD(PhpRequest, __construct)
         zend_update_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("headers"), &headers);
 
         // url
-        set_url(_this_zval, server);
+        php_request_set_url(_this_zval, server);
 
         // accepts
-        set_accept_by_name(_this_zval, server, ZEND_STRL("HTTP_ACCEPT"), ZEND_STRL("acceptMedia"));
-        set_accept_by_name(_this_zval, server, ZEND_STRL("HTTP_ACCEPT_CHARSET"), ZEND_STRL("acceptCharset"));
-        set_accept_by_name(_this_zval, server, ZEND_STRL("HTTP_ACCEPT_ENCODING"), ZEND_STRL("acceptEncoding"));
-        set_accept_language(_this_zval, server);
+        php_request_set_accept_by_name(_this_zval, server, ZEND_STRL("HTTP_ACCEPT"), ZEND_STRL("acceptMedia"));
+        php_request_set_accept_by_name(_this_zval, server, ZEND_STRL("HTTP_ACCEPT_CHARSET"), ZEND_STRL("acceptCharset"));
+        php_request_set_accept_by_name(_this_zval, server, ZEND_STRL("HTTP_ACCEPT_ENCODING"), ZEND_STRL("acceptEncoding"));
+        php_request_set_accept_language(_this_zval, server);
 
         // auth
-        set_auth(_this_zval, server);
-        set_content(_this_zval, server);
+        php_request_set_auth(_this_zval, server);
+        php_request_set_content(_this_zval, server);
     }
 
     // Read back files property

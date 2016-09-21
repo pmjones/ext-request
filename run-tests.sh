@@ -20,6 +20,9 @@ coverage)
         --compat-libtool --output-file coverage.info
     genhtml coverage.info --output-directory reports
     ;;
+valgrind)
+    TEST_PHP_ARGS=-m make test
+    ;;
 *)
     php -d extension=modules/request.so `which phpunit` refimpl $@
     ;;
