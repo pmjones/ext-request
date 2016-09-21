@@ -5,9 +5,9 @@ This extension provides fundamental server-side request and response objects for
 
 This extension provides two classes:
 
-- _StdRequest_, essentially a read-only struct composed of PHP superglobals and some other commonly-used values
+- StdRequest, essentially a read-only struct composed of PHP superglobals and some other commonly-used values
 
-- _StdResponse_, essentially wrapper around response-related PHP functions, with some additional related methods and self-sending capability
+- StdResponse, essentially a wrapper around (and buffer for) response-related PHP functions, with some additional convenience methods, and self-sending capability
 
 ## StdRequest
 
@@ -17,9 +17,11 @@ Goals:
 
 - Add other read-only properties calculated from the superglobals ($method, $headers, $content, etc.) to the struct.
 
-- Only build things that don't require application input; e.g., no negotiation, but build acceptables for application to work through.
+- Only build things that don't require application input; e.g., no negotiation, but build acceptables for an application to work through.
 
 - No methods, just properties (i.e., a struct).
+
+- Extendable so users can add custom functionality.
 
 ### Instantiation
 
