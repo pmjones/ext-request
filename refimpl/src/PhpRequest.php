@@ -64,15 +64,15 @@ class PhpRequest
     protected $url;
     protected $xhr = false;
 
-    public function __construct()
+    public function __construct(array $globals = array())
     {
-        $this->env = $_ENV;
-        $this->server = $_SERVER;
+        $this->env = $globals['_ENV'] ?? $_ENV;
+        $this->server = $globals['_SERVER'] ?? $_SERVER;
 
-        $this->cookie = $_COOKIE;
-        $this->files = $_FILES;
-        $this->get = $_GET;
-        $this->post = $_POST;
+        $this->cookie = $globals['_COOKIE'] ?? $_COOKIE;
+        $this->files = $globals['_FILES'] ?? $_FILES;
+        $this->get = $globals['_GET'] ?? $_GET;
+        $this->post = $globals['_POST'] ?? $_POST;
 
         $this->setMethod();
         $this->setHeaders();

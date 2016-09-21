@@ -22,6 +22,40 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
         $this->assertInstanceOf(PhpRequest::CLASS, $request);
     }
 
+    public function test__construct_customGlobals()
+    {
+        $fakeGlobals = [
+            '_ENV' => [
+                'c' => 'd',
+            ],
+            '_SERVER' => [
+                'HTTP_HOST' => 'foo.bar'
+            ],
+            '_GET' => [
+                'e' => 'f',
+            ],
+            '_POST' => [
+                'g' => 'h',
+            ],
+            '_FILES' => [
+                'i' => array(
+                    'tmp_name' => 'j'
+                ),
+            ],
+            '_COOKIE' => [
+                'k' => 'l',
+            ],
+        ];
+        $request = new PhpRequest($fakeGlobals);
+        $this->assertSame('foo.bar', $request->url['host']);
+        $this->assertSame($fakeGlobals['_ENV'], $request->env);
+        $this->assertSame($fakeGlobals['_SERVER'], $request->server);
+        $this->assertSame($fakeGlobals['_GET'], $request->get);
+        $this->assertSame($fakeGlobals['_POST'], $request->post);
+        $this->assertSame($fakeGlobals['_FILES'], $request->files);
+        $this->assertSame($fakeGlobals['_COOKIE'], $request->cookie);
+    }
+
     public function test__get()
     {
         $_SERVER['REQUEST_METHOD'] = 'PATCH';

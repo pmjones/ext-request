@@ -41,6 +41,7 @@ struct prop_handlers {
 
 /* {{{ Argument Info */
 ZEND_BEGIN_ARG_INFO_EX(StdRequest_construct_args, 0, 0, 0)
+    ZEND_ARG_TYPE_INFO(0, globals, IS_ARRAY, 1)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO(StdRequest_parseAccept_args, IS_ARRAY, NULL, 1)
@@ -504,19 +505,31 @@ static inline void register_default_prop_handlers(const char *name, size_t name_
 }
 /* }}} */
 
-/* {{{ proto StdRequest::__construct() */
-static inline void php_request_copy_global(zval* obj, const char* key, size_t key_len, const char* sg, size_t sg_len)
-{
-    if( PG(auto_globals_jit) ) {
-        zend_is_auto_global_str(sg, sg_len);
+/* {{{ proto StdRequest::__construct([ array $globals ]) */
+static inline void php_request_copy_global(
+    zval *obj,
+    const char *obj_key,
+    size_t obj_key_length,
+    zval *globals,
+    const char *glob_key,
+    size_t glob_key_length
+) {
+    zval *tmp = NULL;
+    if( globals && Z_TYPE_P(globals) == IS_ARRAY ) {
+        tmp = zend_hash_str_find(Z_ARRVAL_P(globals), glob_key, glob_key_length);
     }
-    zval *tmp = zend_hash_str_find(&EG(symbol_table), sg, sg_len);
+    if( !tmp ) {
+        if( PG(auto_globals_jit) ) {
+            zend_is_auto_global_str(glob_key, glob_key_length);
+        }
+        tmp = zend_hash_str_find(&EG(symbol_table), glob_key, glob_key_length);
+    }
     if( tmp ) {
-        zend_update_property(Z_OBJCE_P(obj), obj, key, key_len, tmp);
+        zend_update_property(Z_OBJCE_P(obj), obj, obj_key, obj_key_length, tmp);
         Z_TRY_ADDREF_P(tmp);
     }
 }
-#define php_request_copy_global_lit(obj, glob, key) php_request_copy_global(obj, ZEND_STRL(glob), ZEND_STRL(key))
+#define php_request_copy_global_lit(obj, obj_key, glob, glob_key) php_request_copy_global(obj, ZEND_STRL(obj_key), glob, ZEND_STRL(glob_key))
 
 static inline void php_request_set_url(zval *object, zval *server)
 {
@@ -702,6 +715,7 @@ static inline void php_request_set_content(zval *object, zval *server)
 PHP_METHOD(StdRequest, __construct)
 {
     zval *_this_zval;
+    zval *zv_globals = NULL;
     struct php_request_obj *intern;
     zval *server;
     zval *files;
@@ -710,7 +724,9 @@ PHP_METHOD(StdRequest, __construct)
     zval headers = {0};
     zval uploads = {0};
 
-    ZEND_PARSE_PARAMETERS_START(0, 0)
+    ZEND_PARSE_PARAMETERS_START(0, 1)
+        Z_PARAM_OPTIONAL
+        Z_PARAM_ZVAL(zv_globals)
     ZEND_PARSE_PARAMETERS_END();
 
     _this_zval = getThis();
@@ -720,13 +736,12 @@ PHP_METHOD(StdRequest, __construct)
     intern->locked = 0;
 
     // Copy superglobals
-    php_request_copy_global_lit(_this_zval, "env", "_ENV");
-    php_request_copy_global_lit(_this_zval, "server", "_SERVER");
-
-    php_request_copy_global_lit(_this_zval, "cookie", "_COOKIE");
-    php_request_copy_global_lit(_this_zval, "files", "_FILES");
-    php_request_copy_global_lit(_this_zval, "get", "_GET");
-    php_request_copy_global_lit(_this_zval, "post", "_POST");
+    php_request_copy_global_lit(_this_zval, "env", zv_globals, "_ENV");
+    php_request_copy_global_lit(_this_zval, "server", zv_globals, "_SERVER");
+    php_request_copy_global_lit(_this_zval, "cookie", zv_globals, "_COOKIE");
+    php_request_copy_global_lit(_this_zval, "files", zv_globals, "_FILES");
+    php_request_copy_global_lit(_this_zval, "get", zv_globals, "_GET");
+    php_request_copy_global_lit(_this_zval, "post", zv_globals, "_POST");
 
     // Read back server property
     server = zend_read_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("server"), 0, &rv);
