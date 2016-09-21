@@ -41,6 +41,7 @@ nbproject
 *.out
 .php-version
 .*project
+reports/
 run-tests.php
 .settings
 specs

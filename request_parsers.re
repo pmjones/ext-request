@@ -18,6 +18,10 @@
 
 typedef unsigned char YYCTYPE;
 
+#define lex php_request_lex_generic
+#define strip_slashes php_request_strip_slashes
+#define token1 php_request_parser_token_init
+
 /*!re2c
     re2c:define:YYCURSOR = in->cur;
     re2c:define:YYMARKER = in->mar;
@@ -74,7 +78,7 @@ static zend_string *strip_slashes(const unsigned char *str, size_t len)
     return buf.s;
 }
 
-static inline void token1(struct scanner_token *tok, enum scanner_token_type type,  const YYCTYPE *yytext, size_t yyleng)
+static inline void token1(struct scanner_token *tok, enum scanner_token_type type, const YYCTYPE *yytext, size_t yyleng)
 {
     tok->type = type;
     tok->yytext = yytext;

@@ -1,7 +1,5 @@
 
 #ifdef HAVE_CONFIG_H
-
-#include <main/SAPI.h>
 #include "config.h"
 #endif
 
@@ -1002,7 +1000,7 @@ static zend_function_entry PhpResponse_methods[] = {
 /* }}} PhpResponse methods */
 
 /* {{{ PHP_MINIT_FUNCTION */
-PHP_MINIT_FUNCTION(response)
+PHP_MINIT_FUNCTION(stdresponse)
 {
     zend_class_entry ce;
 
