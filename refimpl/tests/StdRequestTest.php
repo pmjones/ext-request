@@ -1,15 +1,15 @@
 <?php
 // this allows for using this test for *both* the reference
 // implementation *and* the extension
-if (! class_exists('PhpRequest')) {
-    require dirname(__DIR__) . '/src/PhpRequest.php';
+if (! class_exists('StdRequest')) {
+    require dirname(__DIR__) . '/src/StdRequest.php';
 }
 
 /**
  * @todo test that StdClass objects remain read-only
  * @backupGlobals enabled
  */
-class PhpRequestTest extends PHPUnit_Framework_TestCase
+class StdRequestTest extends PHPUnit_Framework_TestCase
 {
     protected function setUp()
     {
@@ -18,8 +18,8 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
 
     public function test__construct()
     {
-        $request = new PhpRequest();
-        $this->assertInstanceOf(PhpRequest::CLASS, $request);
+        $request = new StdRequest();
+        $this->assertInstanceOf(StdRequest::CLASS, $request);
     }
 
     public function test__construct_customGlobals()
@@ -46,7 +46,7 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
                 'k' => 'l',
             ],
         ];
-        $request = new PhpRequest($fakeGlobals);
+        $request = new StdRequest($fakeGlobals);
         $this->assertSame('foo.bar', $request->url['host']);
         $this->assertSame($fakeGlobals['_ENV'], $request->env);
         $this->assertSame($fakeGlobals['_SERVER'], $request->server);
@@ -59,12 +59,12 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
     public function test__get()
     {
         $_SERVER['REQUEST_METHOD'] = 'PATCH';
-        $request = new PhpRequest();
+        $request = new StdRequest();
         $this->assertTrue(isset($request->method));
 
         $this->setExpectedException(
             RuntimeException::CLASS,
-            'PhpRequest::$noSuchProperty does not exist.'
+            'StdRequest::$noSuchProperty does not exist.'
         );
         $request->noSuchProperty;
     }
@@ -72,12 +72,12 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
     public function test__unset()
     {
         $_SERVER['REQUEST_METHOD'] = 'PATCH';
-        $request = new PhpRequest();
+        $request = new StdRequest();
         unset($request->noSuchProperty); // not set - shouldn't cause error
 
         $this->setExpectedException(
             RuntimeException::CLASS,
-            'PhpRequest is read-only.'
+            'StdRequest is read-only.'
         );
 
         unset($request->method);
@@ -86,7 +86,7 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
     public function test__isset()
     {
         $_SERVER['REQUEST_METHOD'] = 'PATCH';
-        $request = new PhpRequest();
+        $request = new StdRequest();
         $this->assertTrue(isset($request->method));
         $this->assertFalse(isset($request->noSuchProperty));
     }
@@ -94,11 +94,11 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
     public function test__set()
     {
         $_SERVER['REQUEST_METHOD'] = 'PATCH';
-        $request = new PhpRequest();
+        $request = new StdRequest();
 
         $this->setExpectedException(
             RuntimeException::CLASS,
-            'PhpRequest is read-only.'
+            'StdRequest is read-only.'
         );
 
         $request->method = 'PATCH';
@@ -106,24 +106,24 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
 
     public function testSuperglobalsAreCopied()
     {
-        $request = new PhpRequest();
+        $request = new StdRequest();
         $_SERVER['HTTP_HOST'] = 'NOT example.com';
         $this->assertSame('example.com', $request->server['HTTP_HOST']);
     }
 
     public function testMethod()
     {
-        $request = new PhpRequest();
+        $request = new StdRequest();
         $this->assertSame('', $request->method);
         $this->assertFalse($request->xhr);
 
         $_SERVER['REQUEST_METHOD'] = 'POST';
-        $request = new PhpRequest();
+        $request = new StdRequest();
         $this->assertSame('POST', $request->method);
         $this->assertFalse($request->xhr);
 
         $_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE'] = 'PATCH';
-        $request = new PhpRequest();
+        $request = new StdRequest();
         $this->assertSame('PATCH', $request->method);
         $this->assertTrue($request->xhr);
     }
@@ -138,7 +138,7 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
             'CONTENT_TYPE' => 'text/plain',
         ];
 
-        $request = new PhpRequest();
+        $request = new StdRequest();
 
         $expect = [
             'Host' => 'example.com',
@@ -153,7 +153,7 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
     public function testSecure()
     {
         // default
-        $request = new PhpRequest();
+        $request = new StdRequest();
         $this->assertFalse($request->secure);
 
         // https on
@@ -161,7 +161,7 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
             'HTTP_HOST' => 'example.com',
             'HTTPS' => 'on',
         ];
-        $request = new PhpRequest();
+        $request = new StdRequest();
         $this->assertTrue($request->secure);
 
         // https off
@@ -169,7 +169,7 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
             'HTTP_HOST' => 'example.com',
             'HTTPS' => 'off',
         ];
-        $request = new PhpRequest();
+        $request = new StdRequest();
         $this->assertFalse($request->secure);
 
         // port 443
@@ -177,7 +177,7 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
             'HTTP_HOST' => 'example.com',
             'SERVER_PORT' => '443',
         ];
-        $request = new PhpRequest();
+        $request = new StdRequest();
         $this->assertTrue($request->secure);
 
         // port 80
@@ -185,7 +185,7 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
             'HTTP_HOST' => 'example.com',
             'SERVER_PORT' => '80',
         ];
-        $request = new PhpRequest();
+        $request = new StdRequest();
         $this->assertFalse($request->secure);
 
         // forwarded https
@@ -193,7 +193,7 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
             'HTTP_HOST' => 'example.com',
             'HTTP_X_FORWARDED_PROTO' => 'https',
         ];
-        $request = new PhpRequest();
+        $request = new StdRequest();
         $this->assertTrue($request->secure);
 
         // forwarded http
@@ -201,7 +201,7 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
             'HTTP_HOST' => 'example.com',
             'HTTP_X_FORWARDED_PROTO' => 'http',
         ];
-        $request = new PhpRequest();
+        $request = new StdRequest();
         $this->assertFalse($request->secure);
     }
 
@@ -211,7 +211,7 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
             'REQUEST_URI' => '/foo/bar?baz=dib',
             'SERVER_PORT' => '8080',
         ];
-        $request = new PhpRequest();
+        $request = new StdRequest();
 
         $expect = [
             'scheme' => 'http',
@@ -231,15 +231,15 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
         $_SERVER = [];
         $this->setExpectedException(
             RuntimeException::CLASS,
-            'Could not determine host for PhpRequest.'
+            'Could not determine host for StdRequest.'
         );
-        $request = new PhpRequest();
+        $request = new StdRequest();
     }
 
     public function testUrl_secure()
     {
         $_SERVER['HTTPS'] = 'on';
-        $request = new PhpRequest();
+        $request = new StdRequest();
 
         $this->assertSame('https', $request->url['scheme']);
     }
@@ -250,7 +250,7 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
             'SERVER_NAME' => 'example.com',
         ];
 
-        $request = new PhpRequest();
+        $request = new StdRequest();
         $this->assertSame('example.com', $request->url['host']);
     }
 
@@ -260,7 +260,7 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
             'HTTP_HOST' => 'example.com:8080',
         ];
 
-        $request = new PhpRequest();
+        $request = new StdRequest();
         $this->assertSame('example.com', $request->url['host']);
         $this->assertSame(8080, $request->url['port']);
     }
@@ -271,7 +271,7 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
             'SERVER_PORT' => '8080',
         ];
 
-        $request = new PhpRequest();
+        $request = new StdRequest();
         $this->assertSame('example.com', $request->url['host']);
         $this->assertSame(8080, $request->url['port']);
     }
@@ -282,7 +282,7 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
             'HTTP_ACCEPT' => 'application/xml;q=0.8, application/json;foo=bar, text/*;q=0.2, */*;q=0.1',
         ];
 
-        $request = new PhpRequest();
+        $request = new StdRequest();
 
         $expect = [
             0 => [
@@ -316,7 +316,7 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
             'HTTP_ACCEPT_CHARSET' => 'iso-8859-5;q=0.8, unicode-1-1',
         ];
 
-        $request = new PhpRequest();
+        $request = new StdRequest();
 
         $expect = [
             0 => [
@@ -340,7 +340,7 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
             'HTTP_ACCEPT_ENCODING' => 'compress;q=0.5, gzip;q=1.0',
         ];
 
-        $request = new PhpRequest();
+        $request = new StdRequest();
 
         $expect = [
             0 => [
@@ -364,7 +364,7 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
             'HTTP_ACCEPT_LANGUAGE' => 'en-US, en-GB, en, *',
         ];
 
-        $request = new PhpRequest();
+        $request = new StdRequest();
 
         $expect = [
             0 => [
@@ -408,7 +408,7 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
             'PHP_AUTH_PW' => 'bar'
         ];
 
-        $request = new PhpRequest();
+        $request = new StdRequest();
 
         $this->assertSame('Basic', $request->authType);
         $this->assertSame('foo', $request->authUser);
@@ -430,7 +430,7 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
             ]),
         ];
 
-        $request = new PhpRequest();
+        $request = new StdRequest();
 
         $expect = [
             'nonce' => 'foo',
@@ -456,7 +456,7 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
             ]),
         ];
 
-        $request = new PhpRequest();
+        $request = new StdRequest();
         $this->assertSame('Digest', $request->authType);
         $this->assertNull($request->authDigest);
     }
@@ -469,28 +469,28 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
             'HTTP_CONTENT_TYPE' => 'text/plain',
         ];
 
-        $request = new PhpRequest();
+        $request = new StdRequest();
         $this->assertSame('foobar', $request->contentMd5);
         $this->assertSame('123', $request->contentLength);
         $this->assertSame('text/plain', $request->contentType);
         $this->assertNull($request->contentCharset);
 
         $_SERVER['HTTP_CONTENT_TYPE'] = 'text/plain;charset=utf-8';
-        $request = new PhpRequest();
+        $request = new StdRequest();
         $this->assertSame('foobar', $request->contentMd5);
         $this->assertSame('123', $request->contentLength);
         $this->assertSame('text/plain', $request->contentType);
         $this->assertSame('utf-8', $request->contentCharset);
 
         $_SERVER['HTTP_CONTENT_TYPE'] = 'text/plain;foo=bar';
-        $request = new PhpRequest();
+        $request = new StdRequest();
         $this->assertSame('foobar', $request->contentMd5);
         $this->assertSame('123', $request->contentLength);
         $this->assertSame('text/plain', $request->contentType);
         $this->assertNull($request->contentCharset);
 
         $_SERVER['HTTP_CONTENT_TYPE'] = 'text/plain;foo=bar;charset=utf-8;baz=dib';
-        $request = new PhpRequest();
+        $request = new StdRequest();
         $this->assertSame('foobar', $request->contentMd5);
         $this->assertSame('123', $request->contentLength);
         $this->assertSame('text/plain', $request->contentType);
@@ -607,7 +607,7 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
           ],
         ];
 
-        $request = new PhpRequest();
+        $request = new StdRequest();
 
         $expect = [
           'foo1' => [
@@ -774,7 +774,7 @@ class PhpRequestTest extends PHPUnit_Framework_TestCase
           ],
         ];
 
-        $request = new PhpRequest();
+        $request = new StdRequest();
 
         $expect = [
           'dib' => [

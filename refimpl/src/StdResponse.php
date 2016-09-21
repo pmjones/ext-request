@@ -14,7 +14,7 @@
  * Capture other auto-sent headers? (E.g. session header, caching headers.)
  *
  */
-class PhpResponse
+class StdResponse
 {
     protected $version = '1.1';
     protected $status = 200;
@@ -166,7 +166,7 @@ class PhpResponse
     public function setContentResource($fh, $disposition, array $params = []) // : void
     {
         if (! is_resource($fh)) {
-            throw new TypeError("Argument 1 passed to PhpResponse::setContentResource() must be of the type resource, string given");
+            throw new TypeError("Argument 1 passed to StdResponse::setContentResource() must be of the type resource, string given");
         }
         $this->setHeader('Content-Type', 'application/octet-stream');
         $this->setHeader('Content-Transfer-Encoding',  'binary');

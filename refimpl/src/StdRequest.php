@@ -36,7 +36,7 @@
  * @property-read $xhr
  *
  */
-class PhpRequest
+class StdRequest
 {
     protected $acceptCharset = [];
     protected $acceptEncoding = [];
@@ -90,12 +90,12 @@ class PhpRequest
             return $this->$key;
         }
 
-        throw new RuntimeException("PhpRequest::\${$key} does not exist.");
+        throw new RuntimeException("StdRequest::\${$key} does not exist.");
     }
 
     public function __set($key, $val) // : void
     {
-        throw new RuntimeException("PhpRequest is read-only.");
+        throw new RuntimeException("StdRequest is read-only.");
     }
 
     public function __isset($key) // : bool
@@ -110,7 +110,7 @@ class PhpRequest
     public function __unset($key) // : void
     {
         if( property_exists($this, $key) ) {
-            throw new RuntimeException("PhpRequest is read-only.");
+            throw new RuntimeException("StdRequest is read-only.");
         }
     }
 
@@ -173,7 +173,7 @@ class PhpRequest
         } elseif (isset($this->server['SERVER_NAME'])) {
             $host = $this->server['SERVER_NAME'];
         } else {
-            throw new RuntimeException("Could not determine host for PhpRequest.");
+            throw new RuntimeException("Could not determine host for StdRequest.");
         }
 
         // port

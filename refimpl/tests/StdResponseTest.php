@@ -1,17 +1,17 @@
 <?php
 // this allows for using this test for *both* the reference
 // implementation *and* the extension
-if (! class_exists('PhpResponse')) {
-    require dirname(__DIR__) . '/src/PhpResponse.php';
+if (! class_exists('StdResponse')) {
+    require dirname(__DIR__) . '/src/StdResponse.php';
 }
 
-class PhpResponseTest extends PHPUnit_Framework_TestCase
+class StdResponseTest extends PHPUnit_Framework_TestCase
 {
     protected $response;
 
     protected function setUp()
     {
-        $this->response = new PhpResponse();
+        $this->response = new StdResponse();
     }
 
     public function testVersion()
@@ -171,7 +171,7 @@ class PhpResponseTest extends PHPUnit_Framework_TestCase
     {
         $this->setExpectedException(
             'TypeError',
-            'Argument 1 passed to PhpResponse::setContentResource() must be of the type resource, string given'
+            'Argument 1 passed to StdResponse::setContentResource() must be of the type resource, string given'
         );
         $this->response->setContentResource('not-a-resource', 'disposition');
     }
