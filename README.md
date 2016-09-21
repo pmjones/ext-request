@@ -1,3 +1,4 @@
+
 # ext/request
 
 This extension provides fundamental server-side request and response objects for PHP. These are *not* HTTP message objects proper. They are more like wrappers for existing global PHP variables and functions, with some limited additional convenience functionality.
@@ -160,7 +161,7 @@ _StdResponse_ has these public methods.
 
 - `setCookie(...)`: A buffered equivalent of [`setcookie()`](http://php.net/setcookie) with identical arguments.
 
-- `setRawCookie(...)`: A buffered equivalent of [`setrawcookie()`](http://php.net/setrawookie) with identical arguments.
+- `setRawCookie(...)`: A buffered equivalent of [`setrawcookie()`](http://php.net/setrawcookie) with identical arguments.
 
 - `getCookies()`: Returns the array of cookies to be sent.
 
@@ -180,4 +181,4 @@ _StdResponse_ has these public methods.
 
 #### Sending
 
-- `send()`: This sends the response version, status, headers, and cookie using native PHP functions `header()`, `setcookie()`, and `setrawcookie()`. Then, if the response content is a resource, it is sent with `fpassthru()`; if a callable object or closure, it is invoked; otherwise, the content is `echo`ed.
+- `send()`: This sends the response version, status, headers, and cookies using native PHP functions `header()`, `setcookie()`, and `setrawcookie()`. Then, if the response content is a resource, it is sent with `fpassthru()`; if a callable object or closure, it is invoked; otherwise, the content is `echo`ed.
