@@ -14,15 +14,17 @@ if (! class_exists('StdRequest')) {
  */
 class ExtendedRequest extends StdRequest
 {
-    protected $other;
+    private $other;
 
     public function __get($key)
     {
-        if (property_exists($this, $key)) {
+        if (extension_loaded('request')) {
             return $this->$key;
+        } else if( property_exists($this, $key) ) {
+            return $this->$key;
+        } else {
+            return parent::__get($key);
         }
-
-        return parent::$key;
     }
 
     public function setParent($name, $value)
