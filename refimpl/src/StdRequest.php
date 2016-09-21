@@ -36,7 +36,7 @@
  * @property-read $xhr
  *
  */
-class PhpRequest
+class StdRequest
 {
     protected $acceptCharset = [];
     protected $acceptEncoding = [];
@@ -64,15 +64,15 @@ class PhpRequest
     protected $url;
     protected $xhr = false;
 
-    public function __construct()
+    public function __construct(array $globals = array())
     {
-        $this->env = $_ENV;
-        $this->server = $_SERVER;
+        $this->env = $globals['_ENV'] ?? $_ENV;
+        $this->server = $globals['_SERVER'] ?? $_SERVER;
 
-        $this->cookie = $_COOKIE;
-        $this->files = $_FILES;
-        $this->get = $_GET;
-        $this->post = $_POST;
+        $this->cookie = $globals['_COOKIE'] ?? $_COOKIE;
+        $this->files = $globals['_FILES'] ?? $_FILES;
+        $this->get = $globals['_GET'] ?? $_GET;
+        $this->post = $globals['_POST'] ?? $_POST;
 
         $this->setMethod();
         $this->setHeaders();
@@ -90,12 +90,12 @@ class PhpRequest
             return $this->$key;
         }
 
-        throw new RuntimeException("PhpRequest::\${$key} does not exist.");
+        throw new RuntimeException("StdRequest::\${$key} does not exist.");
     }
 
     public function __set($key, $val) // : void
     {
-        throw new RuntimeException("PhpRequest is read-only.");
+        throw new RuntimeException("StdRequest is read-only.");
     }
 
     public function __isset($key) // : bool
@@ -104,12 +104,14 @@ class PhpRequest
             return isset($this->$key);
         }
 
-        throw new RuntimeException("PhpRequest::\${$key} does not exist.");
+        return false;
     }
 
     public function __unset($key) // : void
     {
-        throw new RuntimeException("PhpRequest is read-only.");
+        if( property_exists($this, $key) ) {
+            throw new RuntimeException("StdRequest is read-only.");
+        }
     }
 
     protected function setMethod() // : void
@@ -171,7 +173,7 @@ class PhpRequest
         } elseif (isset($this->server['SERVER_NAME'])) {
             $host = $this->server['SERVER_NAME'];
         } else {
-            throw new RuntimeException("Could not determine host for PhpRequest.");
+            throw new RuntimeException("Could not determine host for StdRequest.");
         }
 
         // port

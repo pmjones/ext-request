@@ -1,17 +1,17 @@
 <?php
 // this allows for using this test for *both* the reference
 // implementation *and* the extension
-if (! class_exists('PhpResponse')) {
-    require dirname(__DIR__) . '/src/PhpResponse.php';
+if (! class_exists('StdResponse')) {
+    require dirname(__DIR__) . '/src/StdResponse.php';
 }
 
-class PhpResponseTest extends PHPUnit_Framework_TestCase
+class StdResponseTest extends PHPUnit_Framework_TestCase
 {
     protected $response;
 
     protected function setUp()
     {
-        $this->response = new PhpResponse();
+        $this->response = new StdResponse();
     }
 
     public function testVersion()
@@ -122,7 +122,7 @@ class PhpResponseTest extends PHPUnit_Framework_TestCase
                 'httponly' => false,
             ],
         ];
-        $this->assertSame($expect, $this->response->getCookies());
+        $this->assertEquals($expect, $this->response->getCookies());
     }
 
     public function testContent()
@@ -136,6 +136,7 @@ class PhpResponseTest extends PHPUnit_Framework_TestCase
         $value = ['foo' => 'bar'];
         $this->response->setContentJson($value);
         $this->assertSame('{"foo":"bar"}', $this->response->getContent());
+        $this->assertSame(array('application/json'), $this->response->getHeaders()['Content-Type']);
     }
 
     public function testSetContentJson_failed()
@@ -169,8 +170,8 @@ class PhpResponseTest extends PHPUnit_Framework_TestCase
     public function testSetContentResource_notResource()
     {
         $this->setExpectedException(
-            'RuntimeException',
-            'Content must be a resource.'
+            'TypeError',
+            'Argument 1 passed to StdResponse::setContentResource() must be of the type resource, string given'
         );
         $this->response->setContentResource('not-a-resource', 'disposition');
     }
@@ -210,6 +211,14 @@ class PhpResponseTest extends PHPUnit_Framework_TestCase
 
         $date = new DateTime('1979-11-07 +0000');
         $this->assertSame($expect, $this->response->date($date));
+
+        $this->assertSame($expect, $this->response->date('1979-11-07 03:00:00 +0300'));
+    }
+
+    public function testDateInvalid()
+    {
+        $this->setExpectedException('Exception');
+        $this->response->date(true);
     }
 
     /**
