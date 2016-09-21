@@ -12,7 +12,6 @@
 #include "Zend/zend_smart_str.h"
 
 #include "php_request.h"
-#include "request_parsers.h"
 
 /* Adapted from http://re2c.org/examples/example_07.html */
 
