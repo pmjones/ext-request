@@ -1,10 +1,10 @@
 --TEST--
-PhpResponse::addHeader (array)
+StdResponse::addHeader (array)
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --FILE--
 <?php
-$response = new PhpResponse();
+$response = new StdResponse();
 $response->addHeader('Foo', ['bar' => 'baz']);
 $response->addHeader('Foo', ['dib' => ['zim', 'gir']]);
 var_dump($response->getHeaders());

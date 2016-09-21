@@ -1,10 +1,10 @@
 --TEST--
-PhpResponse::setStatus
+StdResponse::setStatus
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --FILE--
 <?php
-$response = new PhpResponse();
+$response = new StdResponse();
 $response->setStatus('500');
 var_dump($response->getStatus());
 $response->setStatus(401);

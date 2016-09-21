@@ -1,12 +1,12 @@
 --TEST--
-PhpResponse::setContentResource
+StdResponse::setContentResource
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --EXTENSIONS--
 json
 --FILE--
 <?php
-$response = new PhpResponse();
+$response = new StdResponse();
 $fh = fopen('php://temp', 'rb');
 $response->setContentResource(
     $fh,

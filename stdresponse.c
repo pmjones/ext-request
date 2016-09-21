@@ -21,7 +21,7 @@
 
 #include "php_request.h"
 
-zend_class_entry * PhpResponse_ce_ptr;
+zend_class_entry * StdResponse_ce_ptr;
 
 /* {{{ Argument Info */
 #define AI(method) PhpReponse_##method##_args
@@ -184,14 +184,14 @@ static void php_response_header(zval *object, zend_string *label, zval *value, z
 
     // Read property pointer
     if( !Z_OBJ_HT_P(object)->get_property_ptr_ptr ) {
-        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "PhpResponse::setHeader requires get_property_ptr_ptr");
+        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "StdResponse::setHeader requires get_property_ptr_ptr");
         return;
     }
 
     ZVAL_STRING(&member, "headers");
     prop_ptr = Z_OBJ_HT_P(object)->get_property_ptr_ptr(object, &member, BP_VAR_RW, NULL);
     if( !prop_ptr || Z_TYPE_P(prop_ptr) != IS_ARRAY ) {
-        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "PhpResponse::$headers must be an array");
+        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "StdResponse::$headers must be an array");
         return;
     }
 
@@ -254,8 +254,8 @@ static inline void php_response_header_stringl(
 }
 /* }}} */
 
-/* {{{ proto PhpResponse::__construct() */
-PHP_METHOD(PhpResponse, __construct)
+/* {{{ proto StdResponse::__construct() */
+PHP_METHOD(StdResponse, __construct)
 {
     zval *_this_zval = getThis();
     zval arr;
@@ -268,10 +268,10 @@ PHP_METHOD(PhpResponse, __construct)
     array_init(&arr);
     zend_update_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("cookies"), &arr);
 }
-/* }}} PhpResponse::getVersion */
+/* }}} StdResponse::getVersion */
 
-/* {{{ proto string PhpResponse::getVersion() */
-PHP_METHOD(PhpResponse, getVersion)
+/* {{{ proto string StdResponse::getVersion() */
+PHP_METHOD(StdResponse, getVersion)
 {
     zval *_this_zval = getThis();
     zval *retval;
@@ -284,10 +284,10 @@ PHP_METHOD(PhpResponse, getVersion)
         RETVAL_ZVAL(retval, 1, 0);
     }
 }
-/* }}} PhpResponse::getVersion */
+/* }}} StdResponse::getVersion */
 
-/* {{{ proto void PhpResponse::setVersion(string $version) */
-PHP_METHOD(PhpResponse, setVersion)
+/* {{{ proto void StdResponse::setVersion(string $version) */
+PHP_METHOD(StdResponse, setVersion)
 {
     zval *_this_zval = getThis();
     zend_string *version;
@@ -298,10 +298,10 @@ PHP_METHOD(PhpResponse, setVersion)
 
     zend_update_property_str(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("version"), version);
 }
-/* }}} PhpResponse::setVersion */
+/* }}} StdResponse::setVersion */
 
-/* {{{ proto int PhpResponse::getStatus() */
-PHP_METHOD(PhpResponse, getStatus)
+/* {{{ proto int StdResponse::getStatus() */
+PHP_METHOD(StdResponse, getStatus)
 {
     zval *_this_zval = getThis();
     zval *retval;
@@ -315,10 +315,10 @@ PHP_METHOD(PhpResponse, getStatus)
     }
     convert_to_long(return_value);
 }
-/* }}} PhpResponse::getStatus */
+/* }}} StdResponse::getStatus */
 
-/* {{{ proto void PhpResponse::setStatus(int $version) */
-PHP_METHOD(PhpResponse, setStatus)
+/* {{{ proto void StdResponse::setStatus(int $version) */
+PHP_METHOD(StdResponse, setStatus)
 {
     zval *_this_zval = getThis();
     zend_long status;
@@ -329,10 +329,10 @@ PHP_METHOD(PhpResponse, setStatus)
 
     zend_update_property_long(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("status"), status);
 }
-/* }}} PhpResponse::setStatus */
+/* }}} StdResponse::setStatus */
 
-/* {{{ proto array PhpResponse::getHeaders() */
-PHP_METHOD(PhpResponse, getHeaders)
+/* {{{ proto array StdResponse::getHeaders() */
+PHP_METHOD(StdResponse, getHeaders)
 {
     zval *_this_zval = getThis();
     zval *retval;
@@ -345,10 +345,10 @@ PHP_METHOD(PhpResponse, getHeaders)
         RETVAL_ZVAL(retval, 1, 0);
     }
 }
-/* }}} PhpResponse::getHeaders */
+/* }}} StdResponse::getHeaders */
 
-/* {{{ proto void PhpResponse::setHeader(string $label, mixed $value) */
-PHP_METHOD(PhpResponse, setHeader)
+/* {{{ proto void StdResponse::setHeader(string $label, mixed $value) */
+PHP_METHOD(StdResponse, setHeader)
 {
     zend_string *label;
     zval *value;
@@ -360,10 +360,10 @@ PHP_METHOD(PhpResponse, setHeader)
 
     php_response_header(getThis(), label, value, 1);
 }
-/* }}} PhpResponse::setHeader */
+/* }}} StdResponse::setHeader */
 
-/* {{{ proto void PhpResponse::addHeader(string $label, mixed $value) */
-PHP_METHOD(PhpResponse, addHeader)
+/* {{{ proto void StdResponse::addHeader(string $label, mixed $value) */
+PHP_METHOD(StdResponse, addHeader)
 {
     zend_string *label;
     zval *value;
@@ -375,10 +375,10 @@ PHP_METHOD(PhpResponse, addHeader)
 
     php_response_header(getThis(), label, value, 0);
 }
-/* }}} PhpResponse::addHeader */
+/* }}} StdResponse::addHeader */
 
-/* {{{ proto array PhpResponse::getCookies() */
-PHP_METHOD(PhpResponse, getCookies)
+/* {{{ proto array StdResponse::getCookies() */
+PHP_METHOD(StdResponse, getCookies)
 {
     zval *_this_zval = getThis();
     zval *retval;
@@ -391,9 +391,9 @@ PHP_METHOD(PhpResponse, getCookies)
         RETVAL_ZVAL(retval, 1, 0);
     }
 }
-/* }}} PhpResponse::getCookies */
+/* }}} StdResponse::getCookies */
 
-/* {{{ proto void PhpResponse::setCookie(string name [, string value [, int expires [, string path [, string domain [, bool secure[, bool httponly]]]]]]) */
+/* {{{ proto void StdResponse::setCookie(string name [, string value [, int expires [, string path [, string domain [, bool secure[, bool httponly]]]]]]) */
 static void php_response_setcookie(INTERNAL_FUNCTION_PARAMETERS, zend_bool raw)
 {
     zend_string *name;
@@ -421,7 +421,7 @@ static void php_response_setcookie(INTERNAL_FUNCTION_PARAMETERS, zend_bool raw)
     ZEND_PARSE_PARAMETERS_END();
 
     if( !Z_OBJ_HT_P(_this_zval)->get_property_ptr_ptr ) {
-        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "PhpResponse::setCookie requires get_property_ptr_ptr");
+        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "StdResponse::setCookie requires get_property_ptr_ptr");
         return;
     }
 
@@ -469,21 +469,21 @@ static void php_response_setcookie(INTERNAL_FUNCTION_PARAMETERS, zend_bool raw)
     zval_ptr_dtor(&member);
 }
 
-PHP_METHOD(PhpResponse, setCookie)
+PHP_METHOD(StdResponse, setCookie)
 {
     php_response_setcookie(INTERNAL_FUNCTION_PARAM_PASSTHRU, 0);
 }
-/* }}} PhpResponse::setCookie */
+/* }}} StdResponse::setCookie */
 
-/* {{{ proto void PhpResponse::setRawCookie(string name [, string value [, int expires [, string path [, string domain [, bool secure[, bool httponly]]]]]]) */
-PHP_METHOD(PhpResponse, setRawCookie)
+/* {{{ proto void StdResponse::setRawCookie(string name [, string value [, int expires [, string path [, string domain [, bool secure[, bool httponly]]]]]]) */
+PHP_METHOD(StdResponse, setRawCookie)
 {
     php_response_setcookie(INTERNAL_FUNCTION_PARAM_PASSTHRU, 1);
 }
-/* }}} PhpResponse::setRawCookie */
+/* }}} StdResponse::setRawCookie */
 
-/* {{{ proto mixed PhpResponse::getContent() */
-PHP_METHOD(PhpResponse, getContent)
+/* {{{ proto mixed StdResponse::getContent() */
+PHP_METHOD(StdResponse, getContent)
 {
     zval *_this_zval = getThis();
     zval *retval;
@@ -496,10 +496,10 @@ PHP_METHOD(PhpResponse, getContent)
         RETVAL_ZVAL(retval, 1, 0);
     }
 }
-/* }}} PhpResponse::getContent */
+/* }}} StdResponse::getContent */
 
-/* {{{ proto void PhpResponse::setContent(mixed $content) */
-PHP_METHOD(PhpResponse, setContent)
+/* {{{ proto void StdResponse::setContent(mixed $content) */
+PHP_METHOD(StdResponse, setContent)
 {
     zval *_this_zval = getThis();
     zval *content;
@@ -510,9 +510,9 @@ PHP_METHOD(PhpResponse, setContent)
 
     zend_update_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("content"), content);
 }
-/* }}} PhpResponse::setContent */
+/* }}} StdResponse::setContent */
 
-/* {{{ proto void PhpResponse::setContentJson(mixed $value [, int $options [, int $depth = 512]]) */
+/* {{{ proto void StdResponse::setContentJson(mixed $value [, int $options [, int $depth = 512]]) */
 static inline void throw_json_exception()
 {
     zval func_name = {0};
@@ -534,7 +534,7 @@ static inline void throw_json_exception()
     zval_ptr_dtor(&json_errno);
 }
 
-PHP_METHOD(PhpResponse, setContentJson)
+PHP_METHOD(StdResponse, setContentJson)
 {
     zval *value;
     zend_long options = 0;
@@ -587,10 +587,10 @@ PHP_METHOD(PhpResponse, setContentJson)
     // Set header
     php_response_header_stringl(_this_zval, ZEND_STRL("Content-Type"), ZEND_STRL("application/json"), 1);
 }
-/* }}} PhpResponse::setContentJson */
+/* }}} StdResponse::setContentJson */
 
-/* {{{ proto void PhpResponse::setContentResource(resource $fh [, string $disposition [, array $params = array()]]) */
-PHP_METHOD(PhpResponse, setContentResource)
+/* {{{ proto void StdResponse::setContentResource(resource $fh [, string $disposition [, array $params = array()]]) */
+PHP_METHOD(StdResponse, setContentResource)
 {
     zval *zstream;
     zend_string *disposition = NULL;
@@ -627,7 +627,7 @@ PHP_METHOD(PhpResponse, setContentResource)
     // Update content
     zend_update_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("content"), zstream);
 }
-/* }}} PhpResponse::setContentResource */
+/* }}} StdResponse::setContentResource */
 
 /* {{{ php_response_set_download */
 static inline void php_response_set_download(INTERNAL_FUNCTION_PARAMETERS, zend_bool is_inline)
@@ -686,22 +686,22 @@ static inline void php_response_set_download(INTERNAL_FUNCTION_PARAMETERS, zend_
 }
 /* }}} */
 
-/* {{{ proto void PhpResponse::setDownload(resource $fh [, string $name [, array $params = array()]]) */
-PHP_METHOD(PhpResponse, setDownload)
+/* {{{ proto void StdResponse::setDownload(resource $fh [, string $name [, array $params = array()]]) */
+PHP_METHOD(StdResponse, setDownload)
 {
     php_response_set_download(INTERNAL_FUNCTION_PARAM_PASSTHRU, 0);
 }
-/* }}} PhpResponse::setDownload */
+/* }}} StdResponse::setDownload */
 
-/* {{{ proto void PhpResponse::setDownloadInline(resource $fh [, string $name [, array $params = array()]]) */
-PHP_METHOD(PhpResponse, setDownloadInline)
+/* {{{ proto void StdResponse::setDownloadInline(resource $fh [, string $name [, array $params = array()]]) */
+PHP_METHOD(StdResponse, setDownloadInline)
 {
     php_response_set_download(INTERNAL_FUNCTION_PARAM_PASSTHRU, 1);
 }
-/* }}} PhpResponse::setDownloadInline */
+/* }}} StdResponse::setDownloadInline */
 
-/* {{{ proto string PhpResponse::date(mixed $date) */
-PHP_METHOD(PhpResponse, date)
+/* {{{ proto string StdResponse::date(mixed $date) */
+PHP_METHOD(StdResponse, date)
 {
     zval *date_arg;
     zval *date;
@@ -738,10 +738,10 @@ PHP_METHOD(PhpResponse, date)
     zval_ptr_dtor(&tmp);
     zval_ptr_dtor(&ts);
 }
-/* }}} PhpResponse::date */
+/* }}} StdResponse::date */
 
-/* {{{ proto void PhpResponse::send() */
-PHP_METHOD(PhpResponse, send)
+/* {{{ proto void StdResponse::send() */
+PHP_METHOD(StdResponse, send)
 {
     zval *_this_zval = getThis();
     zval rv = {0};
@@ -756,10 +756,10 @@ PHP_METHOD(PhpResponse, send)
 
     zval_ptr_dtor(&rv);
 }
-/* }}} PhpResponse::send */
+/* }}} StdResponse::send */
 
-/* {{{ proto void PhpResponse::sendStatus() */
-PHP_METHOD(PhpResponse, sendStatus)
+/* {{{ proto void StdResponse::sendStatus() */
+PHP_METHOD(StdResponse, sendStatus)
 {
     zval *_this_zval = getThis();
     sapi_header_line ctr = {0};
@@ -799,9 +799,9 @@ PHP_METHOD(PhpResponse, sendStatus)
 
     smart_str_free(&buf);
 }
-/* }}} PhpResponse::sendStatus */
+/* }}} StdResponse::sendStatus */
 
-/* {{{ proto void PhpResponse::sendHeaders() */
+/* {{{ proto void StdResponse::sendHeaders() */
 static inline void send_header(zend_string *header, zval *arr)
 {
     zval *val;
@@ -826,7 +826,8 @@ static inline void send_header(zend_string *header, zval *arr)
         smart_str_free(&buf);
     } ZEND_HASH_FOREACH_END();
 }
-PHP_METHOD(PhpResponse, sendHeaders)
+
+PHP_METHOD(StdResponse, sendHeaders)
 {
     zval *_this_zval = getThis();
     zval *tmp;
@@ -849,9 +850,9 @@ PHP_METHOD(PhpResponse, sendHeaders)
         }
     } ZEND_HASH_FOREACH_END();
 }
-/* }}} PhpResponse::sendHeaders */
+/* }}} StdResponse::sendHeaders */
 
-/* {{{ proto void PhpResponse::sendCookies() */
+/* {{{ proto void StdResponse::sendCookies() */
 static inline void send_cookie(zend_string *name, zval *arr)
 {
     zval *tmp;
@@ -895,7 +896,8 @@ static inline void send_cookie(zend_string *name, zval *arr)
 
     php_setcookie(name, value, expires, path, domain, secure, !raw, httponly);
 }
-PHP_METHOD(PhpResponse, sendCookies)
+
+PHP_METHOD(StdResponse, sendCookies)
 {
     zval *_this_zval = getThis();
     zval *tmp;
@@ -918,10 +920,10 @@ PHP_METHOD(PhpResponse, sendCookies)
         }
     } ZEND_HASH_FOREACH_END();
 }
-/* }}} PhpResponse::sendCookies */
+/* }}} StdResponse::sendCookies */
 
-/* {{{ proto void PhpResponse::sendContent() */
-PHP_METHOD(PhpResponse, sendContent)
+/* {{{ proto void StdResponse::sendContent() */
+PHP_METHOD(StdResponse, sendContent)
 {
     zval *_this_zval = getThis();
     zval *tmp;
@@ -967,50 +969,50 @@ PHP_METHOD(PhpResponse, sendContent)
             break;
     }
 }
-/* }}} PhpResponse::sendContent */
+/* }}} StdResponse::sendContent */
 
-/* {{{ PhpResponse methods */
-static zend_function_entry PhpResponse_methods[] = {
-    PHP_ME(PhpResponse, __construct, AI(__construct), ZEND_ACC_PUBLIC)
-    PHP_ME(PhpResponse, getVersion, AI(getVersion), ZEND_ACC_PUBLIC)
-    PHP_ME(PhpResponse, setVersion, AI(setVersion), ZEND_ACC_PUBLIC)
-    PHP_ME(PhpResponse, getStatus, AI(getStatus), ZEND_ACC_PUBLIC)
-    PHP_ME(PhpResponse, setStatus, AI(setStatus), ZEND_ACC_PUBLIC)
-    PHP_ME(PhpResponse, getHeaders, AI(getHeaders), ZEND_ACC_PUBLIC)
-    PHP_ME(PhpResponse, setHeader, AI(addSetHeader), ZEND_ACC_PUBLIC)
-    PHP_ME(PhpResponse, addHeader, AI(addSetHeader), ZEND_ACC_PUBLIC)
-    PHP_ME(PhpResponse, getCookies, AI(getCookies), ZEND_ACC_PUBLIC)
-    PHP_ME(PhpResponse, setCookie, AI(setCookie), ZEND_ACC_PUBLIC)
-    PHP_ME(PhpResponse, setRawCookie, AI(setCookie), ZEND_ACC_PUBLIC)
-    PHP_ME(PhpResponse, getContent, AI(getContent), ZEND_ACC_PUBLIC)
-    PHP_ME(PhpResponse, setContent, AI(setContent), ZEND_ACC_PUBLIC)
-    PHP_ME(PhpResponse, setContentJson, AI(setContentJson), ZEND_ACC_PUBLIC)
-    PHP_ME(PhpResponse, setContentResource, AI(setContentResource), ZEND_ACC_PUBLIC)
-    PHP_ME(PhpResponse, setDownload, AI(setDownload), ZEND_ACC_PUBLIC)
-    PHP_ME(PhpResponse, setDownloadInline, AI(setDownload), ZEND_ACC_PUBLIC)
-    PHP_ME(PhpResponse, date, AI(date), ZEND_ACC_PUBLIC)
-    PHP_ME(PhpResponse, send, AI(send), ZEND_ACC_PUBLIC)
-    PHP_ME(PhpResponse, sendStatus, AI(send), ZEND_ACC_PROTECTED)
-    PHP_ME(PhpResponse, sendHeaders, AI(send), ZEND_ACC_PROTECTED)
-    PHP_ME(PhpResponse, sendCookies, AI(send), ZEND_ACC_PROTECTED)
-    PHP_ME(PhpResponse, sendContent, AI(send), ZEND_ACC_PROTECTED)
+/* {{{ StdResponse methods */
+static zend_function_entry StdResponse_methods[] = {
+    PHP_ME(StdResponse, __construct, AI(__construct), ZEND_ACC_PUBLIC)
+    PHP_ME(StdResponse, getVersion, AI(getVersion), ZEND_ACC_PUBLIC)
+    PHP_ME(StdResponse, setVersion, AI(setVersion), ZEND_ACC_PUBLIC)
+    PHP_ME(StdResponse, getStatus, AI(getStatus), ZEND_ACC_PUBLIC)
+    PHP_ME(StdResponse, setStatus, AI(setStatus), ZEND_ACC_PUBLIC)
+    PHP_ME(StdResponse, getHeaders, AI(getHeaders), ZEND_ACC_PUBLIC)
+    PHP_ME(StdResponse, setHeader, AI(addSetHeader), ZEND_ACC_PUBLIC)
+    PHP_ME(StdResponse, addHeader, AI(addSetHeader), ZEND_ACC_PUBLIC)
+    PHP_ME(StdResponse, getCookies, AI(getCookies), ZEND_ACC_PUBLIC)
+    PHP_ME(StdResponse, setCookie, AI(setCookie), ZEND_ACC_PUBLIC)
+    PHP_ME(StdResponse, setRawCookie, AI(setCookie), ZEND_ACC_PUBLIC)
+    PHP_ME(StdResponse, getContent, AI(getContent), ZEND_ACC_PUBLIC)
+    PHP_ME(StdResponse, setContent, AI(setContent), ZEND_ACC_PUBLIC)
+    PHP_ME(StdResponse, setContentJson, AI(setContentJson), ZEND_ACC_PUBLIC)
+    PHP_ME(StdResponse, setContentResource, AI(setContentResource), ZEND_ACC_PUBLIC)
+    PHP_ME(StdResponse, setDownload, AI(setDownload), ZEND_ACC_PUBLIC)
+    PHP_ME(StdResponse, setDownloadInline, AI(setDownload), ZEND_ACC_PUBLIC)
+    PHP_ME(StdResponse, date, AI(date), ZEND_ACC_PUBLIC)
+    PHP_ME(StdResponse, send, AI(send), ZEND_ACC_PUBLIC)
+    PHP_ME(StdResponse, sendStatus, AI(send), ZEND_ACC_PROTECTED)
+    PHP_ME(StdResponse, sendHeaders, AI(send), ZEND_ACC_PROTECTED)
+    PHP_ME(StdResponse, sendCookies, AI(send), ZEND_ACC_PROTECTED)
+    PHP_ME(StdResponse, sendContent, AI(send), ZEND_ACC_PROTECTED)
     PHP_FE_END
 };
-/* }}} PhpResponse methods */
+/* }}} StdResponse methods */
 
 /* {{{ PHP_MINIT_FUNCTION */
 PHP_MINIT_FUNCTION(stdresponse)
 {
     zend_class_entry ce;
 
-    INIT_CLASS_ENTRY(ce, "PhpResponse", PhpResponse_methods);
-    PhpResponse_ce_ptr = zend_register_internal_class(&ce);
+    INIT_CLASS_ENTRY(ce, "StdResponse", StdResponse_methods);
+    StdResponse_ce_ptr = zend_register_internal_class(&ce);
 
-    zend_declare_property_stringl(PhpResponse_ce_ptr, ZEND_STRL("version"), ZEND_STRL("1.1"), ZEND_ACC_PROTECTED);
-    zend_declare_property_long(PhpResponse_ce_ptr, ZEND_STRL("status"), 200, ZEND_ACC_PROTECTED);
-    zend_declare_property_null(PhpResponse_ce_ptr, ZEND_STRL("headers"), ZEND_ACC_PROTECTED);
-    zend_declare_property_null(PhpResponse_ce_ptr, ZEND_STRL("cookies"), ZEND_ACC_PROTECTED);
-    zend_declare_property_null(PhpResponse_ce_ptr, ZEND_STRL("content"), ZEND_ACC_PROTECTED);
+    zend_declare_property_stringl(StdResponse_ce_ptr, ZEND_STRL("version"), ZEND_STRL("1.1"), ZEND_ACC_PROTECTED);
+    zend_declare_property_long(StdResponse_ce_ptr, ZEND_STRL("status"), 200, ZEND_ACC_PROTECTED);
+    zend_declare_property_null(StdResponse_ce_ptr, ZEND_STRL("headers"), ZEND_ACC_PROTECTED);
+    zend_declare_property_null(StdResponse_ce_ptr, ZEND_STRL("cookies"), ZEND_ACC_PROTECTED);
+    zend_declare_property_null(StdResponse_ce_ptr, ZEND_STRL("content"), ZEND_ACC_PROTECTED);
 
     return SUCCESS;
 }

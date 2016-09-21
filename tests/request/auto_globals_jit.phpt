@@ -1,5 +1,5 @@
 --TEST--
-PhpRequest - auto_globals_jit
+StdRequest - auto_globals_jit
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --INI--
@@ -12,7 +12,7 @@ $var = '_SERVER';
 var_dump(isset($$var));
 // this will not error if $_SERVER is not defined, but return null - so we want it to error out here
 try {
-    $request = new PhpRequest();
+    $request = new StdRequest();
     var_dump($request->server);
 } catch( Exception $e ) {
     var_dump(true);

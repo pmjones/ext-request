@@ -1,31 +1,31 @@
 --TEST--
-PhpRequest::parseAccept
+StdRequest::parseAccept
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --FILE--
 <?php
 try {
-    var_dump(PhpRequest::parseAccept(null));
+    var_dump(StdRequest::parseAccept(null));
 } catch( Throwable $e ) {
     var_dump(get_class($e), $e->getMessage());
 }
 
-var_dump(PhpRequest::parseAccept(''));
+var_dump(StdRequest::parseAccept(''));
 
 // Accept
-var_dump(PhpRequest::parseAccept('application/xml;q=0.8, application/json;foo=bar, text/*;q=0.2, */*;q=0.1'));
+var_dump(StdRequest::parseAccept('application/xml;q=0.8, application/json;foo=bar, text/*;q=0.2, */*;q=0.1'));
 
 // Accept-Charset
-var_dump(PhpRequest::parseAccept('iso-8859-5;q=0.8, unicode-1-1'));
+var_dump(StdRequest::parseAccept('iso-8859-5;q=0.8, unicode-1-1'));
 
 // Accept-Encoding
-var_dump(PhpRequest::parseAccept('compress;q=0.5, gzip;q=1.0'));
+var_dump(StdRequest::parseAccept('compress;q=0.5, gzip;q=1.0'));
 
 // Accept-Language
-var_dump(PhpRequest::parseAccept('en-US, en-GB, en, *'));
+var_dump(StdRequest::parseAccept('en-US, en-GB, en, *'));
 --EXPECTF--
 string(9) "TypeError"
-string(%d) "Argument 1 passed to PhpRequest::parseAccept() must be of the type string, null given"
+string(%d) "Argument 1 passed to StdRequest::parseAccept() must be of the type string, null given"
 array(0) {
 }
 array(4) {

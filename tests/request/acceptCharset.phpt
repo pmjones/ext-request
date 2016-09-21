@@ -1,5 +1,5 @@
 --TEST--
-PhpRequest::$acceptCharset
+StdRequest::$acceptCharset
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --FILE--
@@ -8,7 +8,7 @@ $_SERVER += [
     'HTTP_HOST' => 'example.com',
     'HTTP_ACCEPT_CHARSET' => 'iso-8859-5;q=0.8, unicode-1-1',
 ];
-$request = new PhpRequest();
+$request = new StdRequest();
 var_dump($request->acceptCharset);
 --EXPECTF--
 array(2) {

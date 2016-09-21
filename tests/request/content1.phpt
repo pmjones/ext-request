@@ -1,5 +1,5 @@
 --TEST--
-PhpRequest::$content (cgi)
+StdRequest::$content (cgi)
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --POST_RAW--
@@ -8,7 +8,7 @@ a=1&b=ZYX
 --FILE--
 <?php
 $_SERVER['HTTP_HOST'] = 'localhost';
-$request = new PhpRequest();
+$request = new StdRequest();
 var_dump($request->content);
 try {
     $request->content = 'foo';
@@ -18,5 +18,5 @@ try {
 --EXPECT--
 string(9) "a=1&b=ZYX"
 string(16) "RuntimeException"
-string(24) "PhpRequest is read-only."
+string(24) "StdRequest is read-only."
 string(9) "a=1&b=ZYX"

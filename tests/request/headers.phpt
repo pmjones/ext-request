@@ -1,5 +1,5 @@
 --TEST--
-PhpRequest::$headers
+StdRequest::$headers
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --FILE--
@@ -11,7 +11,7 @@ $_SERVER = [
     'CONTENT_LENGTH' => '123',
     'CONTENT_TYPE' => 'text/plain',
 ];
-$request = new PhpRequest();
+$request = new StdRequest();
 var_dump($request->headers);
 --EXPECT--
 array(4) {

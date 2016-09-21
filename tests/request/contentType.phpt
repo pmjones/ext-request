@@ -1,5 +1,5 @@
 --TEST--
-PhpRequest::$contentType
+StdRequest::$contentType
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --FILE--
@@ -8,19 +8,19 @@ $_SERVER = [
     'HTTP_HOST' => 'example.com',
     'HTTP_CONTENT_TYPE' => 'text/plain',
 ];
-$request = new PhpRequest();
+$request = new StdRequest();
 var_dump($request->contentType, $request->contentCharset);
 
 $_SERVER['HTTP_CONTENT_TYPE'] = 'text/plain;charset=utf-8';
-$request = new PhpRequest();
+$request = new StdRequest();
 var_dump($request->contentType, $request->contentCharset);
 
 $_SERVER['HTTP_CONTENT_TYPE'] = 'text/plain;foo=bar';
-$request = new PhpRequest();
+$request = new StdRequest();
 var_dump($request->contentType, $request->contentCharset);
 
 $_SERVER['HTTP_CONTENT_TYPE'] = 'text/plain;foo=bar;charset=utf-8;baz=dib';
-$request = new PhpRequest();
+$request = new StdRequest();
 var_dump($request->contentType, $request->contentCharset);
 --EXPECT--
 string(10) "text/plain"

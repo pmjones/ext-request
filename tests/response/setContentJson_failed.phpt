@@ -1,12 +1,12 @@
 --TEST--
-PhpResponse::setContentJson (failed)
+StdResponse::setContentJson (failed)
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --EXTENSIONS--
 json
 --FILE--
 <?php
-$response = new PhpResponse();
+$response = new StdResponse();
 $value = ['foo' => ['bar' => ['baz' => ['dib' => ['zim' => ['gir']]]]]];
 try {
     $response->setContentJson($value, 0, 1);

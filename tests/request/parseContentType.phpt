@@ -1,26 +1,26 @@
 --TEST--
-PhpRequest::parseContentType
+StdRequest::parseContentType
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --FILE--
 <?php
 try {
-    var_dump(PhpRequest::parseContentType(null));
+    var_dump(StdRequest::parseContentType(null));
 } catch( Throwable $e ) {
     var_dump(get_class($e), $e->getMessage());
 }
-var_dump(PhpRequest::parseContentType(''));
-var_dump(PhpRequest::parseContentType('/'));
-var_dump(PhpRequest::parseContentType(';'));
-var_dump(PhpRequest::parseContentType('text/'));
-var_dump(PhpRequest::parseContentType('text/plain'));
-var_dump(PhpRequest::parseContentType('text/plain;charset=utf-8'));
-var_dump(PhpRequest::parseContentType('text/plain;foo=bar'));
-var_dump(PhpRequest::parseContentType('text/plain;foo=bar;charset=utf-8;baz=dib'));
-var_dump(PhpRequest::parseContentType('image/x-tiff;baz = "bat"'));
+var_dump(StdRequest::parseContentType(''));
+var_dump(StdRequest::parseContentType('/'));
+var_dump(StdRequest::parseContentType(';'));
+var_dump(StdRequest::parseContentType('text/'));
+var_dump(StdRequest::parseContentType('text/plain'));
+var_dump(StdRequest::parseContentType('text/plain;charset=utf-8'));
+var_dump(StdRequest::parseContentType('text/plain;foo=bar'));
+var_dump(StdRequest::parseContentType('text/plain;foo=bar;charset=utf-8;baz=dib'));
+var_dump(StdRequest::parseContentType('image/x-tiff;baz = "bat"'));
 --EXPECT--
 string(9) "TypeError"
-string(90) "Argument 1 passed to PhpRequest::parseContentType() must be of the type string, null given"
+string(90) "Argument 1 passed to StdRequest::parseContentType() must be of the type string, null given"
 NULL
 NULL
 NULL

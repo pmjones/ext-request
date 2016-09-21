@@ -1,10 +1,10 @@
 --TEST--
-PhpResponse::setDownload
+StdResponse::setDownload
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --FILE--
 <?php
-$response = new PhpResponse();
+$response = new StdResponse();
 $fh = fopen('php://temp', 'rb');
 $response->setDownload($fh, 'foo.txt');
 var_dump($response->getHeaders());

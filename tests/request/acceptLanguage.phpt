@@ -1,5 +1,5 @@
 --TEST--
-PhpRequest::$acceptLanguage
+StdRequest::$acceptLanguage
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --FILE--
@@ -8,7 +8,7 @@ $_SERVER += [
     'HTTP_HOST' => 'example.com',
     'HTTP_ACCEPT_LANGUAGE' => 'en-US, en-GB, en, *',
 ];
-$request = new PhpRequest();
+$request = new StdRequest();
 var_dump($request->acceptLanguage);
 --EXPECTF--
 array(4) {

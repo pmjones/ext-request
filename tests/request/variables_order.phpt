@@ -1,5 +1,5 @@
 --TEST--
-PhpRequest - variables_order
+StdRequest - variables_order
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --INI--
@@ -11,7 +11,7 @@ foo=bar&baz=bat
 // Currently if a variable is missing from variables_order, it's not available
 $_SERVER['HTTP_HOST'] = 'example.com';
 var_dump($_POST);
-$request = new PhpRequest();
+$request = new StdRequest();
 var_dump($request->post);
 --EXPECT--
 array(0) {

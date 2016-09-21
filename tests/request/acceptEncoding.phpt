@@ -1,5 +1,5 @@
 --TEST--
-PhpRequest::$acceptEncoding
+StdRequest::$acceptEncoding
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --FILE--
@@ -8,7 +8,7 @@ $_SERVER += [
     'HTTP_HOST' => 'example.com',
     'HTTP_ACCEPT_ENCODING' => 'compress;q=0.5, gzip;q=1.0',
 ];
-$request = new PhpRequest();
+$request = new StdRequest();
 var_dump($request->acceptEncoding);
 --EXPECTF--
 array(2) {

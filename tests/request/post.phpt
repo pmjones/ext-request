@@ -1,5 +1,5 @@
 --TEST--
-PhpRequest::$post
+StdRequest::$post
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --POST--
@@ -7,7 +7,7 @@ foo=bar&baz=bat
 --FILE--
 <?php
 $_SERVER['HTTP_HOST'] = 'example.com';
-$request = new PhpRequest();
+$request = new StdRequest();
 var_dump($request->post);
 --EXPECT--
 array(2) {

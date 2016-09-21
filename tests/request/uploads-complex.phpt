@@ -1,5 +1,5 @@
 --TEST--
-PhpRequest::$uploads (complex)
+StdRequest::$uploads (complex)
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --FILE--
@@ -94,7 +94,7 @@ $_FILES = [
     ],
   ],
 ];
-$request = new PhpRequest();
+$request = new StdRequest();
 var_dump($request->uploads);
 --EXPECTF--
 array(1) {

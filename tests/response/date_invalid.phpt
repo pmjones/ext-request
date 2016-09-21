@@ -1,10 +1,10 @@
 --TEST--
-PhpResponse::date (invalid)
+StdResponse::date (invalid)
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --FILE--
 <?php
-$response = new PhpResponse();
+$response = new StdResponse();
 try {
     var_dump($response->date(true));
     echo 'fail';

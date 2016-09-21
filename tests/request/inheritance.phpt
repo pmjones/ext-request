@@ -1,5 +1,5 @@
 --TEST--
-PhpRequest - inheritance
+StdRequest - inheritance
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --FILE--
@@ -8,7 +8,7 @@ $_SERVER = [
     'HTTP_HOST' => 'example.com',
     'REQUEST_METHOD' => 'PUT',
 ];
-class SubPhpRequest extends PhpRequest {
+class SubStdRequest extends StdRequest {
     public $publicTest;
     protected $protectedTest;
     private $privateTest;
@@ -21,7 +21,7 @@ class SubPhpRequest extends PhpRequest {
         $this->method = 'PATCH';
     }
 }
-class MagicPhpRequest extends PhpRequest {
+class MagicStdRequest extends StdRequest {
     protected $magicTest;
     public function __get($key) {
         return $this->$key;
@@ -30,7 +30,7 @@ class MagicPhpRequest extends PhpRequest {
         $this->$key = $value;
     }
 }
-$request = new SubPhpRequest();
+$request = new SubStdRequest();
 var_dump($request->method);
 $request->publicTest = 'foo';
 var_dump($request->publicTest);
@@ -40,7 +40,7 @@ try {
 } catch( Exception $e ) {
     var_dump(get_class($e), $e->getMessage());
 }
-$request = new MagicPhpRequest();
+$request = new MagicStdRequest();
 $request->magicTest = 'baz';
 var_dump($request->magicTest);
 $request->magicTestUndef = 'bat';
@@ -50,6 +50,6 @@ string(3) "PUT"
 string(3) "foo"
 string(3) "bar"
 string(16) "RuntimeException"
-string(24) "PhpRequest is read-only."
+string(24) "StdRequest is read-only."
 string(3) "baz"
 string(3) "bat"
