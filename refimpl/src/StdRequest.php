@@ -38,31 +38,31 @@
  */
 class StdRequest
 {
-    protected $acceptCharset = [];
-    protected $acceptEncoding = [];
-    protected $acceptLanguage = [];
-    protected $acceptMedia = [];
-    protected $authDigest;
-    protected $authPw;
-    protected $authType;
-    protected $authUser;
-    protected $content;
-    protected $contentCharset;
-    protected $contentLength;
-    protected $contentMd5;
-    protected $contentType;
-    protected $cookie = [];
-    protected $env = [];
-    protected $files = [];
-    protected $get = [];
-    protected $headers = [];
-    protected $method = '';
-    protected $post = [];
-    protected $secure = false;
-    protected $server = [];
-    protected $uploads = [];
-    protected $url;
-    protected $xhr = false;
+    private $acceptCharset = [];
+    private $acceptEncoding = [];
+    private $acceptLanguage = [];
+    private $acceptMedia = [];
+    private $authDigest;
+    private $authPw;
+    private $authType;
+    private $authUser;
+    private $content;
+    private $contentCharset;
+    private $contentLength;
+    private $contentMd5;
+    private $contentType;
+    private $cookie = [];
+    private $env = [];
+    private $files = [];
+    private $get = [];
+    private $headers = [];
+    private $method = '';
+    private $post = [];
+    private $secure = false;
+    private $server = [];
+    private $uploads = [];
+    private $url;
+    private $xhr = false;
 
     public function __construct(array $globals = array())
     {

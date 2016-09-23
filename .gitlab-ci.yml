@@ -1,0 +1,42 @@
+variables:
+    NO_INTERACTION: "1"
+    REPORT_EXIT_STATUS: "1"
+    DEBIAN_FRONTEND: "noninteractive"
+
+before_script:
+    - apt-get update
+    - apt-get install -y lcov valgrind
+    - curl -L https://phar.phpunit.de/phpunit.phar > /usr/local/bin/phpunit
+    - chmod +x /usr/local/bin/phpunit
+
+after_script:
+    - for i in `find tests -name "*.out" 2>/dev/null`; do echo "-- START ${i}"; cat $i; echo "-- END"; done
+    - for i in `find tests -name "*.mem" 2>/dev/null`; do echo "-- START ${i}"; cat $i; echo "-- END"; done
+
+test:7.0-nts:
+    image: php:7.0
+    script:
+        - ./run-tests.sh
+        - ./run-tests.sh coverage
+        - ./run-tests.sh valgrind
+
+test:7.0-zts:
+    image: php:7.0-zts
+    script:
+        - ./run-tests.sh
+        - ./run-tests.sh coverage
+        - ./run-tests.sh valgrind
+
+test:7.1-nts:
+    image: php:7.0
+    script:
+        - ./run-tests.sh
+        - ./run-tests.sh coverage
+        - ./run-tests.sh valgrind
+
+test:7.1-zts:
+    image: php:7.0-zts
+    script:
+        - ./run-tests.sh
+        - ./run-tests.sh coverage
+        - ./run-tests.sh valgrind
