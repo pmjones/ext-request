@@ -164,6 +164,7 @@ Notes:
 The `$value` in a `setHeader()` or `addHeader()` call may be an array, in which case it will be converted to a comma-separated and/or semicolon-separated value string. For example:
 
 ```php
+<?php
 $response = new StdResponse();
 
 $response->setHeader('Cache-Control', [
