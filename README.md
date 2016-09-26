@@ -81,7 +81,7 @@ _StdRequest_ has these public properties, all of which are read-only.
 > 'params' => A key-value array of all other parameters
 > ```
 >
-> In addition, each `$acceptLanguage` array element has two additional sub-array keys: `'type' and `'subtype'`.
+> In addition, each `$acceptLanguage` array element has two additional sub-array keys: `'type'` and `'subtype'`.
 >
 > The `$accept*` array elements are sorted by highest `q` value to lowest.
 
