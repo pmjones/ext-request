@@ -73,17 +73,19 @@ _StdRequest_ has these public properties, all of which are read-only.
 - `$url`: The result of [`parse_url`](http://php.net/parse_url) as built from the `$_SERVER` keys `HTTP_HOST`/`SERVER_NAME`, `SERVER_PORT`, and `REQUEST_URI`.
 - `$xhr`: A boolean indicating if this is an XmlHttpRequest.
 
-> N.b.: Each element of the `$accept*` arrays has these sub-array keys:
->
-> ```
-> 'value' => The "main" value of the accept specifier
-> 'quality' => The 'q=' parameter value
-> 'params' => A key-value array of all other parameters
-> ```
->
-> In addition, each `$acceptLanguage` array element has two additional sub-array keys: `'type'` and `'subtype'`.
->
-> The `$accept*` array elements are sorted by highest `q` value to lowest.
+Notes:
+
+Each element of the `$accept*` arrays has these sub-array keys:
+
+```
+'value' => The "main" value of the accept specifier
+'quality' => The 'q=' parameter value
+'params' => A key-value array of all other parameters
+```
+
+In addition, each `$acceptLanguage` array element has two additional sub-array keys: `'type'` and `'subtype'`.
+
+The `$accept*` array elements are sorted by highest `q` value to lowest.
 
 #### Content-related
 
@@ -157,7 +159,37 @@ _StdResponse_ has these public methods.
 
 - `getHeaders()`: Returns the array of headers to be sent.
 
-> N.b.: The `$value` in a `setHeader()` or `addHeader()` call may be an array, in which case it will be converted to a semicolon-separated and/or comma-separated value string. Example TBD.
+Notes:
+
+The `$value` in a `setHeader()` or `addHeader()` call may be an array, in which case it will be converted to a comma-separated and/or semicolon-separated value string. For example:
+
+```php
+$response = new StdResponse();
+
+$response->setHeader('Cache-Control', [
+    'public',
+    'max-age' => '123',
+    's-maxage' => '456',
+    'no-cache',
+]); // Cache-Control: public, max-age=123, s-maxage=456, no-cache
+
+$response->setHeader('Content-Type', [
+    'text/plain' => [
+        'charset' => 'utf-8'
+    ],
+]); // Content-Type: text/plain;charset=utf-8
+
+$response->setHeader('X-Whatever', [
+    'foo',
+    'bar' => [
+        'baz' => 'dib',
+        'zim',
+        'gir' => 'irk',
+    ],
+    'qux' => 'quux',
+]); // X-Whatever: foo, bar;baz=dib;zim;gir=irk, qux=quux
+```
+
 
 #### Cookies
 
