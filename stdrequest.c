@@ -244,10 +244,10 @@ static void php_request_normalize_headers(zval *return_value, zval *server)
 
     // RFC 3875 headers not prefixed with HTTP_*
     if( val = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("CONTENT_LENGTH")) ) {
-        add_assoc_zval_ex(return_value, ZEND_STRL("Content-Length"), val);
+        add_assoc_zval_ex(return_value, ZEND_STRL("content-length"), val);
     }
     if( val = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("CONTENT_TYPE")) ) {
-        add_assoc_zval_ex(return_value, ZEND_STRL("Content-Type"), val);
+        add_assoc_zval_ex(return_value, ZEND_STRL("content-type"), val);
     }
 }
 /* }}} */

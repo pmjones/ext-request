@@ -10,7 +10,7 @@ $response->addHeader('Foo', ['dib' => ['zim', 'gir']]);
 var_dump($response->getHeaders());
 --EXPECT--
 array(1) {
-  ["Foo"]=>
+  ["foo"]=>
   array(2) {
     [0]=>
     string(7) "bar=baz"

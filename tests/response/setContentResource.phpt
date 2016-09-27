@@ -17,17 +17,17 @@ var_dump($response->getHeaders());
 var_dump($fh === $response->getContent());
 --EXPECT--
 array(3) {
-  ["Content-Type"]=>
+  ["content-type"]=>
   array(1) {
     [0]=>
     string(24) "application/octet-stream"
   }
-  ["Content-Transfer-Encoding"]=>
+  ["content-transfer-encoding"]=>
   array(1) {
     [0]=>
     string(6) "binary"
   }
-  ["Content-Disposition"]=>
+  ["content-disposition"]=>
   array(1) {
     [0]=>
     string(16) "whatever;foo=bar"

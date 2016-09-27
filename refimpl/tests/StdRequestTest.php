@@ -141,10 +141,10 @@ class StdRequestTest extends PHPUnit_Framework_TestCase
         $request = new StdRequest();
 
         $expect = [
-            'Host' => 'example.com',
-            'Foo-Bar-Baz' => 'dib,zim,gir',
-            'Content-Length' => '123',
-            'Content-Type' => 'text/plain',
+            'host' => 'example.com',
+            'foo-bar-baz' => 'dib,zim,gir',
+            'content-length' => '123',
+            'content-type' => 'text/plain',
         ];
 
         $this->assertSame($expect, $request->headers);

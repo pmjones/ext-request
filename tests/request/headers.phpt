@@ -15,12 +15,12 @@ $request = new StdRequest();
 var_dump($request->headers);
 --EXPECT--
 array(4) {
-  ["Host"]=>
+  ["host"]=>
   string(11) "example.com"
-  ["Foo-Bar-Baz"]=>
+  ["foo-bar-baz"]=>
   string(11) "dib,zim,gir"
-  ["Content-Length"]=>
+  ["content-length"]=>
   string(3) "123"
-  ["Content-Type"]=>
+  ["content-type"]=>
   string(10) "text/plain"
 }
