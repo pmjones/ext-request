@@ -136,18 +136,17 @@ class StdRequest
             if (substr($key, 0, 5) == 'HTTP_') {
                 $key = substr($key, 5);
                 $key = str_replace('_', '-', strtolower($key));
-                $key = ucwords($key, '-');
                 $this->headers[$key] = $val;
             }
         }
 
         // RFC 3875 headers not prefixed with HTTP_*
         if (isset($this->server['CONTENT_LENGTH'])) {
-            $this->headers['Content-Length'] = $this->server['CONTENT_LENGTH'];
+            $this->headers['content-length'] = $this->server['CONTENT_LENGTH'];
         }
 
         if (isset($this->server['CONTENT_TYPE'])) {
-            $this->headers['Content-Type'] = $this->server['CONTENT_TYPE'];
+            $this->headers['content-type'] = $this->server['CONTENT_TYPE'];
         }
     }
 
@@ -213,20 +212,20 @@ class StdRequest
 
     protected function setAccepts() // : void
     {
-        if (isset($this->headers['Accept'])) {
-            $this->acceptMedia = $this->parseAccepts($this->headers['Accept']);
+        if (isset($this->headers['accept'])) {
+            $this->acceptMedia = $this->parseAccepts($this->headers['accept']);
         }
 
-        if (isset($this->headers['Accept-Charset'])) {
-            $this->acceptCharset = $this->parseAccepts($this->headers['Accept-Charset']);
+        if (isset($this->headers['accept-charset'])) {
+            $this->acceptCharset = $this->parseAccepts($this->headers['accept-charset']);
         }
 
-        if (isset($this->headers['Accept-Encoding'])) {
-            $this->acceptEncoding = $this->parseAccepts($this->headers['Accept-Encoding']);
+        if (isset($this->headers['accept-encoding'])) {
+            $this->acceptEncoding = $this->parseAccepts($this->headers['accept-encoding']);
         }
 
-        if (isset($this->headers['Accept-Language'])) {
-            $language = $this->parseAccepts($this->headers['Accept-Language']);
+        if (isset($this->headers['accept-language'])) {
+            $language = $this->parseAccepts($this->headers['accept-language']);
             foreach ($language as $lang) {
                 $parts = explode('-', $lang['value']);
                 $lang['type'] = array_shift($parts);
@@ -351,19 +350,19 @@ class StdRequest
     {
         $this->content = file_get_contents('php://input');
 
-        if (isset($this->headers['Content-Md5'])) {
-            $this->contentMd5 = $this->headers['Content-Md5'];
+        if (isset($this->headers['content-md5'])) {
+            $this->contentMd5 = $this->headers['content-md5'];
         }
 
-        if (isset($this->headers['Content-Length'])) {
-            $this->contentLength = $this->headers['Content-Length'];
+        if (isset($this->headers['content-length'])) {
+            $this->contentLength = $this->headers['content-length'];
         }
 
-        if (! isset($this->headers['Content-Type'])) {
+        if (! isset($this->headers['content-type'])) {
             return;
         }
 
-        $parts = explode(';', $this->headers['Content-Type']);
+        $parts = explode(';', $this->headers['content-type']);
         $this->contentType = array_shift($parts);
 
         if (! $parts) {

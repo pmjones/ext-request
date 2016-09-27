@@ -585,7 +585,7 @@ PHP_METHOD(StdResponse, setContentJson)
     }
 
     // Set header
-    php_response_header_stringl(_this_zval, ZEND_STRL("Content-Type"), ZEND_STRL("application/json"), 1);
+    php_response_header_stringl(_this_zval, ZEND_STRL("content-type"), ZEND_STRL("application/json"), 1);
 }
 /* }}} StdResponse::setContentJson */
 
@@ -606,8 +606,8 @@ PHP_METHOD(StdResponse, setContentResource)
     ZEND_PARSE_PARAMETERS_END();
 
     // Set headers
-    php_response_header_stringl(_this_zval, ZEND_STRL("Content-Type"), ZEND_STRL("application/octet-stream"), 1);
-    php_response_header_stringl(_this_zval, ZEND_STRL("Content-Transfer-Encoding"), ZEND_STRL("binary"), 1);
+    php_response_header_stringl(_this_zval, ZEND_STRL("content-type"), ZEND_STRL("application/octet-stream"), 1);
+    php_response_header_stringl(_this_zval, ZEND_STRL("content-transfer-encoding"), ZEND_STRL("binary"), 1);
 
     // Set disposition
     if( disposition ) {
@@ -617,10 +617,10 @@ PHP_METHOD(StdResponse, setContentResource)
             smart_str_appendc(&buf, ';');
             _array_to_semicsv(&buf, params);
             smart_str_0(&buf);
-            php_response_header_stringl(_this_zval, ZEND_STRL("Content-Disposition"), ZSTR_VAL(buf.s), ZSTR_LEN(buf.s), 1);
+            php_response_header_stringl(_this_zval, ZEND_STRL("content-disposition"), ZSTR_VAL(buf.s), ZSTR_LEN(buf.s), 1);
             smart_str_free(&buf);
         } else {
-            php_response_header_stringl(_this_zval, ZEND_STRL("Content-Disposition"), ZSTR_VAL(disposition), ZSTR_LEN(disposition), 1);
+            php_response_header_stringl(_this_zval, ZEND_STRL("content-disposition"), ZSTR_VAL(disposition), ZSTR_LEN(disposition), 1);
         }
     }
 

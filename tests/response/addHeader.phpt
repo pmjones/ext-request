@@ -12,7 +12,7 @@ $response->addHeader('foo-bar', 'dib');
 var_dump($response->getHeaders());
 --EXPECT--
 array(1) {
-  ["Foo-Bar"]=>
+  ["foo-bar"]=>
   array(2) {
     [0]=>
     string(3) "baz"

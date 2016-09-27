@@ -17,12 +17,12 @@ $response->setHeader('Content-Type', [
 var_dump($response->getHeaders());
 --EXPECT--
 array(2) {
-  ["Cache-Control"]=>
+  ["cache-control"]=>
   array(1) {
     [0]=>
     string(43) "public, max-age=123, s-maxage=456, no-cache"
   }
-  ["Content-Type"]=>
+  ["content-type"]=>
   array(1) {
     [0]=>
     string(24) "text/plain;charset=utf-8"

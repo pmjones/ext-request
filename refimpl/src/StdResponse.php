@@ -51,7 +51,7 @@ class StdResponse
     // header("$label: $value", true);
     public function setHeader($label, $value) // : void
     {
-        $label = ucwords(strtolower(trim($label)), '-');
+        $label = strtolower(trim($label));
         if (! $label) {
             return;
         }
@@ -72,7 +72,7 @@ class StdResponse
     // header("$label: $value", false);
     public function addHeader($label, $value) // : void
     {
-        $label = ucwords(strtolower(trim($label)), '-');
+        $label = strtolower(trim($label));
         if (! $label) {
             return;
         }

@@ -22,12 +22,10 @@ void php_request_normalize_header_name(char *key, size_t key_length)
     register char *r = key;
     register char *r_end = r + key_length - 1;
 
-    *r = toupper((unsigned char) *r);
+    *r = tolower((unsigned char) *r);
     r++;
     for( ; r <= r_end; r++ ) {
-        if( (unsigned char)*(r - 1) == '-' ) {
-            *r = toupper((unsigned char) *r);
-        } else if( *r == '_' ) {
+        if( *r == '_' ) {
             *r = '-';
         } else {
             *r = tolower((unsigned char) *r);

@@ -15,15 +15,15 @@ $response->send();
 var_dump(headers_list());
 // it appears EXPECTHEADERS can't handle duplicate headers
 --EXPECTHEADERS--
-Foo: bar
-Baz: dib
-Baz: zim
+foo: bar
+baz: dib
+baz: zim
 --EXPECT--
 array(3) {
   [0]=>
-  string(8) "Foo: bar"
+  string(8) "foo: bar"
   [1]=>
-  string(8) "Baz: dib"
+  string(8) "baz: dib"
   [2]=>
-  string(8) "Baz: zim"
+  string(8) "baz: zim"
 }
