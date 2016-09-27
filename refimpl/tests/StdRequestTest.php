@@ -77,7 +77,7 @@ class StdRequestTest extends PHPUnit_Framework_TestCase
 
         $this->setExpectedException(
             RuntimeException::CLASS,
-            'StdRequest is read-only.'
+            'StdRequest::$method is read-only.'
         );
 
         unset($request->method);
@@ -98,7 +98,7 @@ class StdRequestTest extends PHPUnit_Framework_TestCase
 
         $this->setExpectedException(
             RuntimeException::CLASS,
-            'StdRequest is read-only.'
+            'StdRequest::$method is read-only.'
         );
 
         $request->method = 'PATCH';

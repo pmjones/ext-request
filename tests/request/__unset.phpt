@@ -13,4 +13,4 @@ try {
 }
 --EXPECT--
 string(16) "RuntimeException"
-string(24) "StdRequest is read-only."
+string(33) "StdRequest::$method is read-only."

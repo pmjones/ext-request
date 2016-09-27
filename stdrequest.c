@@ -365,6 +365,16 @@ static int php_request_object_default_has_property(zval *object, zval *member, i
 }
 /* }}} */
 
+/* {{{ php_request_throw_readonly_exception */
+static inline void php_request_throw_readonly_exception(zval *object, zval *member)
+{
+    zend_string *ce_name = Z_OBJCE_P(object)->name;
+    zend_string *member_str = zval_get_string(member);
+    zend_throw_exception_ex(spl_ce_RuntimeException, 0, "%.*s::$%.*s is read-only.", ZSTR_LEN(ce_name), ZSTR_VAL(ce_name), ZSTR_LEN(member_str), ZSTR_VAL(member_str));
+    zend_string_release(member_str);
+}
+/* }}} */
+
 /* {{{ php_request_object_default_read_property */
 static zval *php_request_object_default_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv)
 {
@@ -374,7 +384,7 @@ static zval *php_request_object_default_read_property(zval *object, zval *member
     // Make sure the property can't be modified
     if( !Z_ISREF_P(rv) && (type == BP_VAR_W || type == BP_VAR_RW  || type == BP_VAR_UNSET) ) {
         SEPARATE_ZVAL(rv);
-        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "StdRequest is read-only.");
+        php_request_throw_readonly_exception(object, member);
     }
     return retval;
 }
@@ -385,7 +395,7 @@ static void php_request_object_default_write_property(zval *object, zval *member
 {
     struct php_request_obj *intern = Z_REQUEST_P(object);
     if( intern->locked ) {
-        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "StdRequest is read-only.");
+        php_request_throw_readonly_exception(object, member);
     } else {
         std_object_handlers.write_property(object, member, value, cache_slot);
     }
@@ -397,7 +407,7 @@ static void php_request_object_default_unset_property(zval *object, zval *member
 {
     struct php_request_obj *intern = Z_REQUEST_P(object);
     if( intern->locked ) {
-        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "StdRequest is read-only.");
+        php_request_throw_readonly_exception(object, member);
     } else {
         std_object_handlers.unset_property(object, member, cache_slot);
     }
@@ -411,7 +421,7 @@ static zval *php_request_object_content_read_property(zval *object, zval *member
     zend_string *str;
 
     if( (type == BP_VAR_W || type == BP_VAR_RW  || type == BP_VAR_UNSET) ) {
-        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "StdRequest is read-only.");
+        php_request_throw_readonly_exception(object, member);
         return rv;
     }
 
@@ -444,7 +454,10 @@ static int php_request_object_has_property(zval *object, zval *member, int has_s
 static zval *php_request_object_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv)
 {
     if( !Z_OBJCE_P(object)->__get && !std_object_handlers.has_property(object, member, 2, cache_slot) ) {
-        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "StdRequest::$%.*s does not exist.", Z_STRLEN_P(member), Z_STRVAL_P(member));
+        zend_string *ce_name = Z_OBJCE_P(object)->name;
+        zend_string *member_str = zval_get_string(member);
+        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "%.*s::$%.*s does not exist.", ZSTR_LEN(ce_name), ZSTR_VAL(ce_name), ZSTR_LEN(member_str), ZSTR_VAL(member_str));
+        zend_string_release(member_str);
         return rv;
     }
     struct prop_handlers *hnd = zend_hash_str_find_ptr(&StdRequest_prop_handlers, Z_STRVAL_P(member), Z_STRLEN_P(member));
@@ -456,7 +469,7 @@ static zval *php_request_object_read_property(zval *object, zval *member, int ty
 static void php_request_object_write_property(zval *object, zval *member, zval *value, void **cache_slot)
 {
     if( !Z_OBJCE_P(object)->__set && !std_object_handlers.has_property(object, member, 2, cache_slot) ) {
-        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "StdRequest is read-only.");
+        php_request_throw_readonly_exception(object, member);
         return;
     }
     struct prop_handlers *hnd = zend_hash_str_find_ptr(&StdRequest_prop_handlers, Z_STRVAL_P(member), Z_STRLEN_P(member));
@@ -467,10 +480,6 @@ static void php_request_object_write_property(zval *object, zval *member, zval *
 /* {{{ php_request_object_unset_property */
 static void php_request_object_unset_property(zval *object, zval *member, void **cache_slot)
 {
-//    if( !Z_OBJCE_P(object)->__unset && !std_object_handlers.has_property(object, member, 2, cache_slot) ) {
-//        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "StdRequest is read-only.");
-//        return;
-//    }
     struct prop_handlers *hnd = zend_hash_str_find_ptr(&StdRequest_prop_handlers, Z_STRVAL_P(member), Z_STRLEN_P(member));
     return (hnd ? hnd->unset_property : std_object_handlers.unset_property)(object, member, cache_slot);
 }

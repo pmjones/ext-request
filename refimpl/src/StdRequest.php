@@ -90,12 +90,14 @@ class StdRequest
             return $this->$key;
         }
 
-        throw new RuntimeException("StdRequest::\${$key} does not exist.");
+        $class = get_class($this);
+        throw new RuntimeException("{$class}::\${$key} does not exist.");
     }
 
     public function __set($key, $val) // : void
     {
-        throw new RuntimeException("StdRequest is read-only.");
+        $class = get_class($this);
+        throw new RuntimeException("{$class}::\${$key} is read-only.");
     }
 
     public function __isset($key) // : bool
@@ -110,7 +112,8 @@ class StdRequest
     public function __unset($key) // : void
     {
         if( property_exists($this, $key) ) {
-            throw new RuntimeException("StdRequest is read-only.");
+            $class = get_class($this);
+            throw new RuntimeException("{$class}::\${$key} is read-only.");
         }
     }
 

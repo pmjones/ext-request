@@ -18,5 +18,5 @@ try {
 --EXPECT--
 string(9) "a=1&b=ZYX"
 string(16) "RuntimeException"
-string(24) "StdRequest is read-only."
+string(34) "StdRequest::$content is read-only."
 string(9) "a=1&b=ZYX"

@@ -29,6 +29,12 @@ valgrind)
     make clean all
     make test TEST_PHP_ARGS=-m
     ;;
+refimpl)
+    phpize
+    ./configure
+    make clean all
+    $TEST_PHP_EXECUTABLE -d extension=modules/request.so $PHPUNIT refimpl
+    ;;
 *)
     $TEST_PHP_EXECUTABLE -d extension=modules/request.so $PHPUNIT refimpl $@
     ;;
