@@ -930,6 +930,8 @@ PHP_METHOD(StdResponse, sendContent)
     zend_string *tmp_str;
     php_stream *stream;
     char *error;
+    zval func_name = {0};
+    zval rv = {0};
 
     ZEND_PARSE_PARAMETERS_START(0, 0)
     ZEND_PARSE_PARAMETERS_END();
@@ -940,7 +942,22 @@ PHP_METHOD(StdResponse, sendContent)
         return;
     }
 
+    if( Z_TYPE_P(tmp) == IS_OBJECT && zend_is_callable(tmp, 0, NULL) ) {
+        ZVAL_STRING(&func_name, "__invoke");
+        call_user_function(&Z_OBJCE_P(tmp)->function_table, tmp, &func_name, &rv, 0, NULL);
+        zval_ptr_dtor(&func_name);
+        tmp = &rv;
+    } else {
+        Z_TRY_ADDREF_P(tmp);
+    }
+
     switch( Z_TYPE_P(tmp) ) {
+        case IS_UNDEF:
+        case IS_NULL:
+        case IS_FALSE:
+            // do nothing
+            break;
+
         case IS_RESOURCE:
             php_stream_from_res(stream, Z_RES_P(tmp)); // this macro can return
             php_stream_seek(stream, 0, SEEK_SET);
@@ -951,23 +968,14 @@ PHP_METHOD(StdResponse, sendContent)
             php_output_write(Z_STRVAL_P(tmp), Z_STRLEN_P(tmp));
             break;
 
-        case IS_OBJECT:
-            if( zend_is_callable_ex(tmp, NULL, 0, NULL, NULL, &error) ) {
-                zval func_name = {0};
-                zval rv = {0};
-                ZVAL_STRING(&func_name, "__invoke");
-                call_user_function(&Z_OBJCE_P(tmp)->function_table, tmp, &func_name, &rv, 0, NULL);
-                zval_ptr_dtor(&func_name);
-                zval_ptr_dtor(&rv);
-                break;
-            }
-            // fall-through
         default:
             tmp_str = zval_get_string(tmp);
             php_output_write(ZSTR_VAL(tmp_str), ZSTR_LEN(tmp_str));
             zend_string_release(tmp_str);
             break;
     }
+
+    zval_ptr_dtor(tmp);
 }
 /* }}} StdResponse::sendContent */
 

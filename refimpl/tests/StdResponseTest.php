@@ -267,6 +267,22 @@ class StdResponseTest extends PHPUnit_Framework_TestCase
     /**
      * @runInSeparateProcess
      */
+    public function testSendContent_callableWithReturnValue()
+    {
+        $this->response->setContent(function () {
+            echo 'foo';
+            return 'bar';
+        });
+        $this->assertSent(
+            200,
+            [],
+            'foobar'
+        );
+    }
+
+    /**
+     * @runInSeparateProcess
+     */
     public function testSendContent_resource()
     {
         $fh = fopen('php://temp', 'w+');
