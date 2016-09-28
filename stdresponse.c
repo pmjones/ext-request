@@ -932,6 +932,7 @@ PHP_METHOD(StdResponse, sendContent)
     char *error;
     zval func_name = {0};
     zval rv = {0};
+    zval params[1] = {0};
 
     ZEND_PARSE_PARAMETERS_START(0, 0)
     ZEND_PARSE_PARAMETERS_END();
@@ -944,8 +945,10 @@ PHP_METHOD(StdResponse, sendContent)
 
     if( Z_TYPE_P(tmp) == IS_OBJECT && zend_is_callable(tmp, 0, NULL) ) {
         ZVAL_STRING(&func_name, "__invoke");
-        call_user_function(&Z_OBJCE_P(tmp)->function_table, tmp, &func_name, &rv, 0, NULL);
+        ZVAL_ZVAL(&params[0], _this_zval, 1, 0);
+        call_user_function(&Z_OBJCE_P(tmp)->function_table, tmp, &func_name, &rv, 1, &params);
         zval_ptr_dtor(&func_name);
+        zval_ptr_dtor(&params[0]);
         tmp = &rv;
     } else {
         Z_TRY_ADDREF_P(tmp);

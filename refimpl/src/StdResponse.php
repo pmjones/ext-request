@@ -297,7 +297,7 @@ class StdResponse
     protected function sendContent() // : void
     {
         if (is_object($this->content) && is_callable($this->content)) {
-            $content = call_user_func($this->content);
+            $content = call_user_func($this->content, $this);
         } else {
             $content = $this->content;
         }

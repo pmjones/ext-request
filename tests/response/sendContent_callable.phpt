@@ -8,7 +8,8 @@ expose_php=0
 --FILE--
 <?php
 $response = new StdResponse();
-$response->setContent(function () {
+$response->setContent(function (StdResponse $arg) use ($response) {
+    if($response !== $arg) echo 'fail';
     echo 'foo';
 });
 $response->send();
