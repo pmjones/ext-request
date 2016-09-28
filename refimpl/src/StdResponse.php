@@ -296,17 +296,18 @@ class StdResponse
 
     protected function sendContent() // : void
     {
-        if (is_resource($this->content)) {
-            rewind($this->content);
-            fpassthru($this->content);
-            return;
-        }
-
         if (is_object($this->content) && is_callable($this->content)) {
-            call_user_func($this->content);
+            $content = call_user_func($this->content, $this);
+        } else {
+            $content = $this->content;
+        }
+
+        if (is_resource($content)) {
+            rewind($content);
+            fpassthru($content);
             return;
         }
 
-        echo $this->content;
+        echo $content;
     }
 }
