@@ -1,17 +1,7 @@
 <?php
 /**
  *
- * Goals:
- *
- * - Light wrapper around PHP functions (with similar lack of validation)
- * - Buffer for headers and cookies
- * - Helper for HTTP date
- * - Helper for comma- and semicolon-separated header values
- * - Minimalist support for sending a file, and sending json
- * - Self-sendable
- * - Mutable, extendable
- *
- * Capture other auto-sent headers? (E.g. session header, caching headers.)
+ * Mutable response object.
  *
  */
 class StdResponse

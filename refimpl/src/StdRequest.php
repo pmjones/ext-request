@@ -1,13 +1,7 @@
 <?php
 /**
  *
- * Goals:
- * - Provide a struct of non-session superglobals as read-only properties.
- * - Add other read-only properties calculated from the superglobals ($method,
- *   $headers, $content, etc.) to the struct.
- * - Only build things that don't require application input; e.g., no negotiation,
- *   but build acceptables for application to work through.
- * - No methods, just properties (i.e., a struct).
+ * Immutable request object.
  *
  * @property-read $acceptCharset
  * @property-read $acceptEncoding
@@ -27,7 +21,9 @@
  * @property-read $files
  * @property-read $get
  * @property-read $headers
+ * @property-read $input
  * @property-read $method
+ * @property-read $params
  * @property-read $post
  * @property-read $secure
  * @property-read $server
@@ -56,7 +52,9 @@ class StdRequest
     private $files = [];
     private $get = [];
     private $headers = [];
+    private $input;
     private $method = '';
+    private $params = [];
     private $post = [];
     private $secure = false;
     private $server = [];
@@ -409,5 +407,79 @@ class StdRequest
             $uploads[$key] = $this->setUploadsFromSpec($spec);
         }
         return $uploads;
+    }
+
+    // application/json:
+    // $input = json_decode($request->content, true);
+    // $request = $request->withInput($input);
+    //
+    // application/x-www-form-urlencoded:
+    // parse_str($request->content, $input);
+    // $request = $request->withInput($input);
+    final public function withInput($input)
+    {
+        $clone = clone $this;
+        $this->assertImmutable($input);
+        $clone->input = $input;
+        return $clone;
+    }
+
+    // sets one param
+    final public function withParam($key, $val)
+    {
+        $clone = clone $this;
+        $this->assertImmutable($val);
+        $clone->params[$key] = $val;
+        return $clone;
+    }
+
+    // sets all params
+    final public function withParams(array $params)
+    {
+        $clone = clone $this;
+        $this->assertImmutable($params);
+        $clone->params = $params;
+        return $clone;
+    }
+
+    // removes one param
+    final public function withoutParam($key)
+    {
+        $clone = clone $this;
+        unset($clone->params[$key]);
+        return $clone;
+    }
+
+    // removes multiple params
+    final public function withoutParams(array $keys = null)
+    {
+        $clone = clone $this;
+
+        if (is_null($keys)) {
+            $clone->params = [];
+            return $clone;
+        }
+
+        foreach ($keys as $key) {
+            unset($clone->params[$key]);
+        }
+
+        return $clone;
+    }
+
+    final protected function assertImmutable($input)
+    {
+        if (is_null($input) || is_scalar($input)) {
+            return;
+        }
+
+        if (is_array($input)) {
+            foreach ($input as $val) {
+                $this->assertImmutable($val);
+            }
+            return;
+        }
+
+        throw new UnexpectedValueException('All with*() values must be null, scalar, or array.');
     }
 }
