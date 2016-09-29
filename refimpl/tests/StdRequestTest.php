@@ -874,7 +874,7 @@ class StdRequestTest extends PHPUnit_Framework_TestCase
 
         $this->setExpectedException(
             'UnexpectedValueException',
-            'All with*() values must be null, scalar, or array.'
+            'All $input values must be null, scalar, or array.'
         );
         $request = $request->withInput(new StdClass());
     }
@@ -901,7 +901,7 @@ class StdRequestTest extends PHPUnit_Framework_TestCase
 
         $this->setExpectedException(
             'UnexpectedValueException',
-            'All with*() values must be null, scalar, or array.'
+            'All $params values must be null, scalar, or array.'
         );
         $request->withParam('bad', new StdClass());
     }
@@ -926,7 +926,7 @@ class StdRequestTest extends PHPUnit_Framework_TestCase
         $params['bad'] = new StdClass();
         $this->setExpectedException(
             'UnexpectedValueException',
-            'All with*() values must be null, scalar, or array.'
+            'All $params values must be null, scalar, or array.'
         );
         $request = $request->withParams($params);
     }

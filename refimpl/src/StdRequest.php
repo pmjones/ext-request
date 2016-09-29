@@ -64,13 +64,13 @@ class StdRequest
 
     public function __construct(array $globals = array())
     {
-        $this->env = $globals['_ENV'] ?? $_ENV;
-        $this->server = $globals['_SERVER'] ?? $_SERVER;
+        $this->env = $this->importGlobal($globals['_ENV'] ?? $_ENV, '$_ENV');
+        $this->server = $this->importGlobal($globals['_SERVER'] ?? $_SERVER, '$_SERVER');
 
-        $this->cookie = $globals['_COOKIE'] ?? $_COOKIE;
-        $this->files = $globals['_FILES'] ?? $_FILES;
-        $this->get = $globals['_GET'] ?? $_GET;
-        $this->post = $globals['_POST'] ?? $_POST;
+        $this->cookie = $this->importGlobal($globals['_COOKIE'] ?? $_COOKIE, '$_COOKIE');
+        $this->files = $this->importGlobal($globals['_FILES'] ?? $_FILES, '$_FILES');
+        $this->get = $this->importGlobal($globals['_GET'] ?? $_GET, '$_GET');
+        $this->post = $this->importGlobal($globals['_POST'] ?? $_POST, '$_POST');
 
         $this->setMethod();
         $this->setHeaders();
@@ -80,6 +80,12 @@ class StdRequest
         $this->setAuth();
         $this->setContent();
         $this->setUploads();
+    }
+
+    protected function importGlobal($global, $descr)
+    {
+        $this->assertImmutable($global, $descr);
+        return $global;
     }
 
     public function __get($key) // : array
@@ -419,7 +425,7 @@ class StdRequest
     final public function withInput($input)
     {
         $clone = clone $this;
-        $this->assertImmutable($input);
+        $this->assertImmutable($input, '$input');
         $clone->input = $input;
         return $clone;
     }
@@ -428,7 +434,7 @@ class StdRequest
     final public function withParam($key, $val)
     {
         $clone = clone $this;
-        $this->assertImmutable($val);
+        $this->assertImmutable($val, '$params');
         $clone->params[$key] = $val;
         return $clone;
     }
@@ -437,7 +443,7 @@ class StdRequest
     final public function withParams(array $params)
     {
         $clone = clone $this;
-        $this->assertImmutable($params);
+        $this->assertImmutable($params, '$params');
         $clone->params = $params;
         return $clone;
     }
@@ -467,19 +473,19 @@ class StdRequest
         return $clone;
     }
 
-    final protected function assertImmutable($input)
+    final protected function assertImmutable($value, $descr)
     {
-        if (is_null($input) || is_scalar($input)) {
+        if (is_null($value) || is_scalar($value)) {
             return;
         }
 
-        if (is_array($input)) {
-            foreach ($input as $val) {
-                $this->assertImmutable($val);
+        if (is_array($value)) {
+            foreach ($value as $val) {
+                $this->assertImmutable($val, $descr);
             }
             return;
         }
 
-        throw new UnexpectedValueException('All with*() values must be null, scalar, or array.');
+        throw new UnexpectedValueException("All $descr values must be null, scalar, or array.");
     }
 }
