@@ -158,7 +158,7 @@ class StdResponse
             );
         }
         $this->setContent($content);
-        $this->setHeader('Content-Type', 'application/json');
+        $this->setHeader('content-type', 'application/json');
     }
 
     // cf. https://www.iana.org/assignments/cont-disp/cont-disp.xhtml for
@@ -168,12 +168,12 @@ class StdResponse
         if (! is_resource($fh)) {
             throw new TypeError("Argument 1 passed to StdResponse::setContentResource() must be of the type resource, string given");
         }
-        $this->setHeader('Content-Type', 'application/octet-stream');
-        $this->setHeader('Content-Transfer-Encoding',  'binary');
+        $this->setHeader('content-type', 'application/octet-stream');
+        $this->setHeader('content-transfer-encoding',  'binary');
         if ($params) {
             $disposition .= ';' . $this->semicsv($params);
         }
-        $this->setHeader('Content-Disposition', $disposition);
+        $this->setHeader('content-disposition', $disposition);
         $this->setContent($fh);
     }
 
