@@ -424,8 +424,8 @@ class StdRequest
     // $request = $request->withInput($input);
     final public function withInput($input)
     {
-        $clone = clone $this;
         $this->assertImmutable($input, '$input');
+        $clone = clone $this;
         $clone->input = $input;
         return $clone;
     }
@@ -433,8 +433,8 @@ class StdRequest
     // sets one param
     final public function withParam($key, $val)
     {
-        $clone = clone $this;
         $this->assertImmutable($val, '$params');
+        $clone = clone $this;
         $clone->params[$key] = $val;
         return $clone;
     }
@@ -442,8 +442,8 @@ class StdRequest
     // sets all params
     final public function withParams(array $params)
     {
-        $clone = clone $this;
         $this->assertImmutable($params, '$params');
+        $clone = clone $this;
         $clone->params = $params;
         return $clone;
     }
