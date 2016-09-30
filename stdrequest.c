@@ -44,10 +44,6 @@ ZEND_BEGIN_ARG_INFO_EX(StdRequest_construct_args, 0, 0, 0)
     ZEND_ARG_TYPE_INFO(0, globals, IS_ARRAY, 1)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO(StdRequest_withInput_args, IS_OBJECT, "StdRequest", 0)
-    ZEND_ARG_INFO(0, input)
-ZEND_END_ARG_INFO()
-
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO(StdRequest_parseAccept_args, IS_ARRAY, NULL, 1)
     ZEND_ARG_TYPE_INFO(0, header, IS_STRING, 0)
 ZEND_END_ARG_INFO()
@@ -58,6 +54,19 @@ ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO(StdRequest_parseDigestAuth_args, IS_ARRAY, NULL, 1)
     ZEND_ARG_TYPE_INFO(0, header, IS_STRING, 0)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO(StdRequest_withInput_args, IS_OBJECT, "StdRequest", 0)
+    ZEND_ARG_INFO(0, input)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO(StdRequest_withParam_args, IS_OBJECT, "StdRequest", 0)
+    ZEND_ARG_TYPE_INFO(0, key, IS_STRING, 0)
+    ZEND_ARG_INFO(0, val)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO(StdRequest_withParams_args, IS_OBJECT, "StdRequest", 0)
+    ZEND_ARG_ARRAY_INFO(0, params, 0)
 ZEND_END_ARG_INFO()
 /* }}} Argument Info */
 
@@ -890,7 +899,9 @@ PHP_METHOD(StdRequest, withInput)
     // Set property
     intern = Z_REQUEST_P(&clone);
     intern->locked = 0;
+
     zend_update_property(ce, &clone, ZEND_STRL("input"), input);
+
     intern->locked = 1;
 
     if( EG(exception) ) {
@@ -901,6 +912,109 @@ PHP_METHOD(StdRequest, withInput)
     RETURN_ZVAL(&clone, 1, 1);
 }
 /* }}} StdRequest::withInput */
+
+/* {{{ proto StdRequest StdRequest::withParam(string $key, $val) */
+PHP_METHOD(StdRequest, withParam)
+{
+    zend_string *key;
+    zval *val;
+    zval *_this_zval = getThis();
+    zend_class_entry *ce = Z_OBJCE_P(_this_zval);
+    zend_object *clone_obj;
+    zval clone = {0};
+    struct php_request_obj *intern;
+    zval member = {0};
+    zval params = {0};
+    zval *params_ptr;
+
+    ZEND_PARSE_PARAMETERS_START(2, 2)
+        Z_PARAM_STR(key)
+        Z_PARAM_ZVAL(val)
+    ZEND_PARSE_PARAMETERS_END();
+
+    php_request_assert_immutable(val, ZEND_STRL("params"));
+    if( EG(exception) ) {
+        return;
+    }
+
+    ZVAL_OBJ(&clone, Z_OBJ_HT_P(_this_zval)->clone_obj(_this_zval));
+    if( EG(exception) ) {
+        zval_dtor(&clone);
+        return;
+    }
+
+    // Set property
+    intern = Z_REQUEST_P(&clone);
+    intern->locked = 0;
+
+    ZVAL_STRING(&member, "params");
+    params_ptr = std_object_handlers.get_property_ptr_ptr(&clone, &member, BP_VAR_RW, NULL);
+    zval_dtor(&member);
+    if( EG(exception) ) {
+        zval_dtor(&clone);
+        return;
+    }
+
+    if( params_ptr && Z_TYPE_P(params_ptr) == IS_ARRAY ) {
+        add_assoc_zval_ex(params_ptr, ZSTR_VAL(key), ZSTR_LEN(key), val);
+    } else {
+        array_init(&params);
+        add_assoc_zval_ex(&params, ZSTR_VAL(key), ZSTR_LEN(key), val);
+        zend_update_property(ce, &clone, ZEND_STRL("params"), &params);
+    }
+
+    intern->locked = 1;
+
+    if( EG(exception) ) {
+        zval_dtor(&clone);
+        return;
+    }
+
+    RETURN_ZVAL(&clone, 1, 1);
+}
+/* }}} StdRequest::withParam */
+
+/* {{{ proto StdRequest StdRequest::withParams(array $params) */
+PHP_METHOD(StdRequest, withParams)
+{
+    zval *params;
+    zval *_this_zval = getThis();
+    zend_class_entry *ce = Z_OBJCE_P(_this_zval);
+    zend_object *clone_obj;
+    zval clone = {0};
+    struct php_request_obj *intern;
+
+    ZEND_PARSE_PARAMETERS_START(1, 1)
+        Z_PARAM_ARRAY(params)
+    ZEND_PARSE_PARAMETERS_END();
+
+    php_request_assert_immutable(params, ZEND_STRL("params"));
+    if( EG(exception) ) {
+        return;
+    }
+
+    ZVAL_OBJ(&clone, Z_OBJ_HT_P(_this_zval)->clone_obj(_this_zval));
+    if( EG(exception) ) {
+        zval_dtor(&clone);
+        return;
+    }
+
+    // Set property
+    intern = Z_REQUEST_P(&clone);
+    intern->locked = 0;
+
+    zend_update_property(ce, &clone, ZEND_STRL("params"), params);
+
+    intern->locked = 1;
+
+    if( EG(exception) ) {
+        zval_dtor(&clone);
+        return;
+    }
+
+    RETURN_ZVAL(&clone, 1, 1);
+}
+/* }}} StdRequest::withParam */
 
 /* {{{ proto array StdRequest::parseAccept(string $header) */
 PHP_METHOD(StdRequest, parseAccept)
@@ -947,6 +1061,8 @@ PHP_METHOD(StdRequest, parseDigestAuth)
 static zend_function_entry StdRequest_methods[] = {
     PHP_ME(StdRequest, __construct, StdRequest_construct_args, ZEND_ACC_PUBLIC)
     PHP_ME(StdRequest, withInput, StdRequest_withInput_args, ZEND_ACC_PUBLIC | ZEND_ACC_FINAL)
+    PHP_ME(StdRequest, withParam, StdRequest_withParam_args, ZEND_ACC_PUBLIC | ZEND_ACC_FINAL)
+    PHP_ME(StdRequest, withParams, StdRequest_withParams_args, ZEND_ACC_PUBLIC | ZEND_ACC_FINAL)
     PHP_ME(StdRequest, parseAccept, StdRequest_parseAccept_args, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
     PHP_ME(StdRequest, parseContentType, StdRequest_parseContentType_args, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
     PHP_ME(StdRequest, parseDigestAuth, StdRequest_parseDigestAuth_args, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)

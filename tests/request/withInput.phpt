@@ -2,6 +2,8 @@
 StdRequest::withInput
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
+--GET--
+forcecgi
 --FILE--
 <?php
 $_SERVER['HTTP_HOST'] = 'localhost';
