@@ -405,7 +405,7 @@ static int php_request_is_immutable(zval *value)
 static void php_request_assert_immutable(zval *value, const char *desc, size_t desc_len)
 {
     if( !php_request_is_immutable(value) ) {
-        zend_throw_exception_ex(spl_ce_UnexpectedValueException, 0, "All %.*s values must be null, scalar, or array.", desc_len, desc);
+        zend_throw_exception_ex(spl_ce_UnexpectedValueException, 0, "All $%.*s values must be null, scalar, or array.", desc_len, desc);
     }
 }
 /* }}} */
@@ -586,6 +586,12 @@ static inline void php_request_copy_global(
         tmp = zend_hash_str_find(&EG(symbol_table), glob_key, glob_key_length);
     }
     if( tmp ) {
+        // Assert immutable
+        php_request_assert_immutable(tmp, glob_key, glob_key_length);
+        if( EG(exception) ) {
+            return;
+        }
+        // Update property value
         zend_update_property(Z_OBJCE_P(obj), obj, obj_key, obj_key_length, tmp);
         Z_TRY_ADDREF_P(tmp);
     }
@@ -804,6 +810,11 @@ PHP_METHOD(StdRequest, __construct)
     php_request_copy_global_lit(_this_zval, "get", zv_globals, "_GET");
     php_request_copy_global_lit(_this_zval, "post", zv_globals, "_POST");
 
+    // Check if previous step threw
+    if( EG(exception) ) {
+        return;
+    }
+
     // Read back server property
     server = zend_read_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("server"), 0, &rv);
 
@@ -865,7 +876,7 @@ PHP_METHOD(StdRequest, withInput)
         Z_PARAM_ZVAL(input)
     ZEND_PARSE_PARAMETERS_END();
 
-    php_request_assert_immutable(input, ZEND_STRL("$input"));
+    php_request_assert_immutable(input, ZEND_STRL("input"));
     if( EG(exception) ) {
         return;
     }
