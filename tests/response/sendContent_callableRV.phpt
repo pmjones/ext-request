@@ -1,5 +1,5 @@
 --TEST--
-StdResponse::sendContent (callable)
+StdResponse::sendContent (callable return value)
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --CGI--
@@ -11,7 +11,8 @@ $response = new StdResponse();
 $response->setContent(function (StdResponse $arg) use ($response) {
     if($response !== $arg) echo 'fail';
     echo 'foo';
+    return 'bar';
 });
 $response->send();
 --EXPECT--
-foo
+foobar

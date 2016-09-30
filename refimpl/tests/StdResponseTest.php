@@ -254,13 +254,31 @@ class StdResponseTest extends PHPUnit_Framework_TestCase
      */
     public function testSendContent_callable()
     {
-        $this->response->setContent(function () {
+        $this->response->setContent(function (StdResponse $response) {
+            $this->assertSame($this->response, $response);
             echo 'foo';
         });
         $this->assertSent(
             200,
             [],
             'foo'
+        );
+    }
+
+    /**
+     * @runInSeparateProcess
+     */
+    public function testSendContent_callableWithReturnValue()
+    {
+        $this->response->setContent(function (StdResponse $response) {
+            $this->assertSame($this->response, $response);
+            echo 'foo';
+            return 'bar';
+        });
+        $this->assertSent(
+            200,
+            [],
+            'foobar'
         );
     }
 
