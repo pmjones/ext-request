@@ -102,17 +102,6 @@ static zend_bool php_request_is_secure(zval *server)
         return 1;
     }
 
-    if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("SERVER_PORT"))) &&
-        443 == zval_get_long(tmp) ) {
-        return 1;
-    }
-
-    if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_X_FORWARDED_PROTO"))) &&
-        Z_TYPE_P(tmp) == IS_STRING &&
-        zend_string_equals_literal_ci(Z_STR_P(tmp), "https") ) {
-        return 1;
-    }
-
     return 0;
 }
 /* }}} */
@@ -763,10 +752,6 @@ PHP_METHOD(StdRequest, __construct)
         zend_update_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("method"), &method);
         zend_update_property_bool(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("xhr"), xhr);
 
-        // secure
-        zend_bool secure = php_request_is_secure(server);
-        zend_update_property_bool(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("secure"), secure);
-
         // headers
         php_request_normalize_headers(&headers, server);
         zend_update_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("headers"), &headers);
@@ -915,8 +900,6 @@ PHP_MINIT_FUNCTION(stdrequest)
     register_default_prop_handlers(ZEND_STRL("method"));
     zend_declare_property_null(StdRequest_ce_ptr, ZEND_STRL("post"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("post"));
-    zend_declare_property_bool(StdRequest_ce_ptr, ZEND_STRL("secure"), 0, ZEND_ACC_PUBLIC);
-    register_default_prop_handlers(ZEND_STRL("secure"));
     zend_declare_property_null(StdRequest_ce_ptr, ZEND_STRL("server"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("server"));
     zend_declare_property_null(StdRequest_ce_ptr, ZEND_STRL("uploads"), ZEND_ACC_PUBLIC);
