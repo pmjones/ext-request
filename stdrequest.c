@@ -44,6 +44,10 @@ ZEND_BEGIN_ARG_INFO_EX(StdRequest_construct_args, 0, 0, 0)
     ZEND_ARG_TYPE_INFO(0, globals, IS_ARRAY, 1)
 ZEND_END_ARG_INFO()
 
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO(StdRequest_withInput_args, IS_OBJECT, "StdRequest", 0)
+    ZEND_ARG_INFO(0, input)
+ZEND_END_ARG_INFO()
+
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO(StdRequest_parseAccept_args, IS_ARRAY, NULL, 1)
     ZEND_ARG_TYPE_INFO(0, header, IS_STRING, 0)
 ZEND_END_ARG_INFO()
@@ -355,6 +359,54 @@ static zend_object *php_request_obj_create(zend_class_entry *ce)
     obj->locked = 1;
 
     return &obj->std;
+}
+/* }}} */
+
+/* {{{ php_request_clone_obj */
+static zend_object *php_request_clone_obj(zval *zobject)
+{
+    zend_object *old_obj;
+    zend_object *new_obj;
+
+    old_obj = &Z_REQUEST_P(zobject)->std;
+    new_obj = php_request_obj_create(StdRequest_ce_ptr);
+
+    php_request_fetch_object(new_obj)->locked = php_request_fetch_object(old_obj)->locked;
+
+    zend_objects_clone_members(new_obj, old_obj);
+
+    return new_obj;
+}
+/* }}} */
+
+/* {{{ php_request_assert_immutable */
+static int php_request_is_immutable(zval *value)
+{
+    zval *val;
+    switch( Z_TYPE_P(value) ) {
+        case IS_NULL:
+        case IS_TRUE:
+        case IS_FALSE:
+        case IS_LONG:
+        case IS_DOUBLE:
+        case IS_STRING:
+            return 1;
+        case IS_ARRAY:
+            ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(value), val) {
+                if( !php_request_is_immutable(val) ) {
+                    return 0;
+                }
+            } ZEND_HASH_FOREACH_END();
+            return 1;
+        default:
+            return 0;
+    }
+}
+static void php_request_assert_immutable(zval *value, const char *desc, size_t desc_len)
+{
+    if( !php_request_is_immutable(value) ) {
+        zend_throw_exception_ex(spl_ce_UnexpectedValueException, 0, "All %.*s values must be null, scalar, or array.", desc_len, desc);
+    }
 }
 /* }}} */
 
@@ -799,6 +851,46 @@ PHP_METHOD(StdRequest, __construct)
 }
 /* }}} StdRequest::__construct */
 
+/* {{{ proto StdRequest StdRequest::withInput($input) */
+PHP_METHOD(StdRequest, withInput)
+{
+    zval *input;
+    zval *_this_zval = getThis();
+    zend_class_entry *ce = Z_OBJCE_P(_this_zval);
+    zend_object *clone_obj;
+    zval clone = {0};
+    struct php_request_obj *intern;
+
+    ZEND_PARSE_PARAMETERS_START(1, 1)
+        Z_PARAM_ZVAL(input)
+    ZEND_PARSE_PARAMETERS_END();
+
+    php_request_assert_immutable(input, ZEND_STRL("$input"));
+    if( EG(exception) ) {
+        return;
+    }
+
+    ZVAL_OBJ(&clone, Z_OBJ_HT_P(_this_zval)->clone_obj(_this_zval));
+    if( EG(exception) ) {
+        zval_dtor(&clone);
+        return;
+    }
+
+    // Set property
+    intern = Z_REQUEST_P(&clone);
+    intern->locked = 0;
+    zend_update_property(ce, &clone, ZEND_STRL("input"), input);
+    intern->locked = 1;
+
+    if( EG(exception) ) {
+        zval_dtor(&clone);
+        return;
+    }
+
+    RETURN_ZVAL(&clone, 1, 1);
+}
+/* }}} StdRequest::withInput */
+
 /* {{{ proto array StdRequest::parseAccept(string $header) */
 PHP_METHOD(StdRequest, parseAccept)
 {
@@ -843,6 +935,7 @@ PHP_METHOD(StdRequest, parseDigestAuth)
 /* {{{ StdRequest methods */
 static zend_function_entry StdRequest_methods[] = {
     PHP_ME(StdRequest, __construct, StdRequest_construct_args, ZEND_ACC_PUBLIC)
+    PHP_ME(StdRequest, withInput, StdRequest_withInput_args, ZEND_ACC_PUBLIC | ZEND_ACC_FINAL)
     PHP_ME(StdRequest, parseAccept, StdRequest_parseAccept_args, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
     PHP_ME(StdRequest, parseContentType, StdRequest_parseContentType_args, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
     PHP_ME(StdRequest, parseDigestAuth, StdRequest_parseDigestAuth_args, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
@@ -864,6 +957,7 @@ PHP_MINIT_FUNCTION(stdrequest)
     StdRequest_obj_handlers.write_property = php_request_object_write_property;
     StdRequest_obj_handlers.unset_property = php_request_object_unset_property;
     StdRequest_obj_handlers.get_property_ptr_ptr = NULL;
+    StdRequest_obj_handlers.clone_obj = php_request_clone_obj;
 
     INIT_CLASS_ENTRY(ce, "StdRequest", StdRequest_methods);
     StdRequest_ce_ptr = zend_register_internal_class(&ce);
@@ -911,8 +1005,12 @@ PHP_MINIT_FUNCTION(stdrequest)
     register_default_prop_handlers(ZEND_STRL("get"));
     zend_declare_property_null(StdRequest_ce_ptr, ZEND_STRL("headers"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("headers"));
+    zend_declare_property_null(StdRequest_ce_ptr, ZEND_STRL("input"), ZEND_ACC_PUBLIC);
+    register_default_prop_handlers(ZEND_STRL("input"));
     zend_declare_property_string(StdRequest_ce_ptr, ZEND_STRL("method"), "", ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("method"));
+    zend_declare_property_null(StdRequest_ce_ptr, ZEND_STRL("params"), ZEND_ACC_PUBLIC);
+    register_default_prop_handlers(ZEND_STRL("params"));
     zend_declare_property_null(StdRequest_ce_ptr, ZEND_STRL("post"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("post"));
     zend_declare_property_bool(StdRequest_ce_ptr, ZEND_STRL("secure"), 0, ZEND_ACC_PUBLIC);

@@ -871,7 +871,11 @@ class StdRequestTest extends PHPUnit_Framework_TestCase
         $input = ['foo' => 'bar'];
         $request = $request->withInput($input);
         $this->assertSame($input, $request->input);
+    }
 
+    public function testWithInput_throws()
+    {
+        $request = new StdRequest();
         $this->setExpectedException(
             'UnexpectedValueException',
             'All $input values must be null, scalar, or array.'
