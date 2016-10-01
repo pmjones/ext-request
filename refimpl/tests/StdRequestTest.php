@@ -952,8 +952,9 @@ class StdRequestTest extends PHPUnit_Framework_TestCase
         $request = $request->withParams($params);
 
         unset($params['bar']);
-        $request = $request->withoutParam('bar');
-        $this->assertSame($params, $request->params);
+        $clone = $request->withoutParam('bar');
+        $this->assertSame($params, $clone->params);
+        $this->assertNotSame($clone->params, $request->params);
     }
 
     public function testWithoutParams_named()
