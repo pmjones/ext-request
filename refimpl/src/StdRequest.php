@@ -1,13 +1,7 @@
 <?php
 /**
  *
- * Goals:
- * - Provide a struct of non-session superglobals as read-only properties.
- * - Add other read-only properties calculated from the superglobals ($method,
- *   $headers, $content, etc.) to the struct.
- * - Only build things that don't require application input; e.g., no negotiation,
- *   but build acceptables for application to work through.
- * - No methods, just properties (i.e., a struct).
+ * Immutable request object.
  *
  * @property-read $acceptCharset
  * @property-read $acceptEncoding
@@ -27,7 +21,9 @@
  * @property-read $files
  * @property-read $get
  * @property-read $headers
+ * @property-read $input
  * @property-read $method
+ * @property-read $params
  * @property-read $post
  * @property-read $server
  * @property-read $uploads
@@ -55,7 +51,9 @@ class StdRequest
     private $files = [];
     private $get = [];
     private $headers = [];
+    private $input;
     private $method = '';
+    private $params = [];
     private $post = [];
     private $server = [];
     private $uploads = [];
@@ -64,13 +62,13 @@ class StdRequest
 
     public function __construct(array $globals = array())
     {
-        $this->env = $globals['_ENV'] ?? $_ENV;
-        $this->server = $globals['_SERVER'] ?? $_SERVER;
+        $this->env = $this->importGlobal($globals['_ENV'] ?? $_ENV, '$_ENV');
+        $this->server = $this->importGlobal($globals['_SERVER'] ?? $_SERVER, '$_SERVER');
 
-        $this->cookie = $globals['_COOKIE'] ?? $_COOKIE;
-        $this->files = $globals['_FILES'] ?? $_FILES;
-        $this->get = $globals['_GET'] ?? $_GET;
-        $this->post = $globals['_POST'] ?? $_POST;
+        $this->cookie = $this->importGlobal($globals['_COOKIE'] ?? $_COOKIE, '$_COOKIE');
+        $this->files = $this->importGlobal($globals['_FILES'] ?? $_FILES, '$_FILES');
+        $this->get = $this->importGlobal($globals['_GET'] ?? $_GET, '$_GET');
+        $this->post = $this->importGlobal($globals['_POST'] ?? $_POST, '$_POST');
 
         $this->setMethod();
         $this->setHeaders();
@@ -79,6 +77,12 @@ class StdRequest
         $this->setAuth();
         $this->setContent();
         $this->setUploads();
+    }
+
+    protected function importGlobal($global, $descr)
+    {
+        $this->assertImmutable($global, $descr);
+        return $global;
     }
 
     public function __get($key) // : array
@@ -395,5 +399,79 @@ class StdRequest
             $uploads[$key] = $this->setUploadsFromSpec($spec);
         }
         return $uploads;
+    }
+
+    // application/json:
+    // $input = json_decode($request->content, true);
+    // $request = $request->withInput($input);
+    //
+    // application/x-www-form-urlencoded:
+    // parse_str($request->content, $input);
+    // $request = $request->withInput($input);
+    final public function withInput($input)
+    {
+        $this->assertImmutable($input, '$input');
+        $clone = clone $this;
+        $clone->input = $input;
+        return $clone;
+    }
+
+    // sets one param
+    final public function withParam($key, $val)
+    {
+        $this->assertImmutable($val, '$params');
+        $clone = clone $this;
+        $clone->params[$key] = $val;
+        return $clone;
+    }
+
+    // sets all params
+    final public function withParams(array $params)
+    {
+        $this->assertImmutable($params, '$params');
+        $clone = clone $this;
+        $clone->params = $params;
+        return $clone;
+    }
+
+    // removes one param
+    final public function withoutParam($key)
+    {
+        $clone = clone $this;
+        unset($clone->params[$key]);
+        return $clone;
+    }
+
+    // removes multiple params
+    final public function withoutParams(array $keys = null)
+    {
+        $clone = clone $this;
+
+        if (is_null($keys)) {
+            $clone->params = [];
+            return $clone;
+        }
+
+        foreach ($keys as $key) {
+            unset($clone->params[$key]);
+        }
+
+        return $clone;
+    }
+
+    final protected function assertImmutable($value, $descr)
+    {
+        if (is_null($value) || is_scalar($value)) {
+            return;
+        }
+
+        if (is_array($value)) {
+            foreach ($value as $val) {
+                $this->assertImmutable($val, $descr);
+            }
+            return;
+        }
+
+        throw new UnexpectedValueException("All $descr values must be null, scalar, or array.");
     }
 }

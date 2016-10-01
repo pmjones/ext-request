@@ -53,6 +53,13 @@ $request = new StdRequest(array(
 var_dump($request->url['host']);
 var_dump($request->get['foo']);
 
+// Check for immutability in globals
+$_GET['foo'] = new stdClass();
+try {
+    $request = new StdRequest();
+    echo 'fail';
+} catch( UnexpectedValueException $e ) {}
+
 --EXPECT--
 string(10) "StdRequest"
 bool(true)

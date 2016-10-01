@@ -797,4 +797,150 @@ class StdRequestTest extends PHPUnit_Framework_TestCase
 
         $this->assertEquals($expect, $request->uploads);
     }
+
+    public function testWithInput()
+    {
+        $request = new StdRequest();
+
+        $clone = $request->withInput([]);
+        $this->assertNotSame($request, $clone);
+
+        $input = null;
+        $request = $request->withInput($input);
+        $this->assertSame($input, $request->input);
+
+        $input = 'foo';
+        $request = $request->withInput($input);
+        $this->assertSame($input, $request->input);
+
+        $input = ['foo' => 'bar'];
+        $request = $request->withInput($input);
+        $this->assertSame($input, $request->input);
+    }
+
+    public function testWithInput_throws()
+    {
+        $request = new StdRequest();
+        $this->setExpectedException(
+            'UnexpectedValueException',
+            'All $input values must be null, scalar, or array.'
+        );
+        $request = $request->withInput(new StdClass());
+    }
+
+    public function testWithParam()
+    {
+        $request = new StdRequest();
+        $expect = [];
+
+        $clone = $request->withParam('foo', 'bar');
+        $this->assertNotSame($request, $clone);
+
+        $request = $request->withParam('foo', null);
+        $expect['foo'] = null;
+        $this->assertSame($expect, $request->params);
+
+        $request = $request->withParam('bar', 'baz');
+        $expect['bar'] = 'baz';
+        $this->assertSame($expect, $request->params);
+
+        $request = $request->withParam('dib', ['zim' => 'gir']);
+        $expect['dib'] = ['zim' => 'gir'];
+        $this->assertSame($expect, $request->params);
+
+        $this->setExpectedException(
+            'UnexpectedValueException',
+            'All $params values must be null, scalar, or array.'
+        );
+        $request->withParam('bad', new StdClass());
+    }
+
+    public function testWithParams()
+    {
+        $request = new StdRequest();
+
+        $clone = $request->withParams(['foo' => 'bar']);
+        $this->assertNotSame($request, $clone);
+
+        $params = [
+            'foo' => null,
+            'bar' => 'baz',
+            'dib' => [
+                'zim' => 'gir',
+            ],
+        ];
+        $request = $request->withParams($params);
+        $this->assertSame($params, $request->params);
+
+        $params['bad'] = new StdClass();
+        $this->setExpectedException(
+            'UnexpectedValueException',
+            'All $params values must be null, scalar, or array.'
+        );
+        $request = $request->withParams($params);
+    }
+
+    public function testWithoutParam()
+    {
+        $request = new StdRequest();
+
+        $clone = $request->withoutParam('foo');
+        $this->assertNotSame($request, $clone);
+
+        $params = [
+            'foo' => null,
+            'bar' => 'baz',
+            'dib' => [
+                'zim' => 'gir',
+            ],
+        ];
+        $request = $request->withParams($params);
+
+        unset($params['bar']);
+        $clone = $request->withoutParam('bar');
+        $this->assertSame($params, $clone->params);
+        $this->assertNotSame($clone->params, $request->params);
+    }
+
+    public function testWithoutParams_named()
+    {
+        $request = new StdRequest();
+
+        $clone = $request->withoutParams(['bar']);
+        $this->assertNotSame($request, $clone);
+
+        $params = [
+            'foo' => null,
+            'bar' => 'baz',
+            'dib' => [
+                'zim' => 'gir',
+            ],
+        ];
+        $request = $request->withParams($params);
+
+        unset($params['bar']);
+        $request = $request->withoutParams(['bar']);
+        $this->assertSame($params, $request->params);
+    }
+
+    public function testWithoutParams_reset()
+    {
+        $request = new StdRequest();
+
+        $clone = $request->withoutParams();
+        $this->assertNotSame($request, $clone);
+
+        $params = [
+            'foo' => null,
+            'bar' => 'baz',
+            'dib' => [
+                'zim' => 'gir',
+            ],
+        ];
+        $request = $request->withParams($params);
+
+        $params = [];
+        $request = $request->withoutParams();
+        $this->assertSame($params, $request->params);
+    }
 }

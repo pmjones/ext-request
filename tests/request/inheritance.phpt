@@ -45,6 +45,15 @@ $request->magicTest = 'baz';
 var_dump($request->magicTest);
 $request->magicTestUndef = 'bat';
 var_dump($request->magicTestUndef);
+
+// Make sure cloning keeps readonly
+$clone = clone $request;
+try {
+    $clone->method = 'PUT';
+    echo 'fail';
+} catch( Exception $e ) {
+    echo 'ok';
+}
 --EXPECT--
 string(3) "PUT"
 string(3) "foo"
@@ -53,3 +62,4 @@ string(16) "RuntimeException"
 string(36) "SubStdRequest::$method is read-only."
 string(3) "baz"
 string(3) "bat"
+ok
