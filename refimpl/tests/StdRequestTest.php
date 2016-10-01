@@ -150,61 +150,6 @@ class StdRequestTest extends PHPUnit_Framework_TestCase
         $this->assertSame($expect, $request->headers);
     }
 
-    public function testSecure()
-    {
-        // default
-        $request = new StdRequest();
-        $this->assertFalse($request->secure);
-
-        // https on
-        $_SERVER = [
-            'HTTP_HOST' => 'example.com',
-            'HTTPS' => 'on',
-        ];
-        $request = new StdRequest();
-        $this->assertTrue($request->secure);
-
-        // https off
-        $_SERVER = [
-            'HTTP_HOST' => 'example.com',
-            'HTTPS' => 'off',
-        ];
-        $request = new StdRequest();
-        $this->assertFalse($request->secure);
-
-        // port 443
-        $_SERVER = [
-            'HTTP_HOST' => 'example.com',
-            'SERVER_PORT' => '443',
-        ];
-        $request = new StdRequest();
-        $this->assertTrue($request->secure);
-
-        // port 80
-        $_SERVER = [
-            'HTTP_HOST' => 'example.com',
-            'SERVER_PORT' => '80',
-        ];
-        $request = new StdRequest();
-        $this->assertFalse($request->secure);
-
-        // forwarded https
-        $_SERVER = [
-            'HTTP_HOST' => 'example.com',
-            'HTTP_X_FORWARDED_PROTO' => 'https',
-        ];
-        $request = new StdRequest();
-        $this->assertTrue($request->secure);
-
-        // forwarded http
-        $_SERVER = [
-            'HTTP_HOST' => 'example.com',
-            'HTTP_X_FORWARDED_PROTO' => 'http',
-        ];
-        $request = new StdRequest();
-        $this->assertFalse($request->secure);
-    }
-
     public function testUrl()
     {
         $_SERVER += [

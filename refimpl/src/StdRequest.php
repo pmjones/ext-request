@@ -25,7 +25,6 @@
  * @property-read $method
  * @property-read $params
  * @property-read $post
- * @property-read $secure
  * @property-read $server
  * @property-read $uploads
  * @property-read $url
@@ -56,7 +55,6 @@ class StdRequest
     private $method = '';
     private $params = [];
     private $post = [];
-    private $secure = false;
     private $server = [];
     private $uploads = [];
     private $url;
@@ -74,7 +72,6 @@ class StdRequest
 
         $this->setMethod();
         $this->setHeaders();
-        $this->setSecure();
         $this->setUrl();
         $this->setAccepts();
         $this->setAuth();
@@ -154,24 +151,13 @@ class StdRequest
         }
     }
 
-    protected function setSecure() // : void
-    {
-        $scheme = isset($this->server['HTTPS'])
-            && strtolower($this->server['HTTPS']) == 'on';
-
-        $port = isset($this->server['SERVER_PORT'])
-            && $this->server['SERVER_PORT'] == 443;
-
-        $forward = isset($this->server['HTTP_X_FORWARDED_PROTO'])
-            && strtolower($this->server['HTTP_X_FORWARDED_PROTO']) == 'https';
-
-        $this->secure = $scheme || $port || $forward;
-    }
-
     protected function setUrl() // : void
     {
         // scheme
-        $scheme = ($this->secure) ? 'https://' : 'http://';
+        $scheme = 'http://';
+        if (isset($this->server['HTTPS']) && strtolower($this->server['HTTPS']) == 'on') {
+            $scheme = 'https://';
+        }
 
         // host
         if (isset($this->server['HTTP_HOST'])) {

@@ -71,8 +71,7 @@ These properties are read-only and cannot be modified.
 - `$acceptMedia`: An array computed from `$_SERVER['HTTP_ACCEPT']`.
 - `$headers`: An array of all `HTTP_*` header keys from `$_SERVER`, plus RFC 3875 headers not prefixed with `HTTP_`
 - `$method`: The `$_SERVER['REQUEST_METHOD']` value, or the `$_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE']` when appropriate.
-- `$secure`: A boolean indicating if this is an HTTPS or port 443 request.
-- `$url`: The result of [`parse_url`](http://php.net/parse_url) as built from the `$_SERVER` keys `HTTP_HOST`/`SERVER_NAME`, `SERVER_PORT`, and `REQUEST_URI`.
+- `$url`: The result of [`parse_url`](http://php.net/parse_url) as built from the `$_SERVER` keys `HTTPS`, `HTTP_HOST`/`SERVER_NAME`, `SERVER_PORT`, and `REQUEST_URI`.
 - `$xhr`: A boolean indicating if this is an XmlHttpRequest.
 
 Notes:
