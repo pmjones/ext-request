@@ -965,6 +965,7 @@ PHP_METHOD(StdRequest, withParam)
 
     if( params_ptr && Z_TYPE_P(params_ptr) == IS_ARRAY ) {
         add_assoc_zval_ex(params_ptr, ZSTR_VAL(key), ZSTR_LEN(key), val);
+        Z_TRY_ADDREF_P(val);
     } else {
         array_init(&params);
         add_assoc_zval_ex(&params, ZSTR_VAL(key), ZSTR_LEN(key), val);
