@@ -943,4 +943,32 @@ class StdRequestTest extends PHPUnit_Framework_TestCase
         $request = $request->withoutParams();
         $this->assertSame($params, $request->params);
     }
+
+    public function testWithUrl()
+    {
+        $request = new StdRequest();
+
+        $clone = $request->withUrl([]);
+        $this->assertNotSame($request, $clone);
+
+        $request = $request->withUrl([
+            'scheme' => 'https',
+            'host' => 'example.com',
+            'port' => 8080,
+            'path' => '/foo/bar',
+            'query' => 'baz=dib',
+        ]);
+
+        $expect = [
+            'scheme' => 'https',
+            'host' => 'example.com',
+            'port' => 8080,
+            'user' => null,
+            'pass' => null,
+            'path' => '/foo/bar',
+            'query' => 'baz=dib',
+            'fragment' => null,
+        ];
+        $this->assertSame($expect, $request->url);
+    }
 }

@@ -459,6 +459,21 @@ class StdRequest
         return $clone;
     }
 
+    // resets the url.
+    // note that this lets you set values that do not match other superglobals.
+    final public function withUrl(array $url)
+    {
+        $this->assertImmutable($url, '$url');
+        $clone = clone $this;
+        foreach ($clone->url as $key => $val) {
+            $clone->url[$key] = null;
+            if (isset($url[$key])) {
+                $clone->url[$key] = $url[$key];
+            }
+        }
+        return $clone;
+    }
+
     final protected function assertImmutable($value, $descr)
     {
         if (is_null($value) || is_scalar($value)) {

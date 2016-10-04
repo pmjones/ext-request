@@ -71,7 +71,6 @@ These properties are read-only and cannot be modified.
 - `$acceptMedia`: An array computed from `$_SERVER['HTTP_ACCEPT']`.
 - `$headers`: An array of all `HTTP_*` header keys from `$_SERVER`, plus RFC 3875 headers not prefixed with `HTTP_`
 - `$method`: The `$_SERVER['REQUEST_METHOD']` value, or the `$_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE']` when appropriate.
-- `$url`: The result of [`parse_url`](http://php.net/parse_url) as built from the `$_SERVER` keys `HTTPS`, `HTTP_HOST`/`SERVER_NAME`, `SERVER_PORT`, and `REQUEST_URI`.
 - `$xhr`: A boolean indicating if this is an XmlHttpRequest.
 
 Notes:
@@ -117,6 +116,7 @@ These properties are read-only and cannot be modified.
 
 - `$input`: Typically the parsed content of the request.
 - `$params`: Typically path-info or routing parameters.
+- `$url`: The result of [`parse_url`](http://php.net/parse_url) as built from the `$_SERVER` keys `HTTPS`, `HTTP_HOST`/`SERVER_NAME`, `SERVER_PORT`, and `REQUEST_URI`.
 
 Notes:
 
@@ -245,6 +245,41 @@ var_dump($request->params); // []
 ```
 
 Note that this method returns a clone of the _StdRequest_ instance with the new property value. It does not modify the property value on the called instance.
+
+#### `withUrl(array $url)`
+
+Sets the value of the `$url` array on a clone of the called _StdRequest_ instance.
+
+For example:
+
+```php
+<?php
+$request = new StdRequest();
+
+$request = $request->withUrl([
+    'scheme' => 'https',
+    'host' => 'example.com',
+    'port' => 8080,
+    'path' => '/foo/bar',
+    'query' => 'baz=dib',
+]);
+
+var_dump($request->url);
+/* [
+    'scheme' => 'https',
+    'host' => 'example.com',
+    'port' => 8080,
+    'user' => null,
+    'pass' => null,
+    'path' => '/foo/bar',
+    'query' => 'baz=dib',
+    'fragment' => null,
+] */
+?>
+```
+
+Note that this method returns a clone of the _StdRequest_ instance with the new property value. It does not modify the property value on the called instance.
+
 
 ## StdResponse
 
