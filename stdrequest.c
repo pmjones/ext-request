@@ -827,7 +827,7 @@ PHP_METHOD(StdRequest, __construct)
         php_request_set_url(_this_zval, server);
 
         // accepts
-        php_request_set_accept_by_name(_this_zval, server, ZEND_STRL("HTTP_ACCEPT"), ZEND_STRL("acceptMedia"));
+        php_request_set_accept_by_name(_this_zval, server, ZEND_STRL("HTTP_ACCEPT"), ZEND_STRL("accept"));
         php_request_set_accept_by_name(_this_zval, server, ZEND_STRL("HTTP_ACCEPT_CHARSET"), ZEND_STRL("acceptCharset"));
         php_request_set_accept_by_name(_this_zval, server, ZEND_STRL("HTTP_ACCEPT_ENCODING"), ZEND_STRL("acceptEncoding"));
         php_request_set_accept_language(_this_zval, server);
@@ -1224,8 +1224,8 @@ PHP_MINIT_FUNCTION(stdrequest)
     register_default_prop_handlers(ZEND_STRL("acceptEncoding"));
     zend_declare_property_null(StdRequest_ce_ptr, ZEND_STRL("acceptLanguage"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("acceptLanguage"));
-    zend_declare_property_null(StdRequest_ce_ptr, ZEND_STRL("acceptMedia"), ZEND_ACC_PUBLIC);
-    register_default_prop_handlers(ZEND_STRL("acceptMedia"));
+    zend_declare_property_null(StdRequest_ce_ptr, ZEND_STRL("accept"), ZEND_ACC_PUBLIC);
+    register_default_prop_handlers(ZEND_STRL("accept"));
     zend_declare_property_null(StdRequest_ce_ptr, ZEND_STRL("authDigest"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("authDigest"));
     zend_declare_property_null(StdRequest_ce_ptr, ZEND_STRL("authPw"), ZEND_ACC_PUBLIC);

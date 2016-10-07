@@ -13,7 +13,7 @@ try {
     var_dump(get_class($e), $e->getMessage());
 }
 try {
-    $request->acceptMedia[0] = array();
+    $request->accept[0] = array();
 } catch( Exception $e ) {
     var_dump(get_class($e), $e->getMessage());
 }
@@ -30,6 +30,6 @@ bool(true)
 string(16) "RuntimeException"
 string(43) "StdRequest::$noSuchProperty does not exist."
 string(16) "RuntimeException"
-string(38) "StdRequest::$acceptMedia is read-only."
+string(38) "StdRequest::$accept is read-only."
 string(16) "RuntimeException"
 string(33) "StdRequest::$method is read-only."

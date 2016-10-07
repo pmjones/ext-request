@@ -68,7 +68,7 @@ These properties are read-only and cannot be modified.
 - `$acceptCharset`: An array computed from `$_SERVER['HTTP_ACCEPT_CHARSET']`.
 - `$acceptEncoding`: An array computed from `$_SERVER['HTTP_ACCEPT_ENCODING']`.
 - `$acceptLanguage`: An array computed from `$_SERVER['HTTP_ACCEPT_LANGUAGE']`.
-- `$acceptMedia`: An array computed from `$_SERVER['HTTP_ACCEPT']`.
+- `$accept`: An array computed from `$_SERVER['HTTP_ACCEPT']`.
 - `$headers`: An array of all `HTTP_*` header keys from `$_SERVER`, plus RFC 3875 headers not prefixed with `HTTP_`
 - `$method`: The `$_SERVER['REQUEST_METHOD']` value, or the `$_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE']` when appropriate.
 - `$xhr`: A boolean indicating if this is an XmlHttpRequest.
