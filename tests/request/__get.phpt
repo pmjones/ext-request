@@ -30,6 +30,6 @@ bool(true)
 string(16) "RuntimeException"
 string(43) "StdRequest::$noSuchProperty does not exist."
 string(16) "RuntimeException"
-string(38) "StdRequest::$accept is read-only."
+string(33) "StdRequest::$accept is read-only."
 string(16) "RuntimeException"
 string(33) "StdRequest::$method is read-only."

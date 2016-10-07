@@ -1218,14 +1218,14 @@ PHP_MINIT_FUNCTION(stdrequest)
     StdRequest_ce_ptr = zend_register_internal_class(&ce);
     StdRequest_ce_ptr->create_object = php_request_obj_create;
 
+    zend_declare_property_null(StdRequest_ce_ptr, ZEND_STRL("accept"), ZEND_ACC_PUBLIC);
+    register_default_prop_handlers(ZEND_STRL("accept"));
     zend_declare_property_null(StdRequest_ce_ptr, ZEND_STRL("acceptCharset"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("acceptCharset"));
     zend_declare_property_null(StdRequest_ce_ptr, ZEND_STRL("acceptEncoding"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("acceptEncoding"));
     zend_declare_property_null(StdRequest_ce_ptr, ZEND_STRL("acceptLanguage"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("acceptLanguage"));
-    zend_declare_property_null(StdRequest_ce_ptr, ZEND_STRL("accept"), ZEND_ACC_PUBLIC);
-    register_default_prop_handlers(ZEND_STRL("accept"));
     zend_declare_property_null(StdRequest_ce_ptr, ZEND_STRL("authDigest"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("authDigest"));
     zend_declare_property_null(StdRequest_ce_ptr, ZEND_STRL("authPw"), ZEND_ACC_PUBLIC);

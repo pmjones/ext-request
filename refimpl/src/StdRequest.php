@@ -3,10 +3,10 @@
  *
  * Immutable request object.
  *
+ * @property-read $accept
  * @property-read $acceptCharset
  * @property-read $acceptEncoding
  * @property-read $acceptLanguage
- * @property-read $accept
  * @property-read $authDigest
  * @property-read $authPw
  * @property-read $authType
@@ -33,10 +33,10 @@
  */
 class StdRequest
 {
+    private $accept = [];
     private $acceptCharset = [];
     private $acceptEncoding = [];
     private $acceptLanguage = [];
-    private $accept = [];
     private $authDigest;
     private $authPw;
     private $authType;
