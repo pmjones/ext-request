@@ -221,7 +221,7 @@ class StdRequestTest extends PHPUnit_Framework_TestCase
         $this->assertSame(8080, $request->url['port']);
     }
 
-    public function testAcceptMedia()
+    public function testaccept()
     {
         $_SERVER += [
             'HTTP_ACCEPT' => 'application/xml;q=0.8, application/json;foo=bar, text/*;q=0.2, */*;q=0.1',
@@ -252,7 +252,7 @@ class StdRequestTest extends PHPUnit_Framework_TestCase
             ],
         ];
 
-        $this->assertEquals($expect, $request->acceptMedia);
+        $this->assertEquals($expect, $request->accept);
     }
 
     public function testAcceptCharset()

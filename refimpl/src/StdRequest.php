@@ -3,10 +3,10 @@
  *
  * Immutable request object.
  *
+ * @property-read $accept
  * @property-read $acceptCharset
  * @property-read $acceptEncoding
  * @property-read $acceptLanguage
- * @property-read $acceptMedia
  * @property-read $authDigest
  * @property-read $authPw
  * @property-read $authType
@@ -33,10 +33,10 @@
  */
 class StdRequest
 {
+    private $accept = [];
     private $acceptCharset = [];
     private $acceptEncoding = [];
     private $acceptLanguage = [];
-    private $acceptMedia = [];
     private $authDigest;
     private $authPw;
     private $authType;
@@ -203,7 +203,7 @@ class StdRequest
     protected function setAccepts() // : void
     {
         if (isset($this->headers['accept'])) {
-            $this->acceptMedia = $this->parseAccepts($this->headers['accept']);
+            $this->accept = $this->parseAccepts($this->headers['accept']);
         }
 
         if (isset($this->headers['accept-charset'])) {
