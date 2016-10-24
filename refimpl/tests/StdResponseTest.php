@@ -149,59 +149,32 @@ class StdResponseTest extends PHPUnit_Framework_TestCase
         $this->response->setContentJson($value, 0, 1);
     }
 
-    public function testSetContentResource()
+    public function testSetContentDownload()
     {
         $fh = fopen('php://temp', 'rb');
-        $this->response->setContentResource(
+        $this->response->setContentDownload(
             $fh,
-            'whatever',
-            $params = ['foo' => 'bar']
+            'filename.tmp',
+            'inline',
+            ['foo' => 'bar']
         );
 
         $expect = [
             'content-type' =>  ['application/octet-stream'],
             'content-transfer-encoding' => ['binary'],
-            'content-disposition' => ['whatever;foo=bar'],
+            'content-disposition' => ['inline;foo=bar;filename="filename.tmp"'],
         ];
         $this->assertSame($expect, $this->response->getHeaders());
         $this->assertSame($fh, $this->response->getContent());
     }
 
-    public function testSetContentResource_notResource()
+    public function testSetContentDownload_notResource()
     {
         $this->setExpectedException(
             'TypeError',
-            'Argument 1 passed to StdResponse::setContentResource() must be of the type resource, string given'
+            'Argument 1 passed to StdResponse::setContentDownload() must be of the type resource, string given'
         );
-        $this->response->setContentResource('not-a-resource', 'disposition');
-    }
-
-    public function testSetDownload()
-    {
-        $fh = fopen('php://temp', 'rb');
-        $this->response->setDownload($fh, 'foo.txt');
-
-        $expect = [
-            'content-type' =>  ['application/octet-stream'],
-            'content-transfer-encoding' => ['binary'],
-            'content-disposition' => ['attachment;filename="foo.txt"'],
-        ];
-        $this->assertSame($expect, $this->response->getHeaders());
-        $this->assertSame($fh, $this->response->getContent());
-    }
-
-    public function testSetDownloadInline()
-    {
-        $fh = fopen('php://temp', 'rb');
-        $this->response->setDownloadInline($fh, 'foo.txt');
-
-        $expect = [
-            'content-type' =>  ['application/octet-stream'],
-            'content-transfer-encoding' => ['binary'],
-            'content-disposition' => ['inline;filename="foo.txt"'],
-        ];
-        $this->assertSame($expect, $this->response->getHeaders());
-        $this->assertSame($fh, $this->response->getContent());
+        $this->response->setContentDownload('not-a-resource', 'badname');
     }
 
     public function testDate()
