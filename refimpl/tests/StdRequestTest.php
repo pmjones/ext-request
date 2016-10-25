@@ -69,6 +69,16 @@ class StdRequestTest extends PHPUnit_Framework_TestCase
         $request->noSuchProperty;
     }
 
+    public function test__getUnderscorePrefixedProperty()
+    {
+        $request = new StdRequest();
+        $this->setExpectedException(
+            RuntimeException::CLASS,
+            'StdRequest::$_initialized does not exist.'
+        );
+        $request->_initialized;
+    }
+
     public function test__unset()
     {
         $_SERVER['REQUEST_METHOD'] = 'PATCH';
@@ -89,6 +99,7 @@ class StdRequestTest extends PHPUnit_Framework_TestCase
         $request = new StdRequest();
         $this->assertTrue(isset($request->method));
         $this->assertFalse(isset($request->noSuchProperty));
+        $this->assertFalse(isset($request->_initialized));
     }
 
     public function test__set()
