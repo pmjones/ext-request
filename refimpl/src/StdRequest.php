@@ -66,7 +66,7 @@ class StdRequest
     {
         if ($this->_initialized) {
             $class = get_class($this);
-            throw new RuntimeException("Cannot call {$this}::__construct() when already initialized.");
+            throw new RuntimeException("{$class}::__construct() called after construction.");
         }
 
         $this->_initialized = true;

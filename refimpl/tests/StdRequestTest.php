@@ -20,6 +20,12 @@ class StdRequestTest extends PHPUnit_Framework_TestCase
     {
         $request = new StdRequest();
         $this->assertInstanceOf(StdRequest::CLASS, $request);
+
+        $this->setExpectedException(
+            'RuntimeException',
+            'StdRequest::__construct() called after construction.'
+        );
+        $request->__construct();
     }
 
     public function test__construct_customGlobals()
