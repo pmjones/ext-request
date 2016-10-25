@@ -8,9 +8,9 @@ json
 <?php
 $response = new StdResponse();
 try {
-    $response->setContentResource('not-a-resource', 'disposition');
+    $response->setContentDownload('not-a-resource', 'disposition');
 } catch( TypeError $e ) {
     var_dump($e->getMessage());
 }
 --EXPECT--
-string(97) "Argument 1 passed to StdResponse::setContentResource() must be of the type resource, string given"
+string(97) "Argument 1 passed to StdResponse::setContentDownload() must be of the type resource, string given"
