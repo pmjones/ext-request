@@ -1,12 +1,19 @@
 --TEST--
-StdResponse::setDownloadInline
+StdResponse::setContentDownload
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
+--EXTENSIONS--
+json
 --FILE--
 <?php
 $response = new StdResponse();
 $fh = fopen('php://temp', 'rb');
-$response->setDownloadInline($fh, 'foo.txt');
+$response->setContentDownload(
+    $fh,
+    'filename.tmp',
+    'inline',
+    $params = ['foo' => 'bar']
+);
 var_dump($response->getHeaders());
 var_dump($fh === $response->getContent());
 --EXPECT--
@@ -24,7 +31,7 @@ array(3) {
   ["content-disposition"]=>
   array(1) {
     [0]=>
-    string(25) "inline;filename="foo.txt""
+    string(38) "inline;foo=bar;filename="filename.tmp""
   }
 }
 bool(true)

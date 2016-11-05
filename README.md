@@ -348,11 +348,11 @@ $response->setHeader('Cache-Control', [
     'no-cache',
 ]); // Cache-Control: public, max-age=123, s-maxage=456, no-cache
 
-$response->setHeader('Content-Type', [
+$response->setHeader('content-type', [
     'text/plain' => [
         'charset' => 'utf-8'
     ],
-]); // Content-Type: text/plain;charset=utf-8
+]); // content-type: text/plain;charset=utf-8
 
 $response->setHeader('X-Whatever', [
     'foo',
@@ -377,18 +377,14 @@ Finally, the header field labels are retained internally in lower-case, and are 
 
 #### Content
 
-- `setContent($content)`: Sets the content of the response. This can be a string or resource (or anything else).
+- `setContent($content)`: Sets the content of the response. This may be a string, resource, object, or anything else.
 
-- `setContentJson($value, $options = 0, $depth = 512)`: A convenience method to `json_encode($value)` as the response content, and set a `Content-Type: application/json` header.
+- `setContentJson($value, $options = 0, $depth = 512)`: A convenience method to `json_encode($value)` as the response content, and set a `content-type: application/json` header.
 
-- `setContentResource($fh, $disposition, array $params = [])`: A convenience method to set the content to a resource (typically a file handle), as well as set the headers for `Content-Type: application/octet-stream`, `Content-Transfer-Encoding: binary`, and `Content-Disposition: $disposition`.  (The `$params` key-value array is added as parameters on the disposition.)
+- `setContentDownload($fh, $name, $disposition = 'attachment', array $params = [])`: A convenience method to set the content to a resource (typically a file handle) for download to the client. This sets the headers `content-type: application/octet-stream`, `content-transfer-encoding: binary`, and `content-disposition: $disposition;filename="$name"`.  (The `$params` key-value array are included as parameters on the disposition.)
 
-- `setDownload($fh, $name, array $params = [])`: A convenience method to set the content to a resource (typically a file handle), to be downloaded as `$name`, with `Content-Disposition: attachment`.   (The `$params` key-value array is added as parameters on the disposition.)
-
-- `setDownloadInline($fh, $name, array $params = [])`: A convenience method to set the content to a resource (typically a file handle), to be downloaded as `$name`, with `Content-Disposition: inline`.   (The `$params` key-value array is added as parameters on the disposition.)
-
-- `getContent()`: Returns the content of the response; this may be a string or resource (or anything else).
+- `getContent()`: Returns the content of the response. This may be a string, resource, object, or anything else.
 
 #### Sending
 
-- `send()`: This sends the response version, status, headers, and cookies using native PHP functions `header()`, `setcookie()`, and `setrawcookie()`. Then, if the response content is a resource, it is sent with `fpassthru()`; if a callable object or closure, it is invoked; otherwise, the content is `echo`ed.
+- `send()`: This sends the response version, status, headers, and cookies using native PHP functions `header()`, `setcookie()`, and `setrawcookie()`. Then, if the response content is a resource, it is sent with `fpassthru()`; if a callable object or closure, it is invoked; otherwise, the content is `echo`ed (which calls `__toString()` if the content is an object).
