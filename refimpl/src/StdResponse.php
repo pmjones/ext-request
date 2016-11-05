@@ -38,6 +38,16 @@ class StdResponse
         return $this->headers;
     }
 
+    public function getHeader($label) // : string
+    {
+        $value = '';
+        $label = strtolower(trim($label));
+        if (isset($this->headers[$label])) {
+            $value = $this->headers[$label];
+        }
+        return $value;
+    }
+
     // header("$label: $value", true);
     public function setHeader($label, $value) // : void
     {
@@ -56,7 +66,7 @@ class StdResponse
             return;
         }
 
-        $this->headers[$label] = [$value];
+        $this->headers[$label] = $value;
     }
 
     // header("$label: $value", false);
@@ -76,7 +86,11 @@ class StdResponse
             return;
         }
 
-        $this->headers[$label][] = $value;
+        if (! isset($this->headers[$label])) {
+            $this->headers[$label] = $value;
+        } else {
+            $this->headers[$label] .= ", {$value}";
+        }
     }
 
     public function getCookies() // : array
@@ -250,10 +264,8 @@ class StdResponse
     // capture other cookies at send-time, e.g. session ID?
     protected function sendHeaders() // : void
     {
-        foreach ($this->headers as $label => $values) {
-            foreach ($values as $value) {
-                header("{$label}: {$value}", false);
-            }
+        foreach ($this->headers as $label => $value) {
+            header("{$label}: {$value}", false);
         }
     }
 

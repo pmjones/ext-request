@@ -36,9 +36,7 @@ class StdResponseTest extends PHPUnit_Framework_TestCase
         $this->response->setHeader('foo-bar', 'dib');
 
         $expect = [
-            'foo-bar' => [
-                'dib'
-            ]
+            'foo-bar' => 'dib'
         ];
 
         $this->assertSame($expect, $this->response->getHeaders());
@@ -58,8 +56,8 @@ class StdResponseTest extends PHPUnit_Framework_TestCase
         ]);
 
         $expect = [
-            'cache-control' => ['public, max-age=123, s-maxage=456, no-cache'],
-            'content-type' => ['text/plain;charset=utf-8'],
+            'cache-control' => 'public, max-age=123, s-maxage=456, no-cache',
+            'content-type' => 'text/plain;charset=utf-8',
         ];
 
         $this->assertSame($expect, $this->response->getHeaders());
@@ -73,10 +71,7 @@ class StdResponseTest extends PHPUnit_Framework_TestCase
         $this->response->addHeader('foo-bar', 'dib');
 
         $expect = [
-            'foo-bar' => [
-                'baz',
-                'dib'
-            ]
+            'foo-bar' => 'baz, dib',
         ];
 
         $this->assertSame($expect, $this->response->getHeaders());
@@ -89,10 +84,7 @@ class StdResponseTest extends PHPUnit_Framework_TestCase
         $this->response->addHeader('Foo', ['dib' => ['zim', 'gir']]);
 
         $expect = [
-            'foo' => [
-                'bar=baz',
-                'dib;zim;gir',
-            ]
+            'foo' => 'bar=baz, dib;zim;gir',
         ];
 
         $this->assertSame($expect, $this->response->getHeaders());
@@ -136,7 +128,7 @@ class StdResponseTest extends PHPUnit_Framework_TestCase
         $value = ['foo' => 'bar'];
         $this->response->setContentJson($value);
         $this->assertSame('{"foo":"bar"}', $this->response->getContent());
-        $this->assertSame(array('application/json'), $this->response->getHeaders()['content-type']);
+        $this->assertSame('application/json', $this->response->getHeader('content-type'));
     }
 
     public function testSetContentJson_failed()
@@ -159,9 +151,9 @@ class StdResponseTest extends PHPUnit_Framework_TestCase
         );
 
         $expect = [
-            'content-type' =>  ['application/octet-stream'],
-            'content-transfer-encoding' => ['binary'],
-            'content-disposition' => ['whatever;foo=bar'],
+            'content-type' =>  'application/octet-stream',
+            'content-transfer-encoding' => 'binary',
+            'content-disposition' => 'whatever;foo=bar',
         ];
         $this->assertSame($expect, $this->response->getHeaders());
         $this->assertSame($fh, $this->response->getContent());
@@ -178,13 +170,13 @@ class StdResponseTest extends PHPUnit_Framework_TestCase
 
     public function testSetDownload()
     {
-        $fh = fopen('php://temp', 'rb');
+        $fh = fopen('php://memory', 'rb');
         $this->response->setDownload($fh, 'foo.txt');
 
         $expect = [
-            'content-type' =>  ['application/octet-stream'],
-            'content-transfer-encoding' => ['binary'],
-            'content-disposition' => ['attachment;filename="foo.txt"'],
+            'content-type' =>  'application/octet-stream',
+            'content-transfer-encoding' => 'binary',
+            'content-disposition' => 'attachment;filename="foo.txt"',
         ];
         $this->assertSame($expect, $this->response->getHeaders());
         $this->assertSame($fh, $this->response->getContent());
@@ -196,9 +188,9 @@ class StdResponseTest extends PHPUnit_Framework_TestCase
         $this->response->setDownloadInline($fh, 'foo.txt');
 
         $expect = [
-            'content-type' =>  ['application/octet-stream'],
-            'content-transfer-encoding' => ['binary'],
-            'content-disposition' => ['inline;filename="foo.txt"'],
+            'content-type' =>  'application/octet-stream',
+            'content-transfer-encoding' => 'binary',
+            'content-disposition' => 'inline;filename="foo.txt"',
         ];
         $this->assertSame($expect, $this->response->getHeaders());
         $this->assertSame($fh, $this->response->getContent());
