@@ -167,30 +167,25 @@ class StdResponse
 
     // cf. https://www.iana.org/assignments/cont-disp/cont-disp.xhtml for
     // $disposition and $params values
-    public function setContentResource($fh, $disposition, array $params = []) // : void
+    public function setContentDownload(
+        $fh,
+        $name,
+        $disposition = 'attachment',
+        array $params = []
+    ) // : void
     {
         if (! is_resource($fh)) {
-            throw new TypeError("Argument 1 passed to StdResponse::setContentResource() must be of the type resource, string given");
+            $class = get_class($this);
+            throw new TypeError("Argument 1 passed to {$class}::setContentDownload() must be of the type resource, string given");
         }
+
+        $params['filename'] = '"' . rawurlencode($name) . '"';
+        $disposition .= ';' . $this->semicsv($params);
+
         $this->setHeader('content-type', 'application/octet-stream');
         $this->setHeader('content-transfer-encoding',  'binary');
-        if ($params) {
-            $disposition .= ';' . $this->semicsv($params);
-        }
         $this->setHeader('content-disposition', $disposition);
         $this->setContent($fh);
-    }
-
-    public function setDownload($fh, $name, array $params = []) // : void
-    {
-        $params['filename'] = '"' . rawurlencode($name) . '"';
-        $this->setContentResource($fh, 'attachment', $params);
-    }
-
-    public function setDownloadInline($fh, $name, array $params = []) // : void
-    {
-        $params['filename'] = '"' . rawurlencode($name) . '"';
-        $this->setContentResource($fh, 'inline', $params);
     }
 
     /**

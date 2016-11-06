@@ -77,15 +77,10 @@ ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(AI(setContentJson), 0, 1, IS_NULL, NULL,
     ZEND_ARG_TYPE_INFO(0, depth, IS_LONG, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(AI(setContentResource), 0, 1, IS_NULL, NULL, 0)
-    ZEND_ARG_TYPE_INFO(0, fh, IS_RESOURCE, 0)
-    ZEND_ARG_TYPE_INFO(0, disposition, IS_STRING, 0)
-    ZEND_ARG_TYPE_INFO(0, params, IS_ARRAY, 0)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(AI(setDownload), 0, 1, IS_NULL, NULL, 0)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(AI(setContentDownload), 0, 1, IS_NULL, NULL, 0)
     ZEND_ARG_TYPE_INFO(0, fh, IS_RESOURCE, 0)
     ZEND_ARG_TYPE_INFO(0, name, IS_STRING, 0)
+    ZEND_ARG_TYPE_INFO(0, disposition, IS_STRING, 0)
     ZEND_ARG_TYPE_INFO(0, params, IS_ARRAY, 0)
 ZEND_END_ARG_INFO()
 
@@ -589,116 +584,64 @@ PHP_METHOD(StdResponse, setContentJson)
 }
 /* }}} StdResponse::setContentJson */
 
-/* {{{ proto void StdResponse::setContentResource(resource $fh [, string $disposition [, array $params = array()]]) */
-PHP_METHOD(StdResponse, setContentResource)
+/* {{{ proto void StdResponse::setContentDownload(resource $fh, string $name [, string $disposition = 'attachment' [, array $params = array()]]) */
+PHP_METHOD(StdResponse, setContentDownload)
 {
     zval *zstream;
+    zend_string *name = NULL;
     zend_string *disposition = NULL;
     zval *params = NULL;
-
+    zval _params = {0};
     zval *_this_zval = getThis();
+    zend_string *tmp_filename;
+    smart_str buf = {0};
+    smart_str buf2 = {0};
 
-    ZEND_PARSE_PARAMETERS_START(1, 3)
+    ZEND_PARSE_PARAMETERS_START(2, 4)
         Z_PARAM_RESOURCE(zstream)
+        Z_PARAM_STR(name)
         Z_PARAM_OPTIONAL
         Z_PARAM_STR(disposition)
         Z_PARAM_ARRAY(params)
     ZEND_PARSE_PARAMETERS_END();
 
+    // Initialize params
+    if( !params || Z_TYPE_P(params) != IS_ARRAY ) {
+        params = &_params;
+        array_init(params);
+    }
+
     // Set headers
     php_response_header_stringl(_this_zval, ZEND_STRL("content-type"), ZEND_STRL("application/octet-stream"), 1);
     php_response_header_stringl(_this_zval, ZEND_STRL("content-transfer-encoding"), ZEND_STRL("binary"), 1);
 
-    // Set disposition
-    if( disposition ) {
-        if( Z_TYPE_P(params) == IS_ARRAY && zend_hash_num_elements(Z_ARRVAL_P(params)) ) {
-            smart_str buf = {0};
-            smart_str_append(&buf, disposition);
-            smart_str_appendc(&buf, ';');
-            _array_to_semicsv(&buf, params);
-            smart_str_0(&buf);
-            php_response_header_stringl(_this_zval, ZEND_STRL("content-disposition"), ZSTR_VAL(buf.s), ZSTR_LEN(buf.s), 1);
-            smart_str_free(&buf);
-        } else {
-            php_response_header_stringl(_this_zval, ZEND_STRL("content-disposition"), ZSTR_VAL(disposition), ZSTR_LEN(disposition), 1);
-        }
-    }
-
-    // Update content
-    zend_update_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("content"), zstream);
-}
-/* }}} StdResponse::setContentResource */
-
-/* {{{ php_response_set_download */
-static inline void php_response_set_download(INTERNAL_FUNCTION_PARAMETERS, zend_bool is_inline)
-{
-    zval *zstream;
-    zend_string *name = NULL;
-    zval *params = NULL;
-
-    zval *_this_zval = getThis();
-    zval func_name = {0};
-    zval func_params[3] = {0};
-    zval retval = {0};
-    zend_string *tmp_filename;
-
-    ZEND_PARSE_PARAMETERS_START(2, 3)
-            Z_PARAM_RESOURCE(zstream)
-            Z_PARAM_STR(name)
-            Z_PARAM_OPTIONAL
-            Z_PARAM_ARRAY_EX(params, 1, 0)
-    ZEND_PARSE_PARAMETERS_END();
-
-    // Make filename param
+    // Set name
     tmp_filename = php_raw_url_encode(ZSTR_VAL(name), ZSTR_LEN(name));
-    smart_str buf = {0};
     smart_str_appendc(&buf, '"');
     smart_str_append(&buf, tmp_filename);
     smart_str_appendc(&buf, '"');
     smart_str_0(&buf);
     zend_string_release(tmp_filename);
+    add_assoc_str_ex(params, ZEND_STRL("filename"), buf.s);
 
-    // Make params
-    ZVAL_ZVAL(&func_params[0], zstream, 1, 0);
-    if( is_inline ) {
-        ZVAL_STRING(&func_params[1], "inline");
+    // Set disposition
+    if( disposition ) {
+        smart_str_append(&buf2, disposition);
     } else {
-        ZVAL_STRING(&func_params[1], "attachment");
+        smart_str_appendl_ex(&buf2, ZEND_STRL("attachment"), 0);
     }
-    if( params ) {
-        ZVAL_ZVAL(&func_params[2], params, 1, 0);
-    } else {
-        array_init(&func_params[2]);
-    }
-    add_assoc_str_ex(&func_params[2], ZEND_STRL("filename"), buf.s);
+    smart_str_appendc(&buf2, ';');
+    _array_to_semicsv(&buf2, params);
+    smart_str_0(&buf2);
+    php_response_header_stringl(_this_zval, ZEND_STRL("content-disposition"), ZSTR_VAL(buf2.s), ZSTR_LEN(buf2.s), 1);
+    smart_str_free(&buf2);
 
-    // Call
-    ZVAL_STRING(&func_name, "setContentResource");
-    call_user_function(NULL, _this_zval, &func_name, &retval, 3, func_params);
+    // Update content
+    zend_update_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("content"), zstream);
 
-    // Release
-    zval_ptr_dtor(&func_name);
-    zval_ptr_dtor(&func_params[2]);
-    zval_ptr_dtor(&func_params[1]);
-    zval_ptr_dtor(&func_params[0]);
-    //smart_str_free(&buf); should be freed as part of zval
-    zval_ptr_dtor(&retval);
+    zval_dtor(&_params);
 }
-/* }}} */
-
-/* {{{ proto void StdResponse::setDownload(resource $fh [, string $name [, array $params = array()]]) */
-PHP_METHOD(StdResponse, setDownload)
-{
-    php_response_set_download(INTERNAL_FUNCTION_PARAM_PASSTHRU, 0);
-}
-/* }}} StdResponse::setDownload */
-
-/* {{{ proto void StdResponse::setDownloadInline(resource $fh [, string $name [, array $params = array()]]) */
-PHP_METHOD(StdResponse, setDownloadInline)
-{
-    php_response_set_download(INTERNAL_FUNCTION_PARAM_PASSTHRU, 1);
-}
-/* }}} StdResponse::setDownloadInline */
+/* }}} StdResponse::setContentDownload */
 
 /* {{{ proto string StdResponse::date(mixed $date) */
 PHP_METHOD(StdResponse, date)
@@ -998,9 +941,7 @@ static zend_function_entry StdResponse_methods[] = {
     PHP_ME(StdResponse, getContent, AI(getContent), ZEND_ACC_PUBLIC)
     PHP_ME(StdResponse, setContent, AI(setContent), ZEND_ACC_PUBLIC)
     PHP_ME(StdResponse, setContentJson, AI(setContentJson), ZEND_ACC_PUBLIC)
-    PHP_ME(StdResponse, setContentResource, AI(setContentResource), ZEND_ACC_PUBLIC)
-    PHP_ME(StdResponse, setDownload, AI(setDownload), ZEND_ACC_PUBLIC)
-    PHP_ME(StdResponse, setDownloadInline, AI(setDownload), ZEND_ACC_PUBLIC)
+    PHP_ME(StdResponse, setContentDownload, AI(setContentDownload), ZEND_ACC_PUBLIC)
     PHP_ME(StdResponse, date, AI(date), ZEND_ACC_PUBLIC)
     PHP_ME(StdResponse, send, AI(send), ZEND_ACC_PUBLIC)
     PHP_ME(StdResponse, sendStatus, AI(send), ZEND_ACC_PROTECTED)
