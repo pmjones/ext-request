@@ -43,6 +43,9 @@ ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(AI(setStatus), 0, 1, IS_NULL, NULL, 0)
     ZEND_ARG_TYPE_INFO(0, status, IS_LONG, 0)
 ZEND_END_ARG_INFO()
 
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(AI(getHeader), 0, 0, IS_STRING, NULL, 1)
+ZEND_END_ARG_INFO()
+
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(AI(getHeaders), 0, 0, IS_ARRAY, NULL, 0)
 ZEND_END_ARG_INFO()
 
@@ -93,6 +96,23 @@ ZEND_END_ARG_INFO()
 /* }}} Argument Info */
 
 /* {{{ Array to CSV */
+static inline void smart_str_appendz_ex(smart_str *dest, zval *zv, zend_bool persistent)
+{
+    zend_string *tmp;
+    if( Z_TYPE_P(zv) == IS_STRING ) {
+        smart_str_append_ex(dest, Z_STR_P(zv), persistent);
+    } else {
+        tmp = zval_get_string(zv);
+        smart_str_append_ex(dest, Z_STR_P(zv), persistent);
+        zend_string_release(tmp);
+    }
+}
+
+static inline void smart_str_appendz(smart_str *dest, zval *zv)
+{
+    return smart_str_appendz_ex(dest, zv, 0);
+}
+
 static inline void _array_to_semicsv(smart_str *str, zval *arr)
 {
     zend_string *key;
@@ -175,7 +195,8 @@ static void php_response_header(zval *object, zend_string *label, zval *value, z
     zend_string *normal_label;
     zend_string *value_str;
     zend_string *tmp;
-    zval *header_arr = NULL;
+    zval *prev_header = NULL;
+    smart_str buf = {0};
 
     // Read property pointer
     if( !Z_OBJ_HT_P(object)->get_property_ptr_ptr ) {
@@ -191,14 +212,20 @@ static void php_response_header(zval *object, zend_string *label, zval *value, z
     }
 
     // Normalize label
-    normal_label = php_trim(label, ZEND_STRL(" \t\r\n\v"), 3);
-    php_request_normalize_header_name(ZSTR_VAL(normal_label), ZSTR_LEN(normal_label));
-    zend_string_forget_hash_val(normal_label);
-    zend_string_hash_val(normal_label);
+    normal_label = php_request_normalize_header_name_ex(label);
 
-    if( !ZSTR_LEN(label) ) {
+    if( !ZSTR_LEN(normal_label) ) {
         zend_string_release(normal_label);
         return;
+    }
+
+    // Get previous value
+    if( !replace ) {
+        prev_header = zend_hash_find(Z_ARRVAL_P(prop_ptr), normal_label);
+        if( prev_header ) {
+            smart_str_appendz(&buf, prev_header);
+            smart_str_appendl_ex(&buf, ZEND_STRL(", "), 0);
+        }
     }
 
     // Convert value to string
@@ -211,24 +238,15 @@ static void php_response_header(zval *object, zend_string *label, zval *value, z
     zend_string_release(tmp);
 
     if( !ZSTR_LEN(value_str) ) {
-        zend_string_release(normal_label);
-        zend_string_release(value_str);
-        return;
-    }
-
-    // Set value
-    if( !replace ) {
-        header_arr = zend_hash_find(Z_ARRVAL_P(prop_ptr), normal_label);
-    }
-
-    if( header_arr ) {
-        add_next_index_str(header_arr, value_str);
+        smart_str_free(&buf);
     } else {
-        array_init_size(&arr, 1);
-        add_next_index_str(&arr, value_str);
-        zend_hash_update(Z_ARRVAL_P(prop_ptr), normal_label, &arr);
+        // Set/append value
+        smart_str_append_ex(&buf, value_str, 0);
+        smart_str_0(&buf);
+        add_assoc_str_ex(prop_ptr, ZSTR_VAL(normal_label), ZSTR_LEN(normal_label), buf.s);
     }
 
+    zend_string_release(value_str);
     zend_string_release(normal_label);
 }
 static inline void php_response_header_stringl(
@@ -326,10 +344,40 @@ PHP_METHOD(StdResponse, setStatus)
 }
 /* }}} StdResponse::setStatus */
 
+/* {{{ proto string StdResponse::getHeader() */
+PHP_METHOD(StdResponse, getHeader)
+{
+    zval *_this_zval = getThis();
+    zend_string *label;
+    zend_string *normal_label;
+    zval *headers;
+    zval *retval;
+
+    ZEND_PARSE_PARAMETERS_START(1, 1)
+        Z_PARAM_STR(label)
+    ZEND_PARSE_PARAMETERS_END();
+
+    headers = zend_read_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("headers"), 0, NULL);
+    if( !headers || Z_TYPE_P(headers) != IS_ARRAY ) {
+        return;
+    }
+
+    normal_label = php_request_normalize_header_name_ex(label);
+
+    retval = zend_hash_find(Z_ARRVAL_P(headers), normal_label);
+    if( retval ) {
+        RETVAL_ZVAL(retval, 1, 0);
+    }
+
+    zend_string_release(normal_label);
+}
+/* }}} StdResponse::getHeader */
+
 /* {{{ proto array StdResponse::getHeaders() */
 PHP_METHOD(StdResponse, getHeaders)
 {
     zval *_this_zval = getThis();
+
     zval *retval;
 
     ZEND_PARSE_PARAMETERS_START(0, 0)
@@ -745,29 +793,22 @@ PHP_METHOD(StdResponse, sendStatus)
 /* }}} StdResponse::sendStatus */
 
 /* {{{ proto void StdResponse::sendHeaders() */
-static inline void send_header(zend_string *header, zval *arr)
+static inline void send_header(zend_string *header, zval *value)
 {
-    zval *val;
     sapi_header_line ctr = {0};
-    zend_string *tmp_str;
+    smart_str buf = {0};
 
-    ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(arr), val) {
-        smart_str buf = {0};
+    smart_str_append(&buf, header);
+    smart_str_appendl_ex(&buf, ZEND_STRL(": "), 0);
+    smart_str_appendz(&buf, value);
+    smart_str_0(&buf);
 
-        tmp_str = zval_get_string(val);
-        smart_str_append(&buf, header);
-        smart_str_appendl_ex(&buf, ZEND_STRL(": "), 0);
-        smart_str_append(&buf, tmp_str);
-        smart_str_0(&buf);
-        zend_string_release(tmp_str);
+    ctr.response_code = 0;
+    ctr.line = ZSTR_VAL(buf.s);
+    ctr.line_len = ZSTR_LEN(buf.s);
+    sapi_header_op(SAPI_HEADER_ADD, &ctr);
 
-        ctr.response_code = 0;
-        ctr.line = ZSTR_VAL(buf.s);
-        ctr.line_len = ZSTR_LEN(buf.s);
-        sapi_header_op(SAPI_HEADER_ADD, &ctr);
-
-        smart_str_free(&buf);
-    } ZEND_HASH_FOREACH_END();
+    smart_str_free(&buf);
 }
 
 PHP_METHOD(StdResponse, sendHeaders)
@@ -788,7 +829,7 @@ PHP_METHOD(StdResponse, sendHeaders)
     }
 
     ZEND_HASH_FOREACH_KEY_VAL(Z_ARRVAL_P(tmp), index, key, val) {
-        if( key && Z_TYPE_P(val) == IS_ARRAY ) {
+        if( key ) {
             send_header(key, val);
         }
     } ZEND_HASH_FOREACH_END();
@@ -932,6 +973,7 @@ static zend_function_entry StdResponse_methods[] = {
     PHP_ME(StdResponse, setVersion, AI(setVersion), ZEND_ACC_PUBLIC)
     PHP_ME(StdResponse, getStatus, AI(getStatus), ZEND_ACC_PUBLIC)
     PHP_ME(StdResponse, setStatus, AI(setStatus), ZEND_ACC_PUBLIC)
+    PHP_ME(StdResponse, getHeader, AI(getHeader), ZEND_ACC_PUBLIC)
     PHP_ME(StdResponse, getHeaders, AI(getHeaders), ZEND_ACC_PUBLIC)
     PHP_ME(StdResponse, setHeader, AI(addSetHeader), ZEND_ACC_PUBLIC)
     PHP_ME(StdResponse, addHeader, AI(addSetHeader), ZEND_ACC_PUBLIC)

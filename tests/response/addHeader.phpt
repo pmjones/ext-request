@@ -13,10 +13,5 @@ var_dump($response->getHeaders());
 --EXPECT--
 array(1) {
   ["foo-bar"]=>
-  array(2) {
-    [0]=>
-    string(3) "baz"
-    [1]=>
-    string(3) "dib"
-  }
+  string(8) "baz, dib"
 }

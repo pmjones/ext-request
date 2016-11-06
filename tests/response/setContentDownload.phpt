@@ -19,19 +19,10 @@ var_dump($fh === $response->getContent());
 --EXPECT--
 array(3) {
   ["content-type"]=>
-  array(1) {
-    [0]=>
-    string(24) "application/octet-stream"
-  }
+  string(24) "application/octet-stream"
   ["content-transfer-encoding"]=>
-  array(1) {
-    [0]=>
-    string(6) "binary"
-  }
+  string(6) "binary"
   ["content-disposition"]=>
-  array(1) {
-    [0]=>
-    string(38) "inline;foo=bar;filename="filename.tmp""
-  }
+  string(38) "inline;foo=bar;filename="filename.tmp""
 }
 bool(true)

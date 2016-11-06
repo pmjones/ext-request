@@ -9,6 +9,7 @@
 #include "main/php.h"
 #include "main/php_ini.h"
 #include "ext/standard/info.h"
+#include "ext/standard/php_string.h"
 
 #include "php_request.h"
 
@@ -31,6 +32,15 @@ void php_request_normalize_header_name(char *key, size_t key_length)
             *r = tolower((unsigned char) *r);
         }
     }
+}
+
+zend_string *php_request_normalize_header_name_ex(zend_string *in)
+{
+    zend_string * out = php_trim(in, ZEND_STRL(" \t\r\n\v"), 3);
+    php_request_normalize_header_name(ZSTR_VAL(out), ZSTR_LEN(out));
+    zend_string_forget_hash_val(out);
+    zend_string_hash_val(out);
+    return out;
 }
 /* }}} php_request_normalize_header_name */
 
