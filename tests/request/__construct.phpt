@@ -60,6 +60,12 @@ try {
     echo 'fail';
 } catch( UnexpectedValueException $e ) {}
 
+// Check __construct can't be called twice
+try {
+    $request->__construct();
+    echo 'fail';
+} catch( RuntimeException $e ) {}
+
 --EXPECT--
 string(10) "StdRequest"
 bool(true)
