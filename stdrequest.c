@@ -780,6 +780,7 @@ static inline void php_request_set_content(zval *object, zval *server)
 PHP_METHOD(StdRequest, __construct)
 {
     zval *_this_zval;
+    zval *init;
     zval *zv_globals = NULL;
     zval *server;
     zval *files;
@@ -794,6 +795,15 @@ PHP_METHOD(StdRequest, __construct)
     ZEND_PARSE_PARAMETERS_END();
 
     _this_zval = getThis();
+
+    // Check and update _initialized property
+    init = zend_read_property(StdRequest_ce_ptr, _this_zval, ZEND_STRL("_initialized"), 0, &rv);
+    if( zend_is_true(init) ) {
+        zend_string *ce_name = Z_OBJCE_P(_this_zval)->name;
+        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "%.*s::__construct() called after construction.", ZSTR_LEN(ce_name), ZSTR_VAL(ce_name));
+        return;
+    }
+    zend_update_property_bool(StdRequest_ce_ptr, _this_zval, ZEND_STRL("_initialized"), 1);
 
     // Copy superglobals
     php_request_copy_global_lit(_this_zval, "env", zv_globals, "_ENV");
@@ -1217,6 +1227,8 @@ PHP_MINIT_FUNCTION(stdrequest)
     INIT_CLASS_ENTRY(ce, "StdRequest", StdRequest_methods);
     StdRequest_ce_ptr = zend_register_internal_class(&ce);
     StdRequest_ce_ptr->create_object = php_request_obj_create;
+
+    zend_declare_property_bool(StdRequest_ce_ptr, ZEND_STRL("_initialized"), 0, ZEND_ACC_PRIVATE);
 
     zend_declare_property_null(StdRequest_ce_ptr, ZEND_STRL("accept"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("accept"));

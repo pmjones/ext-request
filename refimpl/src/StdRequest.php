@@ -60,8 +60,17 @@ class StdRequest
     private $url;
     private $xhr = false;
 
+    private $_initialized = false;
+
     public function __construct(array $globals = array())
     {
+        if ($this->_initialized) {
+            $class = get_class($this);
+            throw new RuntimeException("{$class}::__construct() called after construction.");
+        }
+
+        $this->_initialized = true;
+
         $this->env = $this->importGlobal($globals['_ENV'] ?? $_ENV, '$_ENV');
         $this->server = $this->importGlobal($globals['_SERVER'] ?? $_SERVER, '$_SERVER');
 
@@ -87,7 +96,7 @@ class StdRequest
 
     public function __get($key) // : array
     {
-        if (property_exists($this, $key)) {
+        if (property_exists($this, $key) && $key{0} != '_') {
             return $this->$key;
         }
 
@@ -103,7 +112,7 @@ class StdRequest
 
     public function __isset($key) // : bool
     {
-        if (property_exists($this, $key)) {
+        if (property_exists($this, $key) && $key{0} != '_') {
             return isset($this->$key);
         }
 
@@ -112,7 +121,7 @@ class StdRequest
 
     public function __unset($key) // : void
     {
-        if( property_exists($this, $key) ) {
+        if (property_exists($this, $key)) {
             $class = get_class($this);
             throw new RuntimeException("{$class}::\${$key} is read-only.");
         }
