@@ -327,11 +327,13 @@ _StdResponse_ has these public methods.
 
 - `setHeader($label, $value)`: Overwrites an HTTP header; a buffered equivalent of `header("$label: $value", true)`.
 
-- `addHeader($label, $value)`: Adds an HTTP header; a buffered equivalent of `header("$label: $value", false)`.
+- `addHeader($label, $value)`: Appends to an HTTP header, comma-separating it from the existing value; a buffered equivalent of `header("$label: $value", false)`.
 
-- `date($date)`: Returns a RFC 1123 formatted date. The `$date` argument can be any recognizable date-time string, or a _DateTime_ object.
+- `getHeader($label)`: Returns the value for a particular header.
 
 - `getHeaders()`: Returns the array of headers to be sent.
+
+- `date($date)`: Returns a RFC 1123 formatted date. The `$date` argument can be any recognizable date-time string, or a _DateTime_ object.
 
 Notes:
 
