@@ -18,13 +18,7 @@ var_dump($response->getHeaders());
 --EXPECT--
 array(2) {
   ["cache-control"]=>
-  array(1) {
-    [0]=>
-    string(43) "public, max-age=123, s-maxage=456, no-cache"
-  }
+  string(43) "public, max-age=123, s-maxage=456, no-cache"
   ["content-type"]=>
-  array(1) {
-    [0]=>
-    string(24) "text/plain;charset=utf-8"
-  }
+  string(24) "text/plain;charset=utf-8"
 }
