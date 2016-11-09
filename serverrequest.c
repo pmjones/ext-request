@@ -17,11 +17,11 @@
 #include "Zend/zend_portability.h"
 #include "Zend/zend_smart_str.h"
 
-#include "php_request.h"
+#include "request.h"
 
-extern void php_request_parse_accept(zval *return_value, const unsigned char *str, size_t len);
-extern void php_request_parse_content_type(zval *return_value, const unsigned char *str, size_t len);
-extern void php_request_parse_digest_auth(zval *return_value, const unsigned char *str, size_t len);
+extern void server_request_parse_accept(zval *return_value, const unsigned char *str, size_t len);
+extern void server_request_parse_content_type(zval *return_value, const unsigned char *str, size_t len);
+extern void server_request_parse_digest_auth(zval *return_value, const unsigned char *str, size_t len);
 
 zend_class_entry *ServerRequest_ce_ptr;
 static zend_object_handlers ServerRequest_obj_handlers;
@@ -90,8 +90,8 @@ ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO(ServerRequest_withUrl_args, IS_OBJECT, "Ser
 ZEND_END_ARG_INFO()
 /* }}} Argument Info */
 
-/* {{ php_request_detect_method */
-static zend_bool php_request_detect_method(zval *return_value, zval *server)
+/* {{ server_request_detect_method */
+static zend_bool server_request_detect_method(zval *return_value, zval *server)
 {
     zend_string *tmp;
     zval *val;
@@ -124,8 +124,8 @@ static zend_bool php_request_detect_method(zval *return_value, zval *server)
 }
 /* }}} */
 
-/* {{{ php_request_is_secure */
-static zend_bool php_request_is_secure(zval *server)
+/* {{{ server_request_is_secure */
+static zend_bool server_request_is_secure(zval *server)
 {
     zval *tmp;
 
@@ -139,7 +139,7 @@ static zend_bool php_request_is_secure(zval *server)
 }
 /* }}} */
 
-/* {{{ php_request_detect_url */
+/* {{{ server_request_detect_url */
 static inline const unsigned char *extract_port_from_host(const unsigned char *host, size_t len)
 {
     const unsigned char *right = host + len - 1;
@@ -201,14 +201,14 @@ static inline zend_string *extract_uri_from_server(zval *server)
     return NULL;
 }
 
-static zend_string *php_request_detect_url(zval *server)
+static zend_string *server_request_detect_url(zval *server)
 {
     zval *tmp;
     zend_string *host;
     zend_long port;
     zend_string *uri;
     smart_str buf = {0};
-    zend_bool is_secure = php_request_is_secure(server);
+    zend_bool is_secure = server_request_is_secure(server);
 
     // Get host
     if( !(host = extract_host_from_server(server)) ) {
@@ -241,11 +241,11 @@ static zend_string *php_request_detect_url(zval *server)
 }
 /* }}} */
 
-/* {{{ php_request_normalize_headers */
+/* {{{ server_request_normalize_headers */
 static const char http_str[] = "HTTP_";
 static const size_t http_len = sizeof(http_str) - 1;
 
-static void php_request_normalize_headers(zval *return_value, zval *server)
+static void server_request_normalize_headers(zval *return_value, zval *server)
 {
     zend_string *key;
     zend_ulong index;
@@ -258,7 +258,7 @@ static void php_request_normalize_headers(zval *return_value, zval *server)
     ZEND_HASH_FOREACH_KEY_VAL(Z_ARRVAL_P(server), index, key, val) {
         if( key && ZSTR_LEN(key) > 5 && strncmp(ZSTR_VAL(key), http_str, http_len) == 0 ) {
             tmp = zend_string_init(ZSTR_VAL(key) + http_len, ZSTR_LEN(key) - http_len, 0);
-            php_request_normalize_header_name(ZSTR_VAL(tmp), ZSTR_LEN(tmp));
+            server_request_normalize_header_name(ZSTR_VAL(tmp), ZSTR_LEN(tmp));
             add_assoc_zval_ex(return_value, ZSTR_VAL(tmp), ZSTR_LEN(tmp), val);
             zend_string_release(tmp);
         }
@@ -274,10 +274,10 @@ static void php_request_normalize_headers(zval *return_value, zval *server)
 }
 /* }}} */
 
-/* {{{ php_request_normalize_files */
-static void php_request_upload_from_spec(zval *return_value, zval *file);
+/* {{{ server_request_normalize_files */
+static void server_request_upload_from_spec(zval *return_value, zval *file);
 
-static inline void php_request_copy_upload_key(zval *return_value, zval *nested, const char *key1, size_t key1_len, zend_ulong index2, zend_string *key2)
+static inline void server_request_copy_upload_key(zval *return_value, zval *nested, const char *key1, size_t key1_len, zend_ulong index2, zend_string *key2)
 {
     zval *tmp = zend_hash_str_find(Z_ARRVAL_P(nested), key1, key1_len);
     if( !tmp ) {
@@ -300,7 +300,7 @@ static inline void php_request_copy_upload_key(zval *return_value, zval *nested,
     }
 }
 
-static inline void php_request_upload_from_nested(zval *return_value, zval *nested, zval *tmp_name)
+static inline void server_request_upload_from_nested(zval *return_value, zval *nested, zval *tmp_name)
 {
     zend_string *key;
     zend_ulong index;
@@ -311,13 +311,13 @@ static inline void php_request_upload_from_nested(zval *return_value, zval *nest
 
     ZEND_HASH_FOREACH_KEY(Z_ARRVAL_P(tmp_name), index, key) {
         array_init(&tmp);
-        php_request_copy_upload_key(&tmp, nested, ZEND_STRL("error"), index, key);
-        php_request_copy_upload_key(&tmp, nested, ZEND_STRL("name"), index, key);
-        php_request_copy_upload_key(&tmp, nested, ZEND_STRL("size"), index, key);
-        php_request_copy_upload_key(&tmp, nested, ZEND_STRL("tmp_name"), index, key);
-        php_request_copy_upload_key(&tmp, nested, ZEND_STRL("type"), index, key);
+        server_request_copy_upload_key(&tmp, nested, ZEND_STRL("error"), index, key);
+        server_request_copy_upload_key(&tmp, nested, ZEND_STRL("name"), index, key);
+        server_request_copy_upload_key(&tmp, nested, ZEND_STRL("size"), index, key);
+        server_request_copy_upload_key(&tmp, nested, ZEND_STRL("tmp_name"), index, key);
+        server_request_copy_upload_key(&tmp, nested, ZEND_STRL("type"), index, key);
 
-        php_request_upload_from_spec(&tmp2, &tmp);
+        server_request_upload_from_spec(&tmp2, &tmp);
         if( key ) {
             add_assoc_zval_ex(return_value, ZSTR_VAL(key), ZSTR_LEN(key), &tmp2);
         } else {
@@ -326,17 +326,17 @@ static inline void php_request_upload_from_nested(zval *return_value, zval *nest
     } ZEND_HASH_FOREACH_END();
 }
 
-static void php_request_upload_from_spec(zval *return_value, zval *file)
+static void server_request_upload_from_spec(zval *return_value, zval *file)
 {
     zval *tmp = zend_hash_str_find(Z_ARRVAL_P(file), ZEND_STRL("tmp_name"));
     if( tmp && Z_TYPE_P(tmp) == IS_ARRAY ) {
-        php_request_upload_from_nested(return_value, file, tmp);
+        server_request_upload_from_nested(return_value, file, tmp);
     } else {
         ZVAL_ZVAL(return_value, file, 0, 0);
     }
 }
 
-void php_request_normalize_files(zval *return_value, zval *files)
+void server_request_normalize_files(zval *return_value, zval *files)
 {
     zend_string *key;
     zend_ulong index;
@@ -345,7 +345,7 @@ void php_request_normalize_files(zval *return_value, zval *files)
 
     ZEND_HASH_FOREACH_KEY_VAL(Z_ARRVAL_P(files), index, key, val) {
         if( Z_TYPE_P(val) == IS_ARRAY ) {
-            php_request_upload_from_spec(&tmp, val);
+            server_request_upload_from_spec(&tmp, val);
             if( key ) {
                 add_assoc_zval_ex(return_value, ZSTR_VAL(key), ZSTR_LEN(key), &tmp);
             } else {
@@ -356,8 +356,8 @@ void php_request_normalize_files(zval *return_value, zval *files)
 }
 /* }}} */
 
-/* {{{ php_request_obj_create */
-static zend_object *php_request_obj_create(zend_class_entry *ce)
+/* {{{ server_request_obj_create */
+static zend_object *server_request_obj_create(zend_class_entry *ce)
 {
     zend_object *obj;
 
@@ -370,8 +370,8 @@ static zend_object *php_request_obj_create(zend_class_entry *ce)
 }
 /* }}} */
 
-/* {{{ php_request_clone_obj */
-static zend_object *php_request_clone_obj(zval *zobject)
+/* {{{ server_request_clone_obj */
+static zend_object *server_request_clone_obj(zval *zobject)
 {
     zend_object * new_obj = std_object_handlers.clone_obj(zobject);
     new_obj->handlers = &ServerRequest_obj_handlers;
@@ -379,8 +379,8 @@ static zend_object *php_request_clone_obj(zval *zobject)
 }
 /* }}} */
 
-/* {{{ php_request_assert_immutable */
-static int php_request_is_immutable(zval *value)
+/* {{{ server_request_assert_immutable */
+static int server_request_is_immutable(zval *value)
 {
     zval *val;
     switch( Z_TYPE_P(value) ) {
@@ -393,7 +393,7 @@ static int php_request_is_immutable(zval *value)
             return 1;
         case IS_ARRAY:
             ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(value), val) {
-                if( !php_request_is_immutable(val) ) {
+                if( !server_request_is_immutable(val) ) {
                     return 0;
                 }
             } ZEND_HASH_FOREACH_END();
@@ -402,23 +402,23 @@ static int php_request_is_immutable(zval *value)
             return 0;
     }
 }
-static void php_request_assert_immutable(zval *value, const char *desc, size_t desc_len)
+static void server_request_assert_immutable(zval *value, const char *desc, size_t desc_len)
 {
-    if( !php_request_is_immutable(value) ) {
+    if( !server_request_is_immutable(value) ) {
         zend_throw_exception_ex(spl_ce_UnexpectedValueException, 0, "All $%.*s values must be null, scalar, or array.", desc_len, desc);
     }
 }
 /* }}} */
 
-/* {{{ php_request_object_default_has_property */
-static int php_request_object_default_has_property(zval *object, zval *member, int has_set_exists, void **cache_slot)
+/* {{{ server_request_object_default_has_property */
+static int server_request_object_default_has_property(zval *object, zval *member, int has_set_exists, void **cache_slot)
 {
     return 1;
 }
 /* }}} */
 
-/* {{{ php_request_throw_readonly_exception */
-static inline void php_request_throw_readonly_exception(zval *object, zval *member)
+/* {{{ server_request_throw_readonly_exception */
+static inline void server_request_throw_readonly_exception(zval *object, zval *member)
 {
     zend_string *ce_name = Z_OBJCE_P(object)->name;
     zend_string *member_str = zval_get_string(member);
@@ -427,8 +427,8 @@ static inline void php_request_throw_readonly_exception(zval *object, zval *memb
 }
 /* }}} */
 
-/* {{{ php_request_object_default_read_property */
-static zval *php_request_object_default_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv)
+/* {{{ server_request_object_default_read_property */
+static zval *server_request_object_default_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv)
 {
     zval *retval;
     ZVAL_UNDEF(rv);
@@ -436,42 +436,42 @@ static zval *php_request_object_default_read_property(zval *object, zval *member
     // Make sure the property can't be modified
     if( !Z_ISREF_P(rv) && (type == BP_VAR_W || type == BP_VAR_RW  || type == BP_VAR_UNSET) ) {
         SEPARATE_ZVAL(rv);
-        php_request_throw_readonly_exception(object, member);
+        server_request_throw_readonly_exception(object, member);
     }
     return retval;
 }
 /* }}} */
 
-/* {{{ php_request_object_default_write_property */
-static void php_request_object_default_write_property(zval *object, zval *member, zval *value, void **cache_slot)
+/* {{{ server_request_object_default_write_property */
+static void server_request_object_default_write_property(zval *object, zval *member, zval *value, void **cache_slot)
 {
     if( get_scope() != ServerRequest_ce_ptr ) {
-        php_request_throw_readonly_exception(object, member);
+        server_request_throw_readonly_exception(object, member);
     } else {
         std_object_handlers.write_property(object, member, value, cache_slot);
     }
 }
 /* }}} */
 
-/* {{{ php_request_object_default_unset_property */
-static void php_request_object_default_unset_property(zval *object, zval *member, void **cache_slot)
+/* {{{ server_request_object_default_unset_property */
+static void server_request_object_default_unset_property(zval *object, zval *member, void **cache_slot)
 {
     if( get_scope() != ServerRequest_ce_ptr ) {
-        php_request_throw_readonly_exception(object, member);
+        server_request_throw_readonly_exception(object, member);
     } else {
         std_object_handlers.unset_property(object, member, cache_slot);
     }
 }
 /* }}} */
 
-/* {{{ php_request_object_content_read_property */
-static zval *php_request_object_content_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv)
+/* {{{ server_request_object_content_read_property */
+static zval *server_request_object_content_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv)
 {
     php_stream *stream;
     zend_string *str;
 
     if( (type == BP_VAR_W || type == BP_VAR_RW  || type == BP_VAR_UNSET) ) {
-        php_request_throw_readonly_exception(object, member);
+        server_request_throw_readonly_exception(object, member);
         return rv;
     }
 
@@ -488,8 +488,8 @@ static zval *php_request_object_content_read_property(zval *object, zval *member
 }
 /* }}} */
 
-/* {{{ php_request_object_has_property */
-static int php_request_object_has_property(zval *object, zval *member, int has_set_exists, void **cache_slot)
+/* {{{ server_request_object_has_property */
+static int server_request_object_has_property(zval *object, zval *member, int has_set_exists, void **cache_slot)
 {
 //    if( !Z_OBJCE_P(object)->__isset && !std_object_handlers.has_property(object, member, has_set_exists, cache_slot) ) {
 //        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "ServerRequest::$%.*s does not exist.", Z_STRLEN_P(member), Z_STRVAL_P(member));
@@ -500,8 +500,8 @@ static int php_request_object_has_property(zval *object, zval *member, int has_s
 }
 /* }}} */
 
-/* {{{ php_request_object_read_property */
-static zval *php_request_object_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv)
+/* {{{ server_request_object_read_property */
+static zval *server_request_object_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv)
 {
     if( !Z_OBJCE_P(object)->__get && !std_object_handlers.has_property(object, member, 2, cache_slot) ) {
         zend_string *ce_name = Z_OBJCE_P(object)->name;
@@ -515,11 +515,11 @@ static zval *php_request_object_read_property(zval *object, zval *member, int ty
 }
 /* }}} */
 
-/* {{{ php_request_object_write_property */
-static void php_request_object_write_property(zval *object, zval *member, zval *value, void **cache_slot)
+/* {{{ server_request_object_write_property */
+static void server_request_object_write_property(zval *object, zval *member, zval *value, void **cache_slot)
 {
     if( !Z_OBJCE_P(object)->__set && !std_object_handlers.has_property(object, member, 2, cache_slot) ) {
-        php_request_throw_readonly_exception(object, member);
+        server_request_throw_readonly_exception(object, member);
         return;
     }
     struct prop_handlers *hnd = zend_hash_str_find_ptr(&ServerRequest_prop_handlers, Z_STRVAL_P(member), Z_STRLEN_P(member));
@@ -527,8 +527,8 @@ static void php_request_object_write_property(zval *object, zval *member, zval *
 }
 /* }}} */
 
-/* {{{ php_request_object_unset_property */
-static void php_request_object_unset_property(zval *object, zval *member, void **cache_slot)
+/* {{{ server_request_object_unset_property */
+static void server_request_object_unset_property(zval *object, zval *member, void **cache_slot)
 {
     struct prop_handlers *hnd = zend_hash_str_find_ptr(&ServerRequest_prop_handlers, Z_STRVAL_P(member), Z_STRLEN_P(member));
     return (hnd ? hnd->unset_property : std_object_handlers.unset_property)(object, member, cache_slot);
@@ -556,16 +556,16 @@ static inline void register_default_prop_handlers(const char *name, size_t name_
     register_prop_handlers(
         name,
         name_length,
-        php_request_object_default_has_property,
-        php_request_object_default_read_property,
-        php_request_object_default_write_property,
-        php_request_object_default_unset_property
+        server_request_object_default_has_property,
+        server_request_object_default_read_property,
+        server_request_object_default_write_property,
+        server_request_object_default_unset_property
     );
 }
 /* }}} */
 
 /* {{{ proto ServerRequest::__construct([ array $globals ]) */
-static inline void php_request_copy_global(
+static inline void server_request_copy_global(
     zval *obj,
     const char *obj_key,
     size_t obj_key_length,
@@ -585,7 +585,7 @@ static inline void php_request_copy_global(
     }
     if( tmp ) {
         // Assert immutable
-        php_request_assert_immutable(tmp, glob_key, glob_key_length);
+        server_request_assert_immutable(tmp, glob_key, glob_key_length);
         if( EG(exception) ) {
             return;
         }
@@ -594,15 +594,15 @@ static inline void php_request_copy_global(
         Z_TRY_ADDREF_P(tmp);
     }
 }
-#define php_request_copy_global_lit(obj, obj_key, glob, glob_key) php_request_copy_global(obj, ZEND_STRL(obj_key), glob, ZEND_STRL(glob_key))
+#define server_request_copy_global_lit(obj, obj_key, glob, glob_key) server_request_copy_global(obj, ZEND_STRL(obj_key), glob, ZEND_STRL(glob_key))
 
-static inline void php_request_set_url(zval *object, zval *server)
+static inline void server_request_set_url(zval *object, zval *server)
 {
     zend_string *tmp;
     php_url *url;
     zval arr = {0};
 
-    tmp = php_request_detect_url(server);
+    tmp = server_request_detect_url(server);
     if( !tmp ) {
         zend_throw_exception_ex(spl_ce_RuntimeException, 0, "Could not determine host for ServerRequest.");
         return;
@@ -662,19 +662,19 @@ static inline void php_request_set_url(zval *object, zval *server)
     php_url_free(url);
 }
 
-static inline void php_request_set_accept_by_name(zval *object, zval *server, const char *src, size_t src_length, const char *dest, size_t dest_length)
+static inline void server_request_set_accept_by_name(zval *object, zval *server, const char *src, size_t src_length, const char *dest, size_t dest_length)
 {
     zval val;
     zval *tmp;
 
     array_init(&val);
     if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), src, src_length)) ) {
-        php_request_parse_accept(&val, Z_STRVAL_P(tmp), Z_STRLEN_P(tmp));
+        server_request_parse_accept(&val, Z_STRVAL_P(tmp), Z_STRLEN_P(tmp));
     }
     zend_update_property(ServerRequest_ce_ptr, object, dest, dest_length, &val);
 }
 
-static inline void php_request_parse_accept_language(zval *lang)
+static inline void server_request_parse_accept_language(zval *lang)
 {
     zend_string *key;
     zend_ulong index;
@@ -706,20 +706,20 @@ static inline void php_request_parse_accept_language(zval *lang)
     } ZEND_HASH_FOREACH_END();
 }
 
-static inline void php_request_set_accept_language(zval *object, zval *server)
+static inline void server_request_set_accept_language(zval *object, zval *server)
 {
     zval val;
     zval *tmp;
 
     array_init(&val);
     if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_ACCEPT_LANGUAGE"))) ) {
-        php_request_parse_accept(&val, Z_STRVAL_P(tmp), Z_STRLEN_P(tmp));
-        php_request_parse_accept_language(&val);
+        server_request_parse_accept(&val, Z_STRVAL_P(tmp), Z_STRLEN_P(tmp));
+        server_request_parse_accept_language(&val);
     }
     zend_update_property(ServerRequest_ce_ptr, object, ZEND_STRL("acceptLanguage"), &val);
 }
 
-static inline void php_request_set_auth(zval *object, zval *server)
+static inline void server_request_set_auth(zval *object, zval *server)
 {
     zval *tmp;
     zval digest = {0};
@@ -738,13 +738,13 @@ static inline void php_request_set_auth(zval *object, zval *server)
 
     if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("PHP_AUTH_DIGEST"))) ) {
         zend_string *str = zval_get_string(tmp);
-        php_request_parse_digest_auth(&digest, ZSTR_VAL(str), ZSTR_LEN(str));
+        server_request_parse_digest_auth(&digest, ZSTR_VAL(str), ZSTR_LEN(str));
         zend_update_property(ServerRequest_ce_ptr, object, ZEND_STRL("authDigest"), &digest);
     }
 
 }
 
-static inline void php_request_set_content(zval *object, zval *server)
+static inline void server_request_set_content(zval *object, zval *server)
 {
     zval *tmp;
     zval zv = {0};
@@ -761,7 +761,7 @@ static inline void php_request_set_content(zval *object, zval *server)
     }
 
     if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_CONTENT_TYPE"))) && Z_TYPE_P(tmp) == IS_STRING ) {
-        php_request_parse_content_type(&contentType, Z_STRVAL_P(tmp), Z_STRLEN_P(tmp));
+        server_request_parse_content_type(&contentType, Z_STRVAL_P(tmp), Z_STRLEN_P(tmp));
         if( Z_TYPE(contentType) == IS_ARRAY ) {
             // contentType
             tmp = zend_hash_str_find(Z_ARRVAL(contentType), ZEND_STRL("value"));
@@ -806,12 +806,12 @@ PHP_METHOD(ServerRequest, __construct)
     zend_update_property_bool(ServerRequest_ce_ptr, _this_zval, ZEND_STRL("_initialized"), 1);
 
     // Copy superglobals
-    php_request_copy_global_lit(_this_zval, "env", zv_globals, "_ENV");
-    php_request_copy_global_lit(_this_zval, "server", zv_globals, "_SERVER");
-    php_request_copy_global_lit(_this_zval, "cookie", zv_globals, "_COOKIE");
-    php_request_copy_global_lit(_this_zval, "files", zv_globals, "_FILES");
-    php_request_copy_global_lit(_this_zval, "get", zv_globals, "_GET");
-    php_request_copy_global_lit(_this_zval, "post", zv_globals, "_POST");
+    server_request_copy_global_lit(_this_zval, "env", zv_globals, "_ENV");
+    server_request_copy_global_lit(_this_zval, "server", zv_globals, "_SERVER");
+    server_request_copy_global_lit(_this_zval, "cookie", zv_globals, "_COOKIE");
+    server_request_copy_global_lit(_this_zval, "files", zv_globals, "_FILES");
+    server_request_copy_global_lit(_this_zval, "get", zv_globals, "_GET");
+    server_request_copy_global_lit(_this_zval, "post", zv_globals, "_POST");
 
     // Check if previous step threw
     if( EG(exception) ) {
@@ -825,26 +825,26 @@ PHP_METHOD(ServerRequest, __construct)
     if( server && Z_TYPE_P(server) == IS_ARRAY ) {
         // method
         ZVAL_STRING(&method, "");
-        zend_bool xhr = php_request_detect_method(&method, server);
+        zend_bool xhr = server_request_detect_method(&method, server);
         zend_update_property(ServerRequest_ce_ptr, _this_zval, ZEND_STRL("method"), &method);
         zend_update_property_bool(ServerRequest_ce_ptr, _this_zval, ZEND_STRL("xhr"), xhr);
 
         // headers
-        php_request_normalize_headers(&headers, server);
+        server_request_normalize_headers(&headers, server);
         zend_update_property(ServerRequest_ce_ptr, _this_zval, ZEND_STRL("headers"), &headers);
 
         // url
-        php_request_set_url(_this_zval, server);
+        server_request_set_url(_this_zval, server);
 
         // accepts
-        php_request_set_accept_by_name(_this_zval, server, ZEND_STRL("HTTP_ACCEPT"), ZEND_STRL("accept"));
-        php_request_set_accept_by_name(_this_zval, server, ZEND_STRL("HTTP_ACCEPT_CHARSET"), ZEND_STRL("acceptCharset"));
-        php_request_set_accept_by_name(_this_zval, server, ZEND_STRL("HTTP_ACCEPT_ENCODING"), ZEND_STRL("acceptEncoding"));
-        php_request_set_accept_language(_this_zval, server);
+        server_request_set_accept_by_name(_this_zval, server, ZEND_STRL("HTTP_ACCEPT"), ZEND_STRL("accept"));
+        server_request_set_accept_by_name(_this_zval, server, ZEND_STRL("HTTP_ACCEPT_CHARSET"), ZEND_STRL("acceptCharset"));
+        server_request_set_accept_by_name(_this_zval, server, ZEND_STRL("HTTP_ACCEPT_ENCODING"), ZEND_STRL("acceptEncoding"));
+        server_request_set_accept_language(_this_zval, server);
 
         // auth
-        php_request_set_auth(_this_zval, server);
-        php_request_set_content(_this_zval, server);
+        server_request_set_auth(_this_zval, server);
+        server_request_set_content(_this_zval, server);
     }
 
     // Read back files property
@@ -852,7 +852,7 @@ PHP_METHOD(ServerRequest, __construct)
 
     if( files && Z_TYPE_P(files) == IS_ARRAY ) {
         array_init(&uploads);
-        php_request_normalize_files(&uploads, files);
+        server_request_normalize_files(&uploads, files);
         zend_update_property(ServerRequest_ce_ptr, _this_zval, ZEND_STRL("uploads"), &uploads);
     }
 }
@@ -870,7 +870,7 @@ PHP_METHOD(ServerRequest, withInput)
         Z_PARAM_ZVAL(input)
     ZEND_PARSE_PARAMETERS_END();
 
-    php_request_assert_immutable(input, ZEND_STRL("input"));
+    server_request_assert_immutable(input, ZEND_STRL("input"));
     if( EG(exception) ) {
         return;
     }
@@ -910,7 +910,7 @@ PHP_METHOD(ServerRequest, withParam)
         Z_PARAM_ZVAL(val)
     ZEND_PARSE_PARAMETERS_END();
 
-    php_request_assert_immutable(val, ZEND_STRL("params"));
+    server_request_assert_immutable(val, ZEND_STRL("params"));
     if( EG(exception) ) {
         return;
     }
@@ -961,7 +961,7 @@ PHP_METHOD(ServerRequest, withParams)
         Z_PARAM_ARRAY(params)
     ZEND_PARSE_PARAMETERS_END();
 
-    php_request_assert_immutable(params, ZEND_STRL("params"));
+    server_request_assert_immutable(params, ZEND_STRL("params"));
     if( EG(exception) ) {
         return;
     }
@@ -1118,7 +1118,7 @@ PHP_METHOD(ServerRequest, withUrl)
         Z_PARAM_ARRAY(url)
     ZEND_PARSE_PARAMETERS_END();
 
-    php_request_assert_immutable(url, ZEND_STRL("url"));
+    server_request_assert_immutable(url, ZEND_STRL("url"));
     if( EG(exception) ) {
         return;
     }
@@ -1162,7 +1162,7 @@ PHP_METHOD(ServerRequest, parseAccept)
     ZEND_PARSE_PARAMETERS_END();
 
     //array_init(return_value);
-    php_request_parse_accept(return_value, ZSTR_VAL(header), ZSTR_LEN(header));
+    server_request_parse_accept(return_value, ZSTR_VAL(header), ZSTR_LEN(header));
 
 }
 /* }}} ServerRequest::parseAccept */
@@ -1176,7 +1176,7 @@ PHP_METHOD(ServerRequest, parseContentType)
         Z_PARAM_STR(header)
     ZEND_PARSE_PARAMETERS_END();
 
-    php_request_parse_content_type(return_value, ZSTR_VAL(header), ZSTR_LEN(header));
+    server_request_parse_content_type(return_value, ZSTR_VAL(header), ZSTR_LEN(header));
 }
 /* }}} ServerRequest::parseContentType */
 
@@ -1189,7 +1189,7 @@ PHP_METHOD(ServerRequest, parseDigestAuth)
         Z_PARAM_STR(header)
     ZEND_PARSE_PARAMETERS_END();
 
-    php_request_parse_digest_auth(return_value, ZSTR_VAL(header), ZSTR_LEN(header));
+    server_request_parse_digest_auth(return_value, ZSTR_VAL(header), ZSTR_LEN(header));
 }
 /* }}} ServerRequest::parseDigestAuth */
 
@@ -1217,16 +1217,16 @@ PHP_MINIT_FUNCTION(serverrequest)
     zend_hash_init(&ServerRequest_prop_handlers, 0, NULL, NULL, 1);
 
     memcpy(&ServerRequest_obj_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
-    ServerRequest_obj_handlers.has_property = php_request_object_has_property;
-    ServerRequest_obj_handlers.read_property = php_request_object_read_property;
-    ServerRequest_obj_handlers.write_property = php_request_object_write_property;
-    ServerRequest_obj_handlers.unset_property = php_request_object_unset_property;
+    ServerRequest_obj_handlers.has_property = server_request_object_has_property;
+    ServerRequest_obj_handlers.read_property = server_request_object_read_property;
+    ServerRequest_obj_handlers.write_property = server_request_object_write_property;
+    ServerRequest_obj_handlers.unset_property = server_request_object_unset_property;
     ServerRequest_obj_handlers.get_property_ptr_ptr = NULL;
-    ServerRequest_obj_handlers.clone_obj = php_request_clone_obj;
+    ServerRequest_obj_handlers.clone_obj = server_request_clone_obj;
 
     INIT_CLASS_ENTRY(ce, "ServerRequest", ServerRequest_methods);
     ServerRequest_ce_ptr = zend_register_internal_class(&ce);
-    ServerRequest_ce_ptr->create_object = php_request_obj_create;
+    ServerRequest_ce_ptr->create_object = server_request_obj_create;
 
     zend_declare_property_bool(ServerRequest_ce_ptr, ZEND_STRL("_initialized"), 0, ZEND_ACC_PRIVATE);
 
@@ -1249,10 +1249,10 @@ PHP_MINIT_FUNCTION(serverrequest)
     zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("content"), ZEND_ACC_PUBLIC);
     register_prop_handlers(
         ZEND_STRL("content"),
-        php_request_object_default_has_property,
-        php_request_object_content_read_property,
-        php_request_object_default_write_property,
-        php_request_object_default_unset_property
+        server_request_object_default_has_property,
+        server_request_object_content_read_property,
+        server_request_object_default_write_property,
+        server_request_object_default_unset_property
     );
     zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("contentCharset"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("contentCharset"));

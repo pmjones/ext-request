@@ -19,7 +19,7 @@
 #include "Zend/zend_types.h"
 #include "Zend/zend_smart_str.h"
 
-#include "php_request.h"
+#include "request.h"
 
 zend_class_entry * ServerResponse_ce_ptr;
 
@@ -212,7 +212,7 @@ static void php_response_header(zval *object, zend_string *label, zval *value, z
     }
 
     // Normalize label
-    normal_label = php_request_normalize_header_name_ex(label);
+    normal_label = server_request_normalize_header_name_ex(label);
 
     if( !ZSTR_LEN(normal_label) ) {
         zend_string_release(normal_label);
@@ -362,7 +362,7 @@ PHP_METHOD(ServerResponse, getHeader)
         return;
     }
 
-    normal_label = php_request_normalize_header_name_ex(label);
+    normal_label = server_request_normalize_header_name_ex(label);
 
     retval = zend_hash_find(Z_ARRVAL_P(headers), normal_label);
     if( retval ) {

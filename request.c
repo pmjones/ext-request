@@ -11,14 +11,14 @@
 #include "ext/standard/info.h"
 #include "ext/standard/php_string.h"
 
-#include "php_request.h"
+#include "request.h"
 
 extern PHP_MINIT_FUNCTION(serverrequest);
 extern PHP_MINIT_FUNCTION(serverresponse);
 extern PHP_MSHUTDOWN_FUNCTION(serverrequest);
 
-/* {{{ php_request_normalize_header_name */
-void php_request_normalize_header_name(char *key, size_t key_length)
+/* {{{ server_request_normalize_header_name */
+void server_request_normalize_header_name(char *key, size_t key_length)
 {
     register char *r = key;
     register char *r_end = r + key_length - 1;
@@ -34,15 +34,15 @@ void php_request_normalize_header_name(char *key, size_t key_length)
     }
 }
 
-zend_string *php_request_normalize_header_name_ex(zend_string *in)
+zend_string *server_request_normalize_header_name_ex(zend_string *in)
 {
     zend_string * out = php_trim(in, ZEND_STRL(" \t\r\n\v"), 3);
-    php_request_normalize_header_name(ZSTR_VAL(out), ZSTR_LEN(out));
+    server_request_normalize_header_name(ZSTR_VAL(out), ZSTR_LEN(out));
     zend_string_forget_hash_val(out);
     zend_string_hash_val(out);
     return out;
 }
-/* }}} php_request_normalize_header_name */
+/* }}} server_request_normalize_header_name */
 
 /* {{{ PHP_MINIT_FUNCTION */
 static PHP_MINIT_FUNCTION(request)
