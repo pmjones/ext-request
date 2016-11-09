@@ -11,15 +11,15 @@
 #include "Zend/zend_API.h"
 #include "Zend/zend_smart_str.h"
 
-#include "php_request.h"
+#include "request.h"
 
 /* Adapted from http://re2c.org/examples/example_07.html */
 
 typedef unsigned char YYCTYPE;
 
-#define lex php_request_lex_generic
-#define strip_slashes php_request_strip_slashes
-#define token1 php_request_parser_token_init
+#define lex server_request_lex_generic
+#define strip_slashes server_request_strip_slashes
+#define token1 server_request_parser_token_init
 
 /*!re2c
     re2c:define:YYCURSOR = in->cur;
@@ -103,7 +103,7 @@ static struct scanner_token lex_quoted_str(struct scanner_input *in, YYCTYPE q)
     return tok;
 }
 
-/* {{{ php_request_lex_generic */
+/* {{{ server_request_lex_generic */
 static struct scanner_token lex(struct scanner_input *in)
 {
     struct scanner_token tok = {0};
@@ -135,11 +135,11 @@ static struct scanner_token lex(struct scanner_input *in)
     //fprintf(stderr, "TOKEN[%d] %.*s\n", tok.type, tok.yyleng, tok.yytext);
     return tok;
 }
-/* }}} php_request_lex_generic */
+/* }}} server_request_lex_generic */
 
-/* {{{ php_request_parse_accept */
+/* {{{ server_request_parse_accept */
 /* @see https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html */
-static int php_request_accept_compare(const void *a, const void *b)
+static int server_request_accept_compare(const void *a, const void *b)
 {
     Bucket *f = (Bucket *) a;
     Bucket *s = (Bucket *) b;
@@ -213,7 +213,7 @@ static int parse_accept_params(struct scanner_input *in, zval *params)
     return 1;
 }
 
-void php_request_parse_accept(zval *return_value, const YYCTYPE *str, size_t len)
+void server_request_parse_accept(zval *return_value, const YYCTYPE *str, size_t len)
 {
     // Pad the buffer
     YYCTYPE *str2 = emalloc(len + YYMAXFILL + 1);
@@ -265,16 +265,16 @@ void php_request_parse_accept(zval *return_value, const YYCTYPE *str, size_t len
     };
 
     // Sort
-    zend_hash_sort(Z_ARRVAL_P(return_value), php_request_accept_compare, 1);
+    zend_hash_sort(Z_ARRVAL_P(return_value), server_request_accept_compare, 1);
 
     efree(str2);
 }
-/* }}} php_request_parse_accept */
+/* }}} server_request_parse_accept */
 
-/* {{{ php_request_parse_content_type */
+/* {{{ server_request_parse_content_type */
 /* @see https://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.7 */
 /* @see https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html */
-void php_request_parse_content_type(zval *return_value, const YYCTYPE *str, size_t len)
+void server_request_parse_content_type(zval *return_value, const YYCTYPE *str, size_t len)
 {
     // Pad the buffer
     YYCTYPE *str2 = emalloc(len + YYMAXFILL + 1);
@@ -351,13 +351,13 @@ void php_request_parse_content_type(zval *return_value, const YYCTYPE *str, size
 err:
     efree(str2);
 }
-/* }}} php_request_parse_content_type */
+/* }}} server_request_parse_content_type */
 
-/* {{{ php_request_parse_digest_auth */
+/* {{{ server_request_parse_digest_auth */
 /* @see: https://secure.php.net/manual/en/features.http-auth.php */
 /* @see: https://www.w3.org/Protocols/rfc2616/rfc2616-sec2.html */
 /* @see: https://en.wikipedia.org/wiki/Digest_access_authentication */
-void php_request_parse_digest_auth(zval *return_value, const YYCTYPE *str, size_t len)
+void server_request_parse_digest_auth(zval *return_value, const YYCTYPE *str, size_t len)
 {
     // Pad the buffer
     YYCTYPE *str2 = emalloc(len + YYMAXFILL + 1);
@@ -434,4 +434,4 @@ void php_request_parse_digest_auth(zval *return_value, const YYCTYPE *str, size_
     zval_dtor(&need);
     efree(str2);
 }
-/* }}} php_request_parse_digest_auth */
+/* }}} server_request_parse_digest_auth */

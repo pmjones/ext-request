@@ -1,17 +1,17 @@
 <?php
 // this allows for using this test for *both* the reference
 // implementation *and* the extension
-if (! class_exists('StdResponse')) {
-    require dirname(__DIR__) . '/src/StdResponse.php';
+if (! class_exists('ServerResponse')) {
+    require dirname(__DIR__) . '/src/ServerResponse.php';
 }
 
-class StdResponseTest extends PHPUnit_Framework_TestCase
+class ServerResponseTest extends PHPUnit_Framework_TestCase
 {
     protected $response;
 
     protected function setUp()
     {
-        $this->response = new StdResponse();
+        $this->response = new ServerResponse();
     }
 
     public function testVersion()
@@ -164,7 +164,7 @@ class StdResponseTest extends PHPUnit_Framework_TestCase
     {
         $this->setExpectedException(
             'TypeError',
-            'Argument 1 passed to StdResponse::setContentDownload() must be of the type resource, string given'
+            'Argument 1 passed to ServerResponse::setContentDownload() must be of the type resource, string given'
         );
         $this->response->setContentDownload('not-a-resource', 'badname');
     }
@@ -219,7 +219,7 @@ class StdResponseTest extends PHPUnit_Framework_TestCase
      */
     public function testSendContent_callable()
     {
-        $this->response->setContent(function (StdResponse $response) {
+        $this->response->setContent(function (ServerResponse $response) {
             $this->assertSame($this->response, $response);
             echo 'foo';
         });
@@ -235,7 +235,7 @@ class StdResponseTest extends PHPUnit_Framework_TestCase
      */
     public function testSendContent_callableWithReturnValue()
     {
-        $this->response->setContent(function (StdResponse $response) {
+        $this->response->setContent(function (ServerResponse $response) {
             $this->assertSame($this->response, $response);
             echo 'foo';
             return 'bar';

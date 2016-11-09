@@ -1,10 +1,10 @@
 --TEST--
-StdResponse::setVersion
+ServerResponse::setVersion
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --FILE--
 <?php
-$response = new StdResponse();
+$response = new ServerResponse();
 $response->setVersion('1.0');
 var_dump($response->getVersion());
 --EXPECT--

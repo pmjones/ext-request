@@ -1,11 +1,11 @@
 --TEST--
-StdRequest::__get
+ServerRequest::__get
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --FILE--
 <?php
 $_SERVER['HTTP_HOST'] = 'localhost';
-$request = new StdRequest();
+$request = new ServerRequest();
 var_dump(isset($request->method));
 try {
     $request->noSuchProperty;
@@ -28,8 +28,8 @@ try {
 --EXPECT--
 bool(true)
 string(16) "RuntimeException"
-string(43) "StdRequest::$noSuchProperty does not exist."
+string(46) "ServerRequest::$noSuchProperty does not exist."
 string(16) "RuntimeException"
-string(33) "StdRequest::$accept is read-only."
+string(36) "ServerRequest::$accept is read-only."
 string(16) "RuntimeException"
-string(33) "StdRequest::$method is read-only."
+string(36) "ServerRequest::$method is read-only."

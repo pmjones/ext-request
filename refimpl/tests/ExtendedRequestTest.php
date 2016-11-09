@@ -1,18 +1,18 @@
 <?php
 // this allows for using this test for *both* the reference
 // implementation *and* the extension
-if (! class_exists('StdRequest')) {
-    require dirname(__DIR__) . '/src/StdRequest.php';
+if (! class_exists('ServerRequest')) {
+    require dirname(__DIR__) . '/src/ServerRequest.php';
 }
 
 /**
  *
  * Notes:
  *
- * - Exceptions should use the class name, not the literal StdRequest name.
+ * - Exceptions should use the class name, not the literal ServerRequest name.
  *
  */
-class ExtendedRequest extends StdRequest
+class ExtendedRequest extends ServerRequest
 {
     private $other;
 

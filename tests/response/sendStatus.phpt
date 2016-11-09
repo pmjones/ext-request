@@ -1,5 +1,5 @@
 --TEST--
-StdResponse::sendStatus
+ServerResponse::sendStatus
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --CGI--
@@ -7,7 +7,7 @@ StdResponse::sendStatus
 expose_php=0
 --FILE--
 <?php
-$response = new StdResponse();
+$response = new ServerResponse();
 $response->setStatus(400);
 $response->send();
 var_dump(headers_list());

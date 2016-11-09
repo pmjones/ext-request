@@ -1,5 +1,5 @@
 --TEST--
-StdRequest - digest auth
+ServerRequest - digest auth
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --FILE--
@@ -17,7 +17,7 @@ $_SERVER += [
         'response="irk"',
     ]),
 ];
-$request = new StdRequest();
+$request = new ServerRequest();
 var_dump($request->authDigest);
 
 // missing parts
@@ -30,7 +30,7 @@ $_SERVER = [
         'cnonce=baz',
     ]),
 ];
-$request = new StdRequest();
+$request = new ServerRequest();
 var_dump($request->authDigest);
 
 --EXPECTF--

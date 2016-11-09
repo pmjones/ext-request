@@ -1,12 +1,12 @@
 --TEST--
-StdResponse::setContentJson
+ServerResponse::setContentJson
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --EXTENSIONS--
 json
 --FILE--
 <?php
-$response = new StdResponse();
+$response = new ServerResponse();
 $response->setContentJson(array('foo' => 'bar'));
 var_dump($response->getContent());
 var_dump($response->getHeaders()['content-type']);

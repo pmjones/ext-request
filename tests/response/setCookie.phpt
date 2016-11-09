@@ -1,10 +1,10 @@
 --TEST--
-StdResponse::setCookie
+ServerResponse::setCookie
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --FILE--
 <?php
-$response = new StdResponse();
+$response = new ServerResponse();
 $response->setCookie('foo', 'bar');
 $response->setRawCookie('baz', 'dib');
 var_dump($response->getCookies());

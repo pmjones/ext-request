@@ -1,12 +1,12 @@
 --TEST--
-StdRequest::__clone
+ServerRequest::__clone
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --FILE--
 <?php
 $_SERVER['HTTP_HOST'] = 'localhost';
 
-$request = new StdRequest();
+$request = new ServerRequest();
 
 $_SERVER['HTTP_HOST'] = 'example.com';
 $clone = clone $request;

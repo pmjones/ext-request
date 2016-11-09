@@ -4,7 +4,7 @@
  * Mutable response object.
  *
  */
-class StdResponse
+class ServerResponse
 {
     protected $version = '1.1';
     protected $status = 200;

@@ -1,10 +1,10 @@
 --TEST--
-StdResponse::date
+ServerResponse::date
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --FILE--
 <?php
-$response = new StdResponse();
+$response = new ServerResponse();
 var_dump($response->date('1979-11-07 +0000'));
 var_dump($response->date(new DateTime('1979-11-07 +0000')));
 var_dump($response->date('1979-11-07 03:00:00 +0300'));

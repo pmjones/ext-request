@@ -1,10 +1,10 @@
 --TEST--
-StdResponse::setHeader
+ServerResponse::setHeader
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --FILE--
 <?php
-$response = new StdResponse();
+$response = new ServerResponse();
 $response->setHeader('', 'should-not-show');
 $response->setHeader('Should-Not-Show', '');
 $response->setHeader('Foo-Bar', 'baz');

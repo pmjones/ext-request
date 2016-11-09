@@ -1,5 +1,5 @@
 --TEST--
-StdRequest::$url
+ServerRequest::$url
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --FILE--
@@ -9,13 +9,13 @@ $_SERVER += [
     'REQUEST_URI' => '/foo/bar?baz=dib',
     'SERVER_PORT' => '8080',
 ];
-$request = new StdRequest();
+$request = new ServerRequest();
 var_dump($request->url);
 
 // without host
 unset($_SERVER['HTTP_HOST']);
 try {
-    $request = new StdRequest();
+    $request = new ServerRequest();
 } catch( Exception $e ) {
     var_dump(get_class($e), $e->getMessage());
 }
@@ -25,21 +25,21 @@ $_SERVER = [
     'SERVER_NAME' => 'example.com',
     'HTTPS' => 'on',
 ];
-$request = new StdRequest();
+$request = new ServerRequest();
 var_dump($request->url['scheme']);
 
 // hostn
 $_SERVER = [
     'SERVER_NAME' => 'example.com',
 ];
-$request = new StdRequest();
+$request = new ServerRequest();
 var_dump($request->url['host']);
 
 // host/port
 $_SERVER = [
     'HTTP_HOST' => 'example.com:8080',
 ];
-$request = new StdRequest();
+$request = new ServerRequest();
 var_dump($request->url['host']);
 var_dump($request->url['port']);
 
@@ -48,7 +48,7 @@ $_SERVER = [
     'HTTP_HOST' => 'example.com',
     'SERVER_PORT' => '8080',
 ];
-$request = new StdRequest();
+$request = new ServerRequest();
 var_dump($request->url['host']);
 var_dump($request->url['port']);
 
@@ -72,7 +72,7 @@ array(8) {
   NULL
 }
 string(16) "RuntimeException"
-string(40) "Could not determine host for StdRequest."
+string(43) "Could not determine host for ServerRequest."
 string(5) "https"
 string(11) "example.com"
 string(11) "example.com"

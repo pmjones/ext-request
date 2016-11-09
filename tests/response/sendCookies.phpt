@@ -1,5 +1,5 @@
 --TEST--
-StdResponse::sendCookies
+ServerResponse::sendCookies
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --CGI--
@@ -7,7 +7,7 @@ StdResponse::sendCookies
 expose_php=0
 --FILE--
 <?php
-$response = new StdResponse();
+$response = new ServerResponse();
 $response->setCookie('cookie1', 'value1');
 $response->setRawCookie('cookie2', 'value2');
 $response->send();

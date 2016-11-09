@@ -1,5 +1,5 @@
 --TEST--
-StdRequest::$method
+ServerRequest::$method
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --FILE--
@@ -7,15 +7,15 @@ StdRequest::$method
 unset($_SERVER['REQUEST_METHOD']); // not sure why this was set here
 $_SERVER['HTTP_HOST'] = 'example.com';
 
-$request = new StdRequest();
+$request = new ServerRequest();
 var_dump($request->method, $request->xhr);
 
 $_SERVER['REQUEST_METHOD'] = 'POST';
-$request = new StdRequest();
+$request = new ServerRequest();
 var_dump($request->method, $request->xhr);
 
 $_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE'] = 'PATCH';
-$request = new StdRequest();
+$request = new ServerRequest();
 var_dump($request->method, $request->xhr);
 --EXPECT--
 string(0) ""
