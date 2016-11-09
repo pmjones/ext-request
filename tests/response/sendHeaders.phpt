@@ -1,5 +1,5 @@
 --TEST--
-StdResponse::sendHeaders
+ServerResponse::sendHeaders
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --CGI--
@@ -7,7 +7,7 @@ StdResponse::sendHeaders
 expose_php=0
 --FILE--
 <?php
-$response = new StdResponse();
+$response = new ServerResponse();
 $response->setHeader('Foo', 'bar');
 $response->setHeader('Baz', 'dib');
 $response->addHeader('Baz', 'zim');

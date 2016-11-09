@@ -1,10 +1,10 @@
 --TEST--
-StdResponse::setHeader (array)
+ServerResponse::setHeader (array)
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --FILE--
 <?php
-$response = new StdResponse();
+$response = new ServerResponse();
 $response->setHeader('Cache-Control', [
     'public',
     'max-age' => '123',

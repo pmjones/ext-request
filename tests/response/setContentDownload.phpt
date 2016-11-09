@@ -1,12 +1,12 @@
 --TEST--
-StdResponse::setContentDownload
+ServerResponse::setContentDownload
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --EXTENSIONS--
 json
 --FILE--
 <?php
-$response = new StdResponse();
+$response = new ServerResponse();
 $fh = fopen('php://temp', 'rb');
 $response->setContentDownload(
     $fh,

@@ -1,11 +1,11 @@
 --TEST--
-StdRequest::__set
+ServerRequest::__set
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --FILE--
 <?php
 $_SERVER['HTTP_HOST'] = 'localhost';
-$request = new StdRequest();
+$request = new ServerRequest();
 try {
     $request->method = 'PATCH';
 } catch( Exception $e ) {
@@ -18,6 +18,6 @@ try {
 }
 --EXPECT--
 string(16) "RuntimeException"
-string(33) "StdRequest::$method is read-only."
+string(36) "ServerRequest::$method is read-only."
 string(16) "RuntimeException"
-string(41) "StdRequest::$noSuchProperty is read-only."
+string(44) "ServerRequest::$noSuchProperty is read-only."

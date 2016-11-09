@@ -1,5 +1,5 @@
 --TEST--
-StdRequest::__construct
+ServerRequest::__construct
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --FILE--
@@ -7,7 +7,7 @@ StdRequest::__construct
 $_SERVER['HTTP_HOST'] = 'localhost';
 
 // Basic construct
-$request = new StdRequest();
+$request = new ServerRequest();
 var_dump(get_class($request));
 
 // Globals argument
@@ -33,7 +33,7 @@ $fakeGlobals = array(
         'k' => 'l',
     ),
 );
-$request = new StdRequest($fakeGlobals);
+$request = new ServerRequest($fakeGlobals);
 var_dump(
     $request->env === $fakeGlobals['_ENV'] &&
     $request->server === $fakeGlobals['_SERVER'] &&
@@ -45,7 +45,7 @@ var_dump(
 
 // Partial globals argument
 $_SERVER['HTTP_HOST'] = 'foo.bar';
-$request = new StdRequest(array(
+$request = new ServerRequest(array(
     '_GET' => array(
         'foo' => 'bar',
     )
@@ -56,7 +56,7 @@ var_dump($request->get['foo']);
 // Check for immutability in globals
 $_GET['foo'] = new stdClass();
 try {
-    $request = new StdRequest();
+    $request = new ServerRequest();
     echo 'fail';
 } catch( UnexpectedValueException $e ) {}
 
@@ -67,7 +67,7 @@ try {
 } catch( RuntimeException $e ) {}
 
 --EXPECT--
-string(10) "StdRequest"
+string(13) "ServerRequest"
 bool(true)
 string(7) "foo.bar"
 string(3) "bar"

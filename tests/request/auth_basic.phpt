@@ -1,5 +1,5 @@
 --TEST--
-StdRequest - basic auth
+ServerRequest - basic auth
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --FILE--
@@ -10,7 +10,7 @@ $_SERVER += [
     'PHP_AUTH_USER' => 'foo',
     'PHP_AUTH_PW' => 'bar'
 ];
-$request = new StdRequest();
+$request = new ServerRequest();
 var_dump($request->authType);
 var_dump($request->authUser);
 var_dump($request->authPw);

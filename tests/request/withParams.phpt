@@ -1,5 +1,5 @@
 --TEST--
-StdRequest::withParams
+ServerRequest::withParams
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --GET--
@@ -8,7 +8,7 @@ forcecgi
 <?php
 $_SERVER['HTTP_HOST'] = 'localhost';
 
-$request = new StdRequest();
+$request = new ServerRequest();
 
 if( $request === $request->withParams(['foo' => 'bar']) ) echo "fail\n";
 

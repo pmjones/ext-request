@@ -1,5 +1,5 @@
 --TEST--
-StdResponse::sendContent (callable)
+ServerResponse::sendContent (callable)
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --CGI--
@@ -7,8 +7,8 @@ StdResponse::sendContent (callable)
 expose_php=0
 --FILE--
 <?php
-$response = new StdResponse();
-$response->setContent(function (StdResponse $arg) use ($response) {
+$response = new ServerResponse();
+$response->setContent(function (ServerResponse $arg) use ($response) {
     if($response !== $arg) echo 'fail';
     echo 'foo';
 });

@@ -5,11 +5,11 @@ This extension provides fundamental server-side request and response objects for
 
 This extension provides two classes:
 
-- StdRequest, composed of read-only copies of PHP superglobals and some other commonly-used values, with methods for adding application-specific request information in immutable fashion.
+- ServerRequest, composed of read-only copies of PHP superglobals and some other commonly-used values, with methods for adding application-specific request information in immutable fashion.
 
-- StdResponse, essentially a wrapper around (and buffer for) response-related PHP functions, with some additional convenience methods, and self-sending capability
+- ServerResponse, essentially a wrapper around (and buffer for) response-related PHP functions, with some additional convenience methods, and self-sending capability
 
-## StdRequest
+## ServerRequest
 
 An object representing the PHP request information.
 
@@ -23,19 +23,19 @@ An object representing the PHP request information.
 
 ### Instantiation
 
-Instantiation of _StdRequest_ is straightforward:
+Instantiation of _ServerRequest_ is straightforward:
 
 ```php
 <?php
-$request = new StdRequest();
+$request = new ServerRequest();
 ?>
 ```
 
-The _StdRequest_ object builds itself from the PHP superglobals. If you want to provide custom values in place of the superglobals, pass an array that mimics `$GLOBALS` to the constructor:
+The _ServerRequest_ object builds itself from the PHP superglobals. If you want to provide custom values in place of the superglobals, pass an array that mimics `$GLOBALS` to the constructor:
 
 ```php
 <?php
-$request = new StdRequest([
+$request = new ServerRequest([
     '_SERVER' => [
         'foo' => 'bar',
     ],
@@ -43,11 +43,11 @@ $request = new StdRequest([
 ?>
 ```
 
-If a superglobal is represented in the array of custom values, it will be used instead of the real superglobal. If it is not represented in the array, _StdRequest_ will use the real superglobal.
+If a superglobal is represented in the array of custom values, it will be used instead of the real superglobal. If it is not represented in the array, _ServerRequest_ will use the real superglobal.
 
 ### Properties
 
-_StdRequest_ has these public properties.
+_ServerRequest_ has these public properties.
 
 #### Superglobal-related
 
@@ -120,21 +120,21 @@ These properties are read-only and cannot be modified.
 
 Notes:
 
-These property values are "immutable" rather than read-only. That is, they can changed using the methods below, but the changed values are available only on a new instance of the _StdRequest_ as returned by the method.
+These property values are "immutable" rather than read-only. That is, they can changed using the methods below, but the changed values are available only on a new instance of the _ServerRequest_ as returned by the method.
 
 ### Methods
 
-The _StdRequest_ object has these public methods:
+The _ServerRequest_ object has these public methods:
 
 #### `withInput(mixed $input)`
 
-Sets the `$input` value on a clone of the called _StdRequest_ instance.
+Sets the `$input` value on a clone of the called _ServerRequest_ instance.
 
 For example:
 
 ```php
 <?php
-$request = new StdRequest();
+$request = new ServerRequest();
 if ($request->contentType == 'application/json') {
     $input = json_decode($request->content, true);
     $request = $request->withInput($input);
@@ -142,19 +142,19 @@ if ($request->contentType == 'application/json') {
 ?>
 ```
 
-Note that this method returns a clone of the _StdRequest_ instance with the new property value. It does not modify the property value on the called instance.
+Note that this method returns a clone of the _ServerRequest_ instance with the new property value. It does not modify the property value on the called instance.
 
 The value may be null, scalar, or array. Arrays are recursively checked to make sure they contain only null, scalar, or array values; this is to preserve immutability of the value.
 
 #### `withParam(mixed $key, mixed $val)`
 
-Sets the value of one `$params` key on a clone of the called _StdRequest_ instance.
+Sets the value of one `$params` key on a clone of the called _ServerRequest_ instance.
 
 For example:
 
 ```php
 <?php
-$request = new StdRequest();
+$request = new ServerRequest();
 var_dump($request->params); // []
 
 $request = $request->withParam('foo', 'bar');
@@ -162,20 +162,20 @@ var_dump($request->params); // ['foo' => 'bar']
 ?>
 ```
 
-Note that this method returns a clone of the _StdRequest_ instance with the new property value. It does not modify the property value on the called instance.
+Note that this method returns a clone of the _ServerRequest_ instance with the new property value. It does not modify the property value on the called instance.
 
 The value may be null, scalar, or array. Arrays are recursively checked to make sure they contain only null, scalar, or array values; this is to preserve immutability of the value.
 
 
 #### `withParams(array $params)`
 
-Sets the `$params` value on a clone of the called _StdRequest_ instance.
+Sets the `$params` value on a clone of the called _ServerRequest_ instance.
 
 For example:
 
 ```php
 <?php
-$request = new StdRequest();
+$request = new ServerRequest();
 var_dump($request->params); // []
 
 $request = $request->withParams(['foo' => 'bar']);
@@ -183,19 +183,19 @@ var_dump($request->params); // ['foo' => 'bar']
 ?>
 ```
 
-Note that this method returns a clone of the _StdRequest_ instance with the new property value. It does not modify the property value on the called instance.
+Note that this method returns a clone of the _ServerRequest_ instance with the new property value. It does not modify the property value on the called instance.
 
 The value may be null, scalar, or array. Arrays are recursively checked to make sure they contain only null, scalar, or array values; this is to preserve immutability of the value.
 
 #### `withoutParam(mixed $key)`
 
-Unsets a single `$params` key on a clone of the called _StdRequest_ instance.
+Unsets a single `$params` key on a clone of the called _ServerRequest_ instance.
 
 For example:
 
 ```php
 <?php
-$request = new StdRequest();
+$request = new ServerRequest();
 $request = $request->withParams(['foo' => 'bar', 'baz' => 'dib']);
 var_dump($request->params); // ['foo' => 'bar', 'baz' => 'dib']
 
@@ -204,17 +204,17 @@ var_dump($request->params); // ['foo' => 'bar']
 ?>
 ```
 
-Note that this method returns a clone of the _StdRequest_ instance with the new property value. It does not modify the property value on the called instance.
+Note that this method returns a clone of the _ServerRequest_ instance with the new property value. It does not modify the property value on the called instance.
 
 #### `withoutParams([array $keys = null])`
 
-Unsets multiple `$params` keys on a clone of the called _StdRequest_ instance.
+Unsets multiple `$params` keys on a clone of the called _ServerRequest_ instance.
 
 For example:
 
 ```php
 <?php
-$request = new StdRequest();
+$request = new ServerRequest();
 $request = $request->withParams([
     'foo' => 'bar',
     'baz' => 'dib',
@@ -227,11 +227,11 @@ var_dump($request->params); // ['foo' => 'bar']
 ?>
 ```
 
-Calling `withoutParams()` with no arguments removes all `$params` on a clone of the called _StdRequest_ instance:
+Calling `withoutParams()` with no arguments removes all `$params` on a clone of the called _ServerRequest_ instance:
 
 ```php
 <?php
-$request = new StdRequest();
+$request = new ServerRequest();
 $request = $request->withParams([
     'foo' => 'bar',
     'baz' => 'dib',
@@ -244,17 +244,17 @@ var_dump($request->params); // []
 ?>
 ```
 
-Note that this method returns a clone of the _StdRequest_ instance with the new property value. It does not modify the property value on the called instance.
+Note that this method returns a clone of the _ServerRequest_ instance with the new property value. It does not modify the property value on the called instance.
 
 #### `withUrl(array $url)`
 
-Sets the value of the `$url` array on a clone of the called _StdRequest_ instance.
+Sets the value of the `$url` array on a clone of the called _ServerRequest_ instance.
 
 For example:
 
 ```php
 <?php
-$request = new StdRequest();
+$request = new ServerRequest();
 
 $request = $request->withUrl([
     'scheme' => 'https',
@@ -278,10 +278,10 @@ var_dump($request->url);
 ?>
 ```
 
-Note that this method returns a clone of the _StdRequest_ instance with the new property value. It does not modify the property value on the called instance.
+Note that this method returns a clone of the _ServerRequest_ instance with the new property value. It does not modify the property value on the called instance.
 
 
-## StdResponse
+## ServerResponse
 
 Goals:
 
@@ -299,17 +299,17 @@ Instantation is straightforward:
 
 ```php
 <?php
-$response = new StdResponse();
+$response = new ServerResponse();
 ?>
 ```
 
 ### Properties
 
-_StdResponse_ has no public properties.
+_ServerResponse_ has no public properties.
 
 ### Methods
 
-_StdResponse_ has these public methods.
+_ServerResponse_ has these public methods.
 
 #### HTTP Version
 
@@ -341,7 +341,7 @@ The `$value` in a `setHeader()` or `addHeader()` call may be an array, in which 
 
 ```php
 <?php
-$response = new StdResponse();
+$response = new ServerResponse();
 
 $response->setHeader('Cache-Control', [
     'public',

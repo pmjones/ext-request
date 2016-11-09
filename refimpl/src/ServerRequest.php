@@ -31,7 +31,7 @@
  * @property-read $xhr
  *
  */
-class StdRequest
+class ServerRequest
 {
     private $accept = [];
     private $acceptCharset = [];
@@ -174,7 +174,7 @@ class StdRequest
         } elseif (isset($this->server['SERVER_NAME'])) {
             $host = $this->server['SERVER_NAME'];
         } else {
-            throw new RuntimeException("Could not determine host for StdRequest.");
+            throw new RuntimeException("Could not determine host for ServerRequest.");
         }
 
         // port

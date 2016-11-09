@@ -1,5 +1,5 @@
 --TEST--
-StdRequest::$files
+ServerRequest::$files
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --POST_RAW--
@@ -17,7 +17,7 @@ Content-Type: text/plain-file1
 --FILE--
 <?php
 $_SERVER['HTTP_HOST'] = 'example.com';
-$request = new StdRequest();
+$request = new ServerRequest();
 var_dump($request->files);
 var_dump($request->files == $_FILES);
 --EXPECTF--

@@ -1,5 +1,5 @@
 --TEST--
-StdRequest::$accept
+ServerRequest::$accept
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --FILE--
@@ -8,7 +8,7 @@ $_SERVER += [
     'HTTP_HOST' => 'example.com',
     'HTTP_ACCEPT' => 'application/xml;q=0.8, application/json;foo=bar, text/*;q=0.2, */*;q=0.1',
 ];
-$request = new StdRequest();
+$request = new ServerRequest();
 var_dump($request->accept);
 --EXPECTF--
 array(4) {

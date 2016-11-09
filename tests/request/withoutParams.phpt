@@ -1,5 +1,5 @@
 --TEST--
-StdRequest::withoutParams
+ServerRequest::withoutParams
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --GET--
@@ -9,7 +9,7 @@ forcecgi
 $_SERVER['HTTP_HOST'] = 'localhost';
 
 // Named
-$request = new StdRequest();
+$request = new ServerRequest();
 
 $params = [
     'foo' => null,
@@ -27,7 +27,7 @@ if( $request->params !== $params ) echo "fail\n";
 var_dump($clone->params);
 
 // Reset
-$request = new StdRequest();
+$request = new ServerRequest();
 $params = [
     'foo' => null,
     'bar' => 'baz',

@@ -1,5 +1,5 @@
 --TEST--
-StdResponse::sendContent (string)
+ServerResponse::sendContent (string)
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --CGI--
@@ -7,7 +7,7 @@ StdResponse::sendContent (string)
 expose_php=0
 --FILE--
 <?php
-$response = new StdResponse();
+$response = new ServerResponse();
 $response->setContent('foo');
 $response->send();
 --EXPECT--

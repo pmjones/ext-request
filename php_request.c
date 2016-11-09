@@ -13,9 +13,9 @@
 
 #include "php_request.h"
 
-extern PHP_MINIT_FUNCTION(stdrequest);
-extern PHP_MINIT_FUNCTION(stdresponse);
-extern PHP_MSHUTDOWN_FUNCTION(stdrequest);
+extern PHP_MINIT_FUNCTION(serverrequest);
+extern PHP_MINIT_FUNCTION(serverresponse);
+extern PHP_MSHUTDOWN_FUNCTION(serverrequest);
 
 /* {{{ php_request_normalize_header_name */
 void php_request_normalize_header_name(char *key, size_t key_length)
@@ -47,8 +47,8 @@ zend_string *php_request_normalize_header_name_ex(zend_string *in)
 /* {{{ PHP_MINIT_FUNCTION */
 static PHP_MINIT_FUNCTION(request)
 {
-    PHP_MINIT(stdrequest)(INIT_FUNC_ARGS_PASSTHRU);
-    PHP_MINIT(stdresponse)(INIT_FUNC_ARGS_PASSTHRU);
+    PHP_MINIT(serverrequest)(INIT_FUNC_ARGS_PASSTHRU);
+    PHP_MINIT(serverresponse)(INIT_FUNC_ARGS_PASSTHRU);
 
     return SUCCESS;
 }
@@ -66,7 +66,7 @@ static PHP_MINFO_FUNCTION(request)
 /* {{{ PHP_MSHUTDOWN_FUNCTION */
 static PHP_MSHUTDOWN_FUNCTION(request)
 {
-    PHP_MSHUTDOWN(stdrequest)(SHUTDOWN_FUNC_ARGS_PASSTHRU);
+    PHP_MSHUTDOWN(serverrequest)(SHUTDOWN_FUNC_ARGS_PASSTHRU);
     return SUCCESS;
 }
 /* }}} */

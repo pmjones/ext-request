@@ -1,5 +1,5 @@
 --TEST--
-StdRequest - inheritance
+ServerRequest - inheritance
 --SKIPIF--
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --FILE--
@@ -8,7 +8,7 @@ $_SERVER = [
     'HTTP_HOST' => 'example.com',
     'REQUEST_METHOD' => 'PUT',
 ];
-class SubStdRequest extends StdRequest {
+class SubServerRequest extends ServerRequest {
     public $publicTest;
     protected $protectedTest;
     private $privateTest;
@@ -21,7 +21,7 @@ class SubStdRequest extends StdRequest {
         $this->method = 'PATCH';
     }
 }
-class MagicStdRequest extends StdRequest {
+class MagicServerRequest extends ServerRequest {
     protected $magicTest;
     public function __get($key) {
         return $this->$key;
@@ -30,7 +30,7 @@ class MagicStdRequest extends StdRequest {
         $this->$key = $value;
     }
 }
-$request = new SubStdRequest();
+$request = new SubServerRequest();
 var_dump($request->method);
 $request->publicTest = 'foo';
 var_dump($request->publicTest);
@@ -40,7 +40,7 @@ try {
 } catch( Exception $e ) {
     var_dump(get_class($e), $e->getMessage());
 }
-$request = new MagicStdRequest();
+$request = new MagicServerRequest();
 $request->magicTest = 'baz';
 var_dump($request->magicTest);
 $request->magicTestUndef = 'bat';
@@ -59,7 +59,7 @@ string(3) "PUT"
 string(3) "foo"
 string(3) "bar"
 string(16) "RuntimeException"
-string(36) "SubStdRequest::$method is read-only."
+string(39) "SubServerRequest::$method is read-only."
 string(3) "baz"
 string(3) "bat"
 ok
