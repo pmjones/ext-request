@@ -11,7 +11,7 @@
 #include "ext/standard/info.h"
 #include "ext/standard/php_string.h"
 
-#include "request.h"
+#include "php_request.h"
 
 extern PHP_MINIT_FUNCTION(serverrequest);
 extern PHP_MINIT_FUNCTION(serverresponse);

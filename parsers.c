@@ -13,7 +13,7 @@
 #include "Zend/zend_API.h"
 #include "Zend/zend_smart_str.h"
 
-#include "request.h"
+#include "php_request.h"
 
 /* Adapted from http://re2c.org/examples/example_07.html */
 

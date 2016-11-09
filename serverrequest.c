@@ -17,7 +17,7 @@
 #include "Zend/zend_portability.h"
 #include "Zend/zend_smart_str.h"
 
-#include "request.h"
+#include "php_request.h"
 
 extern void server_request_parse_accept(zval *return_value, const unsigned char *str, size_t len);
 extern void server_request_parse_content_type(zval *return_value, const unsigned char *str, size_t len);

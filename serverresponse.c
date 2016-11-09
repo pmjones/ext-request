@@ -19,7 +19,7 @@
 #include "Zend/zend_types.h"
 #include "Zend/zend_smart_str.h"
 
-#include "request.h"
+#include "php_request.h"
 
 zend_class_entry * ServerResponse_ce_ptr;
 
