@@ -21,6 +21,8 @@
 
 #include "php_request.h"
 
+extern zend_string *server_request_normalize_header_name_ex(zend_string *in);
+
 zend_class_entry * ServerResponse_ce_ptr;
 
 /* {{{ Argument Info */

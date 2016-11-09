@@ -8,9 +8,6 @@
 extern zend_module_entry request_module_entry;
 #define phpext_request_ptr &request_module_entry
 
-PHPAPI void server_request_normalize_header_name(char *key, size_t key_length);
-PHPAPI zend_string *server_request_normalize_header_name_ex(zend_string *in);
-
 #endif	/* PHP_REQUEST_H */
 
 /*

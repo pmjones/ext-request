@@ -22,6 +22,7 @@
 extern void server_request_parse_accept(zval *return_value, const unsigned char *str, size_t len);
 extern void server_request_parse_content_type(zval *return_value, const unsigned char *str, size_t len);
 extern void server_request_parse_digest_auth(zval *return_value, const unsigned char *str, size_t len);
+extern void server_request_normalize_header_name(char *key, size_t key_length);
 
 zend_class_entry *ServerRequest_ce_ptr;
 static zend_object_handlers ServerRequest_obj_handlers;
