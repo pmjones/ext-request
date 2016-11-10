@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<package
+    version="2.0"
+    xmlns="http://pear.php.net/dtd/package-2.0"
+    xmlns:tasks="http://pear.php.net/dtd/tasks-1.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+        http://pear.php.net/dtd/tasks-1.0
+        http://pear.php.net/dtd/tasks-1.0.xsd
+        http://pear.php.net/dtd/package-2.0
+        http://pear.php.net/dtd/package-2.0.xsd
+    "
+>
+    <name>request</name>
+    <channel>pecl.php.net</channel>
+    <summary>Provides server-side request and response objects.</summary>
+    <description><![CDATA[
+This extension provides server-side request and response objects for PHP.
+These are *not* HTTP message objects proper. They are more like wrappers
+for existing global PHP variables and functions, with some limited
+additional convenience functionality.
+
+This extension defines two classes in the global namespace:
+
+- ServerRequest, composed of read-only copies of PHP superglobals and some
+  other commonly-used values, with methods for adding application-specific
+  request information in immutable fashion.
+
+- ServerResponse, essentially a wrapper around (and buffer for) response-
+  related PHP functions, with some additional convenience methods, and self-
+  sending capability.
+
+Documentation: https://gitlab.com/pmjones/phprequest
+]]></description>
+    <lead>
+        <name>John Boehr</name>
+        <user>jbboehr</user>
+        <email>jbboehr@php.net</email>
+        <active>yes</active>
+    </lead>
+    <lead>
+        <name>Paul M. Jones</name>
+        <user>pmjones</user>
+        <email>pmjones@php.net</email>
+        <active>yes</active>
+    </lead>
+    <date>2016-11-27</date>
+    <version>
+        <release>1.0.0b1</release>
+        <api>1.0.0b1</api>
+    </version>
+    <stability>
+        <release>beta</release>
+        <api>beta</api>
+    </stability>
+    <license uri="https://opensource.org/licenses/MIT">MIT</license>
+    <notes><![CDATA[
+Please see CHANGELOG.md for release notes.
+]]></notes>
+    <contents>
+        <dir name="/">
+            <file role="doc" name="CHANGELOG.md"/>
+            <file role="doc" name="LICENSE.md"/>
+            <file role="doc" name="README.md"/>
+            <file role="doc" name="TODO.md"/>
+            <file role="script" name="reflect.php" />
+            <file role="src" name="config.m4" />
+            <file role="src" name="Makefile.frag" />
+            <file role="src" name="parsers.c" />
+            <file role="src" name="parsers.re" />
+            <file role="src" name="php_request.c" />
+            <file role="src" name="php_request.h" />
+            <file role="src" name="serverrequest.c" />
+            <file role="src" name="serverresponse.c" />
+            <file role="test" name="run-tests.sh" />
+            <dir name="tests">
+                <dir name="request">
+                    <file role="test" name="__clone.phpt" />
+                    <file role="test" name="__construct.phpt" />
+                    <file role="test" name="__get.phpt" />
+                    <file role="test" name="__isset.phpt" />
+                    <file role="test" name="__set.phpt" />
+                    <file role="test" name="__unset.phpt" />
+                    <file role="test" name="accept.phpt" />
+                    <file role="test" name="acceptCharset.phpt" />
+                    <file role="test" name="acceptEncoding.phpt" />
+                    <file role="test" name="acceptLanguage.phpt" />
+                    <file role="test" name="auth_basic.phpt" />
+                    <file role="test" name="auth_digest.phpt" />
+                    <file role="test" name="auto_globals_jit.phpt" />
+                    <file role="test" name="content1.phpt" />
+                    <file role="test" name="content2.phpt" />
+                    <file role="test" name="contentLength.phpt" />
+                    <file role="test" name="contentMd5.phpt" />
+                    <file role="test" name="contentType.phpt" />
+                    <file role="test" name="cookie.phpt" />
+                    <file role="test" name="env.phpt" />
+                    <file role="test" name="files.phpt" />
+                    <file role="test" name="get.phpt" />
+                    <file role="test" name="headers.phpt" />
+                    <file role="test" name="inheritance.phpt" />
+                    <file role="test" name="method.phpt" />
+                    <file role="test" name="parseAccept.phpt" />
+                    <file role="test" name="parseContentType.phpt" />
+                    <file role="test" name="parseDigestAuth.phpt" />
+                    <file role="test" name="post.phpt" />
+                    <file role="test" name="superglobals-are-copied.phpt" />
+                    <file role="test" name="uploads-complex.phpt" />
+                    <file role="test" name="uploads-real.phpt" />
+                    <file role="test" name="uploads-trivial.phpt" />
+                    <file role="test" name="url.phpt" />
+                    <file role="test" name="variables_order.phpt" />
+                    <file role="test" name="withInput.phpt" />
+                    <file role="test" name="withoutParam.phpt" />
+                    <file role="test" name="withoutParams.phpt" />
+                    <file role="test" name="withParam.phpt" />
+                    <file role="test" name="withParams.phpt" />
+                    <file role="test" name="withUrl.phpt" />
+                </dir>
+                <dir name="response">
+                    <file role="test" name="addHeader_array.phpt" />
+                    <file role="test" name="addHeader.phpt" />
+                    <file role="test" name="date_invalid.phpt" />
+                    <file role="test" name="date.phpt" />
+                    <file role="test" name="getStatus.phpt" />
+                    <file role="test" name="getVersion.phpt" />
+                    <file role="test" name="sendContent_callable.phpt" />
+                    <file role="test" name="sendContent_callableRV.phpt" />
+                    <file role="test" name="sendContent_resource.phpt" />
+                    <file role="test" name="sendContent_string.phpt" />
+                    <file role="test" name="sendCookies.phpt" />
+                    <file role="test" name="sendHeaders.phpt" />
+                    <file role="test" name="sendStatus.phpt" />
+                    <file role="test" name="setContent.phpt" />
+                    <file role="test" name="setContentDownload_notResource.phpt" />
+                    <file role="test" name="setContentDownload.phpt" />
+                    <file role="test" name="setContentJson_failed.phpt" />
+                    <file role="test" name="setContentJson.phpt" />
+                    <file role="test" name="setCookie.phpt" />
+                    <file role="test" name="setHeader_array.phpt" />
+                    <file role="test" name="setHeader.phpt" />
+                    <file role="test" name="setStatus.phpt" />
+                    <file role="test" name="setVersion.phpt" />
+                </dir>
+            </dir>
+            <dir name="userland">
+                <file role="test" name="phpunit.xml.dist" />
+                <dir name="src">
+                    <file role="php" name="ServerRequest.php" />
+                    <file role="php" name="ServerResponse.php" />
+                </dir>
+                <dir name="tests">
+                    <file role="test" name="ExtendedRequestTest.php" />
+                    <file role="test" name="ServerRequestTest.php" />
+                    <file role="test" name="ServerResponseTest.php" />
+                </dir>
+            </dir>
+        </dir>
+    </contents>
+    <dependencies>
+        <required>
+            <php>
+                <min>7.0.0</min>
+            </php>
+            <pearinstaller>
+                <min>1.4.1</min>
+            </pearinstaller>
+        </required>
+    </dependencies>
+    <providesextension>request</providesextension>
+    <extsrcrelease />
+    <changelog />
+</package>
