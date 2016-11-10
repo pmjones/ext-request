@@ -442,7 +442,11 @@ while HTTP/1.x has no such requirement, lower-case is also recognized as valid.
   `content-type: application/json` header.
 
 - `setContentDownload($fh, $name, $disposition = 'attachment', array $params = [])`:
-  A convenience method to set the content to a resource (typically a file handle) for download to the client. This sets the headers `content-type: application/octet-stream`, `content-transfer-encoding: binary`, and `content-disposition: $disposition;filename="$name"`.  (The `$params` key-value array are included as parameters on the disposition.)
+  A convenience method to set the content to a resource (typically a file handle)
+  for download to the client. This sets the headers
+  `content-type: application/octet-stream`, `content-transfer-encoding: binary`,
+  and `content-disposition: $disposition;filename="$name"`.  (The `$params`
+  key-value array are included as parameters on the disposition.)
 
 - `getContent()`: Returns the content of the response. This may be a string,
   resource, object, or anything else.
