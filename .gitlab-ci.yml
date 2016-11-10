@@ -16,31 +16,31 @@ after_script:
 test:7.0-nts:
     image: php:7.0
     script:
-        - phpunit refimpl
-        - ./run-tests.sh refimpl
+        - phpunit userland
+        - ./run-tests.sh userland
         - ./run-tests.sh coverage
         - ./run-tests.sh valgrind
 
 test:7.0-zts:
     image: php:7.0-zts
     script:
-        - phpunit refimpl
-        - ./run-tests.sh refimpl
+        - phpunit userland
+        - ./run-tests.sh userland
         - ./run-tests.sh coverage
         - ./run-tests.sh valgrind
 
 test:7.1-nts:
     image: php:7.0
     script:
-        - phpunit refimpl
-        - ./run-tests.sh refimpl
+        - phpunit userland
+        - ./run-tests.sh userland
         - ./run-tests.sh coverage
         - ./run-tests.sh valgrind
 
 test:7.1-zts:
     image: php:7.0-zts
     script:
-        - phpunit refimpl
-        - ./run-tests.sh refimpl
+        - phpunit userland
+        - ./run-tests.sh userland
         - ./run-tests.sh coverage
         - ./run-tests.sh valgrind
