@@ -64,6 +64,7 @@ Please see CHANGELOG.md for release notes.
             <file role="doc" name="README.md"/>
             <file role="doc" name="TODO.md"/>
             <file role="script" name="reflect.php" />
+            <file role="src" name="clean.sh" />
             <file role="src" name="config.m4" />
             <file role="src" name="Makefile.frag" />
             <file role="src" name="parsers.c" />
@@ -144,6 +145,9 @@ Please see CHANGELOG.md for release notes.
                 </dir>
             </dir>
             <dir name="userland">
+                <file role="doc" name="composer.json" />
+                <file role="doc" name="LICENSE.md" />
+                <file role="doc" name="README.md" />
                 <file role="test" name="phpunit.xml.dist" />
                 <dir name="src">
                     <file role="php" name="ServerRequest.php" />
