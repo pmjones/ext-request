@@ -46,7 +46,7 @@ Documentation: https://gitlab.com/pmjones/phprequest
     </lead>
     <date>2016-11-11</date>
     <version>
-        <release>1.0.a1</release>
+        <release>1.0.0a1</release>
         <api>1.0.0a1</api>
     </version>
     <stability>
