@@ -3,7 +3,9 @@
     "description": "Server-side request and response objects.",
     "type": "library",
     "license": "MIT",
-    "require": {},
+    "require": {
+        "php": ">=5.4"
+    },
     "autoload": {
         "classmap": ["src/"]
     },

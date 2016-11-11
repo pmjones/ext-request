@@ -1,12 +1,5 @@
 <?php
-// this allows for using this test for *both* the reference
-// implementation *and* the extension
-if (! class_exists('ServerRequest')) {
-    require dirname(__DIR__) . '/src/ServerRequest.php';
-}
-
 /**
- * @todo test that StdClass objects remain read-only
  * @backupGlobals enabled
  */
 class ServerRequestTest extends PHPUnit_Framework_TestCase

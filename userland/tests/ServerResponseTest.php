@@ -1,10 +1,4 @@
 <?php
-// this allows for using this test for *both* the reference
-// implementation *and* the extension
-if (! class_exists('ServerResponse')) {
-    require dirname(__DIR__) . '/src/ServerResponse.php';
-}
-
 class ServerResponseTest extends PHPUnit_Framework_TestCase
 {
     protected $response;
@@ -163,7 +157,7 @@ class ServerResponseTest extends PHPUnit_Framework_TestCase
     public function testSetContentDownload_notResource()
     {
         $this->setExpectedException(
-            'TypeError',
+            'RuntimeException',
             'Argument 1 passed to ServerResponse::setContentDownload() must be of the type resource, string given'
         );
         $this->response->setContentDownload('not-a-resource', 'badname');
