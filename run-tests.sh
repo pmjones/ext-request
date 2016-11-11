@@ -14,7 +14,7 @@ coverage)
     make clean all
     lcov --directory . --zerocounters
     lcov --directory . --capture --compat-libtool --initial --output-file coverage.info
-    $TEST_PHP_EXECUTABLE -d extension=modules/request.so $PHPUNIT refimpl
+    $TEST_PHP_EXECUTABLE -d extension=modules/request.so $PHPUNIT userland
     $TEST_PHP_EXECUTABLE run-tests.php -d extension=request.so -d extension_dir=modules -n ./tests/
     lcov --no-checksum --directory . --capture --compat-libtool --output-file coverage.info
     lcov --remove coverage.info "/usr*" \
@@ -29,13 +29,13 @@ valgrind)
     make clean all
     make test TEST_PHP_ARGS=-m
     ;;
-refimpl)
+userland)
     phpize
     ./configure
     make clean all
-    $TEST_PHP_EXECUTABLE -d extension=modules/request.so $PHPUNIT refimpl
+    $TEST_PHP_EXECUTABLE -d extension=modules/request.so $PHPUNIT userland
     ;;
 *)
-    $TEST_PHP_EXECUTABLE -d extension=modules/request.so $PHPUNIT refimpl $@
+    $TEST_PHP_EXECUTABLE -d extension=modules/request.so $PHPUNIT userland $@
     ;;
 esac

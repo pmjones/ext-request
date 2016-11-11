@@ -1,0 +1,13 @@
+{
+    "name": "pmjones/ext-request",
+    "description": "Server-side request and response objects.",
+    "type": "library",
+    "license": "MIT",
+    "require": {},
+    "autoload": {
+        "classmap": ["src/"]
+    },
+    "autoload-dev": {
+        "classmap": ["tests/"]
+    }
+}
