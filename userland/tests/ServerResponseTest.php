@@ -156,8 +156,9 @@ class ServerResponseTest extends PHPUnit_Framework_TestCase
 
     public function testSetContentDownload_notResource()
     {
+        $expect = class_exists('TypeError') ? 'TypeError' : 'RuntimeException';
         $this->setExpectedException(
-            'RuntimeException',
+            $expect,
             'Argument 1 passed to ServerResponse::setContentDownload() must be of the type resource, string given'
         );
         $this->response->setContentDownload('not-a-resource', 'badname');
