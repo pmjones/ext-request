@@ -23,8 +23,8 @@ try {
 } catch( Exception $e ) {
     var_dump(get_class($e), $e->getMessage());
 }
---EXPECT--
+--EXPECTF--
 
-Notice: Indirect modification of overloaded property ServerRequest::$accept has no effect in /Users/pmjones/Vagrant/ext-request/code/ext-request/tests/request/__get-userland.php on line 5
+Notice: Indirect modification of overloaded property ServerRequest::$accept has no effect in %s/__get-userland.php on line 5
 
-Notice: Indirect modification of overloaded property ServerRequest::$method has no effect in /Users/pmjones/Vagrant/ext-request/code/ext-request/tests/request/__get-userland.php on line 13
+Notice: Indirect modification of overloaded property ServerRequest::$method has no effect in %s/__get-userland.php on line 13
