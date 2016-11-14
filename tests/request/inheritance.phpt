@@ -3,7 +3,6 @@ ServerRequest - inheritance
 --SKIPIF--
 <?php if (
     ! extension_loaded('request')
-    && ! getenv('TEST_USERLAND_REQUEST')
 ) {
     die('skip ');
 } ?>
