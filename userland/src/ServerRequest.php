@@ -369,7 +369,10 @@ class ServerRequest
 
     protected function setContent() // : void
     {
-        $this->content = file_get_contents('php://input');
+        $content = file_get_contents('php://input');
+        if ($content) {
+            $this->content = $content;
+        }
 
         if (isset($this->headers['content-md5'])) {
             $this->contentMd5 = $this->headers['content-md5'];
