@@ -14,7 +14,7 @@ json
 $response = new ServerResponse();
 try {
     $response->setContentDownload('not-a-resource', 'disposition');
-} catch( TypeError $e ) {
+} catch( Exception $e ) {
     var_dump($e->getMessage());
 }
 --EXPECT--
