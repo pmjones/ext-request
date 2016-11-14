@@ -5,7 +5,6 @@ set -ex
 export NO_INTERACTION=1
 export REPORT_EXIT_STATUS=1
 export TEST_PHP_EXECUTABLE=`which php`
-export PHPUNIT=`which phpunit`
 
 case $1 in
 coverage)
@@ -14,8 +13,8 @@ coverage)
     make clean all
     lcov --directory . --zerocounters
     lcov --directory . --capture --compat-libtool --initial --output-file coverage.info
-    $TEST_PHP_EXECUTABLE -d extension=modules/request.so $PHPUNIT userland
-    $TEST_PHP_EXECUTABLE run-tests.php -d extension=request.so -d extension_dir=modules -n ./tests/
+    $TEST_PHP_EXECUTABLE run-tests.php -d auto_prepend_file=./userland/tests/prepend.php -n ./tests/
+    $TEST_PHP_EXECUTABLE run-tests.php -d extension=modules/request.so -n ./tests/
     lcov --no-checksum --directory . --capture --compat-libtool --output-file coverage.info
     lcov --remove coverage.info "/usr*" \
         --remove coverage.info "*/.phpenv/*" \
@@ -33,9 +32,9 @@ userland)
     phpize
     ./configure
     make clean all
-    $TEST_PHP_EXECUTABLE -d extension=modules/request.so $PHPUNIT userland
+    $TEST_PHP_EXECUTABLE run-tests.php -d auto_prepend_file=./userland/tests/prepend.php -n ./tests/
     ;;
 *)
-    $TEST_PHP_EXECUTABLE -d extension=modules/request.so $PHPUNIT userland $@
+    $TEST_PHP_EXECUTABLE run-tests.php -d auto_prepend_file=./userland/tests/prepend.php -n ./tests/ $@
     ;;
 esac
