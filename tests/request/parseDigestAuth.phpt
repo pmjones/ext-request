@@ -1,12 +1,7 @@
 --TEST--
 ServerRequest::parseDigestAuth
 --SKIPIF--
-<?php if (
-    ! extension_loaded('request')
-    && ! getenv('TEST_USERLAND_REQUEST')
-) {
-    die('skip ');
-} ?>
+<?php if( !extension_loaded('request') ) die('skip '); ?>
 --FILE--
 <?php
 try {
