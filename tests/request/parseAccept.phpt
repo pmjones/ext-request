@@ -9,30 +9,20 @@ ServerRequest::parseAccept
 } ?>
 --FILE--
 <?php
-try {
-    var_dump(ServerRequest::parseAccept(null));
-} catch( Throwable $e ) {
-    var_dump(get_class($e), $e->getMessage());
-}
+$_SERVER += [
+    'HTTP_HOST' => 'example.com',
+    'HTTP_ACCEPT' => 'application/xml;q=0.8, application/json;foo=bar, text/*;q=0.2, */*;q=0.1',
+    'HTTP_ACCEPT_CHARSET' => 'iso-8859-5;q=0.8, unicode-1-1',
+    'HTTP_ACCEPT_ENCODING' => 'compress;q=0.5, gzip;q=1.0',
+    'HTTP_ACCEPT_LANGUAGE' => 'en-US, en-GB, en, *',
+];
 
-var_dump(ServerRequest::parseAccept(''));
-
-// Accept
-var_dump(ServerRequest::parseAccept('application/xml;q=0.8, application/json;foo=bar, text/*;q=0.2, */*;q=0.1'));
-
-// Accept-Charset
-var_dump(ServerRequest::parseAccept('iso-8859-5;q=0.8, unicode-1-1'));
-
-// Accept-Encoding
-var_dump(ServerRequest::parseAccept('compress;q=0.5, gzip;q=1.0'));
-
-// Accept-Language
-var_dump(ServerRequest::parseAccept('en-US, en-GB, en, *'));
---EXPECTF--
-string(9) "TypeError"
-string(%d) "Argument 1 passed to ServerRequest::parseAccept() must be of the type string, null given"
-array(0) {
-}
+$request = new ServerRequest();
+var_dump($request->accept);
+var_dump($request->acceptCharset);
+var_dump($request->acceptEncoding);
+var_dump($request->acceptLanguage);
+--EXPECT--
 array(4) {
   [0]=>
   array(3) {
@@ -123,7 +113,7 @@ array(2) {
 }
 array(4) {
   [0]=>
-  array(3) {
+  array(5) {
     ["value"]=>
     string(5) "en-US"
     ["quality"]=>
@@ -131,9 +121,13 @@ array(4) {
     ["params"]=>
     array(0) {
     }
+    ["type"]=>
+    string(2) "en"
+    ["subtype"]=>
+    string(2) "US"
   }
   [1]=>
-  array(3) {
+  array(5) {
     ["value"]=>
     string(5) "en-GB"
     ["quality"]=>
@@ -141,9 +135,13 @@ array(4) {
     ["params"]=>
     array(0) {
     }
+    ["type"]=>
+    string(2) "en"
+    ["subtype"]=>
+    string(2) "GB"
   }
   [2]=>
-  array(3) {
+  array(5) {
     ["value"]=>
     string(2) "en"
     ["quality"]=>
@@ -151,9 +149,13 @@ array(4) {
     ["params"]=>
     array(0) {
     }
+    ["type"]=>
+    string(2) "en"
+    ["subtype"]=>
+    NULL
   }
   [3]=>
-  array(3) {
+  array(5) {
     ["value"]=>
     string(1) "*"
     ["quality"]=>
@@ -161,5 +163,9 @@ array(4) {
     ["params"]=>
     array(0) {
     }
+    ["type"]=>
+    string(1) "*"
+    ["subtype"]=>
+    NULL
   }
 }
