@@ -116,7 +116,7 @@ class ServerRequest
         return $global;
     }
 
-    public function __get($key) // : array
+    final public function __get($key) // : array
     {
         if (property_exists($this, $key) && $key{0} != '_') {
             return $this->$key;
@@ -126,13 +126,13 @@ class ServerRequest
         throw new RuntimeException("{$class}::\${$key} does not exist.");
     }
 
-    public function __set($key, $val) // : void
+    final public function __set($key, $val) // : void
     {
         $class = get_class($this);
         throw new RuntimeException("{$class}::\${$key} is read-only.");
     }
 
-    public function __isset($key) // : bool
+    final public function __isset($key) // : bool
     {
         if (property_exists($this, $key) && $key{0} != '_') {
             return isset($this->$key);
@@ -141,7 +141,7 @@ class ServerRequest
         return false;
     }
 
-    public function __unset($key) // : void
+    final public function __unset($key) // : void
     {
         if (property_exists($this, $key)) {
             $class = get_class($this);
