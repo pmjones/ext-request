@@ -4,12 +4,12 @@
     "type": "library",
     "license": "MIT",
     "require": {
-        "php": ">=5.4"
+        "php": "< 7.0.0"
     },
     "autoload": {
         "classmap": ["src/"]
     },
-    "autoload-dev": {
-        "classmap": ["tests/"]
+    "scripts": {
+        "test": "TEST_PHP_EXECUTABLE=`which php` php ../run-tests.php ../tests -d auto_prepend_file=`pwd`/tests/prepend.php"
     }
 }
