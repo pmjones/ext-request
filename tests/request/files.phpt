@@ -1,7 +1,12 @@
 --TEST--
 ServerRequest::$files
 --SKIPIF--
-<?php if( !extension_loaded('request') ) die('skip '); ?>
+<?php if (
+    ! extension_loaded('request')
+    && ! getenv('TEST_USERLAND_REQUEST')
+) {
+    die('skip ');
+} ?>
 --POST_RAW--
 Content-Type: multipart/form-data; boundary=---------------------------20896060251896012921717172737
 -----------------------------20896060251896012921717172737
