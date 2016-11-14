@@ -7,6 +7,8 @@ ServerResponse::date
 ) {
     die('skip ');
 } ?>
+--INI--
+date.timezone=America/Chicago
 --FILE--
 <?php
 $response = new ServerResponse();
