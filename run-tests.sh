@@ -13,7 +13,7 @@ coverage)
     make clean all
     lcov --directory . --zerocounters
     lcov --directory . --capture --compat-libtool --initial --output-file coverage.info
-    $TEST_PHP_EXECUTABLE run-tests.php -d auto_prepend_file=./userland/tests/prepend.php -n ./tests/
+    $TEST_PHP_EXECUTABLE run-tests.php -d auto_prepend_file=`pwd`/userland/tests/prepend.php -n ./tests/
     $TEST_PHP_EXECUTABLE run-tests.php -d extension=modules/request.so -n ./tests/
     lcov --no-checksum --directory . --capture --compat-libtool --output-file coverage.info
     lcov --remove coverage.info "/usr*" \
@@ -32,9 +32,9 @@ userland)
     phpize
     ./configure
     make clean all
-    $TEST_PHP_EXECUTABLE run-tests.php -d auto_prepend_file=./userland/tests/prepend.php -n ./tests/
+    $TEST_PHP_EXECUTABLE run-tests.php -d auto_prepend_file=`pwd`/userland/tests/prepend.php -n ./tests/
     ;;
 *)
-    $TEST_PHP_EXECUTABLE run-tests.php -d auto_prepend_file=./userland/tests/prepend.php -n ./tests/ $@
+    $TEST_PHP_EXECUTABLE run-tests.php -d auto_prepend_file=`pwd`/userland/tests/prepend.php -n ./tests/ $@
     ;;
 esac
