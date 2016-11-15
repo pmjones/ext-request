@@ -1,7 +1,12 @@
 --TEST--
 ServerRequest::withInput
 --SKIPIF--
-<?php if( !extension_loaded('request') ) die('skip '); ?>
+<?php if (
+    ! extension_loaded('request')
+    && ! getenv('TEST_USERLAND_REQUEST')
+) {
+    die('skip ');
+} ?>
 --GET--
 forcecgi
 --FILE--

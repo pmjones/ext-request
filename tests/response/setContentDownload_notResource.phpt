@@ -1,7 +1,12 @@
 --TEST--
 ServerResponse::setContentResource (not resource)
 --SKIPIF--
-<?php if( !extension_loaded('request') ) die('skip '); ?>
+<?php if (
+    ! extension_loaded('request')
+    && ! getenv('TEST_USERLAND_REQUEST')
+) {
+    die('skip ');
+} ?>
 --EXTENSIONS--
 json
 --FILE--
@@ -10,6 +15,10 @@ $response = new ServerResponse();
 try {
     $response->setContentDownload('not-a-resource', 'disposition');
 } catch( TypeError $e ) {
+    // php 7 (extension)
+    var_dump($e->getMessage());
+} catch( RuntimeException $e ) {
+    // php 5 (userland)
     var_dump($e->getMessage());
 }
 --EXPECT--

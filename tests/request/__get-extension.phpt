@@ -1,9 +1,8 @@
 --TEST--
-ServerRequest::__set
+ServerRequest::__get extension indirect modification
 --SKIPIF--
 <?php if (
     ! extension_loaded('request')
-    && ! getenv('TEST_USERLAND_REQUEST')
 ) {
     die('skip ');
 } ?>
@@ -12,17 +11,20 @@ ServerRequest::__set
 $_SERVER['HTTP_HOST'] = 'localhost';
 $request = new ServerRequest();
 try {
-    $request->method = 'PATCH';
+    $request->accept[0] = array();
 } catch( Exception $e ) {
     var_dump(get_class($e), $e->getMessage());
 }
+function mut(&$method) {
+    $method = 'DELETE';
+}
 try {
-    $request->noSuchProperty = 'foo';
+    mut($request->method);
 } catch( Exception $e ) {
     var_dump(get_class($e), $e->getMessage());
 }
 --EXPECT--
 string(16) "RuntimeException"
-string(36) "ServerRequest::$method is read-only."
+string(36) "ServerRequest::$accept is read-only."
 string(16) "RuntimeException"
-string(44) "ServerRequest::$noSuchProperty is read-only."
+string(36) "ServerRequest::$method is read-only."
