@@ -17,17 +17,18 @@ This extension defines two classes in the global namespace:
 
 ## ServerRequest
 
-An object representing the PHP request information.
+An object representing the PHP request received by the server; use it in place
+of the `$_GET`, `$_POST`, etc. superglobals. It provides:
 
-- Provide non-session superglobals as read-only properties.
+- non-session superglobals as read-only properties;
 
-- Add other read-only properties calculated from the superglobals ($method,
-  $headers, $content, etc.).
+- other read-only properties calculated from the superglobals (`$method`,
+  `$headers`, `$content`, `$accept`, `$uploads`, etc.);
 
-- Allow for adding application-specific information, such as parsed body and
-  path-info or routing parameters, in immutable fashion.
+- immutable retention of application-specific information, such as parsed body
+  input and routing parameters;
 
-- Extendable so users can add custom functionality.
+- extensibility.
 
 ### Instantiation
 
@@ -63,6 +64,8 @@ _ServerRequest_ has these public properties.
 
 #### Superglobal-related
 
+These properties are read-only and cannot be modified.
+
 - `$env`: A copy of `$_ENV`.
 - `$files`: A copy of `$_FILES`.
 - `$get`: A copy of `$_GET`.
@@ -71,25 +74,19 @@ _ServerRequest_ has these public properties.
 - `$server`: A copy of `$_SERVER`.
 - `$uploads`: A copy of `$_FILES`, restructured to look more like `$_POST`.
 
-Notes:
+#### HTTP-related
 
 These properties are read-only and cannot be modified.
-
-#### HTTP-related
 
 - `$accept`: An array computed from `$_SERVER['HTTP_ACCEPT']`.
 - `$acceptCharset`: An array computed from `$_SERVER['HTTP_ACCEPT_CHARSET']`.
 - `$acceptEncoding`: An array computed from `$_SERVER['HTTP_ACCEPT_ENCODING']`.
 - `$acceptLanguage`: An array computed from `$_SERVER['HTTP_ACCEPT_LANGUAGE']`.
 - `$headers`: An array of all `HTTP_*` header keys from `$_SERVER`, plus RFC
-  3875 headers not prefixed with `HTTP_`
+  3875 headers not prefixed with `HTTP_`.
 - `$method`: The `$_SERVER['REQUEST_METHOD']` value, or the
   `$_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE']` when appropriate.
 - `$xhr`: A boolean indicating if this is an XmlHttpRequest.
-
-Notes:
-
-These properties are read-only and cannot be modified.
 
 Each element of the `$accept*` arrays has these sub-array keys:
 
@@ -106,17 +103,17 @@ The `$accept*` array elements are sorted by highest `q` value to lowest.
 
 #### Content-related
 
+These properties are read-only and cannot be modified.
+
 - `$content`: The value of `file_get_contents('php://input')`.
 - `$contentCharset`: The `charset` parameter value of `$_SERVER['CONTENT_TYPE']`.
 - `$contentLength`: The value of `$_SERVER['CONTENT_LENGTH']`.
 - `$contentMd5`: The value of `$_SERVER['HTTP_CONTENT_MD5']`.
 - `$contentType`: The value of `$_SERVER['CONTENT_TYPE']`, minus any parameters.
 
-Notes:
+#### Authentication-related
 
 These properties are read-only and cannot be modified.
-
-#### Authentication-related
 
 - `$authDigest`: An array of digest values computed from
   `$_SERVER['PHP_AUTH_DIGEST']`.
@@ -124,27 +121,22 @@ These properties are read-only and cannot be modified.
 - `$authType`: The value of `$_SERVER['PHP_AUTH_TYPE']`.
 - `$authUser`: The value of `$_SERVER['PHP_AUTH_USER']`.
 
-Notes:
-
-These properties are read-only and cannot be modified.
-
 #### Application-related
-
-- `$input`: Typically the parsed content of the request.
-- `$params`: Typically path-info or routing parameters.
-- `$url`: The result of [`parse_url`](http://php.net/parse_url) as built from
-  the `$_SERVER` keys `HTTPS`, `HTTP_HOST`/`SERVER_NAME`, `SERVER_PORT`, and
-  `REQUEST_URI`.
-
-Notes:
 
 These property values are "immutable" rather than read-only. That is, they can
 changed using the methods below, but the changed values are available only on a
 new instance of the _ServerRequest_ as returned by the method.
 
+- `$input`: Typically the parsed body content of the request, such as from
+  `json_decode()`.
+- `$params`: Typically path-info or routing parameters.
+- `$url`: The result of [`parse_url`](http://php.net/parse_url) as built from
+  the `$_SERVER` keys `HTTPS`, `HTTP_HOST`/`SERVER_NAME`, `SERVER_PORT`, and
+  `REQUEST_URI`.
+
 ### Methods
 
-The _ServerRequest_ object has these public methods:
+The _ServerRequest_ object has these public methods.
 
 #### `withInput(mixed $input)`
 
@@ -194,7 +186,6 @@ instance.
 The value may be null, scalar, or array. Arrays are recursively checked to make
 sure they contain only null, scalar, or array values; this is to preserve
 immutability of the value.
-
 
 #### `withParams(array $params)`
 
@@ -325,15 +316,18 @@ instance.
 
 ## ServerResponse
 
-Goals:
+An object representing the PHP response to be sent from the server; use it in
+place of the `header()`, `setcookie()`, `setrawcookie()`, etc. functions. It
+provides:
 
-- Light wrapper around PHP functions (with similar lack of validation)
-- Buffer for headers and cookies
-- Helper for HTTP date
-- Helper for comma- and semicolon-separated header values
-- Minimalist support for sending a file, and sending json
-- Self-sendable
-- Mutable, extendable
+- a retention space for headers, cookies, and status, so they can be inspected
+  before sending;
+- a helper method for building HTTP date strings;
+- a helper for building header comma- and semicolon-separated strings for headers;
+- support for specifying content as a download (with appropriate headers);
+- support for specifying content as JSON (with appropriate headers);
+- self-sending capability;
+- mutability and extensibility.
 
 ## Instantiation
 
