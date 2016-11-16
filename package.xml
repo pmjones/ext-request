@@ -76,6 +76,8 @@ Please see CHANGELOG.md for release notes.
                     <file role="test" name="__clone.phpt" />
                     <file role="test" name="__construct.phpt" />
                     <file role="test" name="__get.phpt" />
+                    <file role="test" name="__get-extension.phpt" />
+                    <file role="test" name="__get-userland.phpt" />
                     <file role="test" name="__isset.phpt" />
                     <file role="test" name="__set.phpt" />
                     <file role="test" name="__unset.phpt" />
