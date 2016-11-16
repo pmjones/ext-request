@@ -1,10 +1,15 @@
 #!/bin/sh
 
-set -ex
+set -e
 
 export NO_INTERACTION=1
 export REPORT_EXIT_STATUS=1
-export TEST_PHP_EXECUTABLE=`which php`
+if [ -z $TEST_PHP_EXECUTABLE ]; then
+	export TEST_PHP_EXECUTABLE=`which php`
+fi
+#if [ -z $TEST_PHP_CGI_EXECUTABLE ]; then
+#	export TEST_PHP_CGI_EXECUTABLE=`which php-cgi`
+#fi
 
 case $1 in
 coverage)
@@ -28,13 +33,26 @@ valgrind)
     make clean all
     make test TEST_PHP_ARGS=-m
     ;;
+after_failure)
+    for i in `find tests -name "*.out" 2>/dev/null`; do
+        echo "-- START ${i}";
+        cat $i;
+        printf "\n";
+        echo "-- END";
+    done
+    for i in `find tests -name "*.mem" 2>/dev/null`; do
+        echo "-- START ${i}";
+        cat $i;
+        printf "\n";
+        echo "-- END";
+    done
+    ;;
 userland)
     phpize
-    ./configure
-    make clean all
     $TEST_PHP_EXECUTABLE run-tests.php -d auto_prepend_file=`pwd`/userland/tests/prepend.php -n ./tests/
     ;;
 *)
     $TEST_PHP_EXECUTABLE run-tests.php -d auto_prepend_file=`pwd`/userland/tests/prepend.php -n ./tests/ $@
     ;;
 esac
+

@@ -10,21 +10,18 @@ before_script:
     - chmod +x /usr/local/bin/phpunit
 
 after_script:
-    - for i in `find tests -name "*.out" 2>/dev/null`; do echo "-- START ${i}"; cat $i; echo "-- END"; done
-    - for i in `find tests -name "*.mem" 2>/dev/null`; do echo "-- START ${i}"; cat $i; echo "-- END"; done
+    - ./run-tests.sh after_failure
 
 test:7.0-nts:
     image: php:7.0
     script:
-        - phpunit userland
         - ./run-tests.sh userland
         - ./run-tests.sh coverage
         - ./run-tests.sh valgrind
 
 test:7.0-zts:
-    image: php:7.0-zts
+    image: jbboehr/php-cgi:7.0-zts
     script:
-        - phpunit userland
         - ./run-tests.sh userland
         - ./run-tests.sh coverage
         - ./run-tests.sh valgrind
@@ -32,15 +29,19 @@ test:7.0-zts:
 test:7.1-nts:
     image: php:7.0
     script:
-        - phpunit userland
         - ./run-tests.sh userland
         - ./run-tests.sh coverage
         - ./run-tests.sh valgrind
 
 test:7.1-zts:
-    image: php:7.0-zts
+    image: jbboehr/php-cgi:7.0-zts
     script:
-        - phpunit userland
         - ./run-tests.sh userland
         - ./run-tests.sh coverage
         - ./run-tests.sh valgrind
+
+test:5.6:
+    image: jbboehr/php-cgi:5.6-zts
+    script:
+        - ./run-tests.sh userland
+
