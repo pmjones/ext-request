@@ -9,3 +9,6 @@ cp -r ./userland/tests/* $1/tests/
 
 # copy test runner
 cp ./run-tests.php $1
+
+# copy license
+cp ./LICENSE.md $1
