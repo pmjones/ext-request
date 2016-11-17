@@ -1,0 +1,9 @@
+// vim:ft=javascript
+
+ARG_ENABLE("request", "enable request support", "no");
+
+if (PHP_REQUEST != "no") {
+	EXTENSION("request", "php_request.c parsers.c serverresponse.c serverrequest.c");
+	AC_DEFINE("HAVE_REQUEST", 1, "Have Request Support");
+}
+
