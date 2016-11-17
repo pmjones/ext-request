@@ -30,7 +30,7 @@ This extension defines two classes in the global namespace:
   related PHP functions, with some additional convenience methods, and self-
   sending capability.
 
-Documentation: https://gitlab.com/pmjones/phprequest
+Documentation: https://gitlab.com/pmjones/ext-request
 ]]></description>
     <lead>
         <name>John Boehr</name>
