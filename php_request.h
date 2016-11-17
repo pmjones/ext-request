@@ -3,7 +3,7 @@
 #define PHP_REQUEST_H
 
 #define PHP_REQUEST_NAME "request"
-#define PHP_REQUEST_VERSION "0.0.0"
+#define PHP_REQUEST_VERSION "1.0.0a1"
 
 extern zend_module_entry request_module_entry;
 #define phpext_request_ptr &request_module_entry
