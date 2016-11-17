@@ -15,7 +15,7 @@
     <channel>pecl.php.net</channel>
     <summary>Provides server-side request and response objects.</summary>
     <description><![CDATA[
-This extension provides server-side request and response objects for PHP.
+This extension provides server-side request and response objects for PHP 7.
 These are *not* HTTP message objects proper. They are more like wrappers
 for existing global PHP variables and functions, with some limited
 additional convenience functionality.
@@ -31,6 +31,9 @@ This extension defines two classes in the global namespace:
   sending capability.
 
 Documentation: https://gitlab.com/pmjones/ext-request
+
+A PHP 5 userland implementation that tracks this extension is available at
+https://packagist.org/packages/pmjones/request .
 ]]></description>
     <lead>
         <name>John Boehr</name>
