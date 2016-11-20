@@ -99,6 +99,17 @@ static zend_bool server_request_detect_method(zval *return_value, zval *server)
     zend_bool xhr = 0;
     zend_string *method;
 
+    // determine xhr value from X-Requested-With header
+    zval *xreqwith_val;
+    zend_string *xreqwith_str;
+    xreqwith_val = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_X_REQUESTED_WITH"));
+    if( xreqwith_val && Z_TYPE_P(xreqwith_val) == IS_STRING ) {
+        xreqwith_str = Z_STR_P(xreqwith_val);
+        if( zend_string_equals_literal_ci(xreqwith_str, "XmlHttpRequest") ) {
+            xhr = 1;
+        }
+    }
+
     // determine method from request
     val = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("REQUEST_METHOD"));
     if( !val || Z_TYPE_P(val) != IS_STRING ) {
@@ -111,7 +122,6 @@ static zend_bool server_request_detect_method(zval *return_value, zval *server)
         val = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_X_HTTP_METHOD_OVERRIDE"));
         if( val && Z_TYPE_P(val) == IS_STRING ) {
             method = Z_STR_P(val);
-            xhr = 1;
         }
     }
 
