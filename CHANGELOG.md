@@ -17,4 +17,5 @@ Initial release.
 
 * * *
 
+[1.0.0a2]: https://gitlab.com/pmjones/ext-request/tags/1.0.0a2
 [1.0.0a1]: https://gitlab.com/pmjones/ext-request/tags/1.0.0a1
