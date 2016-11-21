@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- Fixed issue #9 so that ServerRequest::$xhr is computer correctly.
+- Fixed issue #9 so that ServerRequest::$xhr is computed correctly.
 
 - Updated docs
 
