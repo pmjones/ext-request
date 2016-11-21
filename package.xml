@@ -47,10 +47,10 @@ https://packagist.org/packages/pmjones/request .
         <email>pmjones@php.net</email>
         <active>yes</active>
     </lead>
-    <date>2016-11-17</date>
+    <date>2016-11-21</date>
     <version>
-        <release>1.0.0a1</release>
-        <api>1.0.0a1</api>
+        <release>1.0.0a2</release>
+        <api>1.0.0a2</api>
     </version>
     <stability>
         <release>alpha</release>
