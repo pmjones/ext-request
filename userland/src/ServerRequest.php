@@ -108,6 +108,9 @@ class ServerRequest
         $this->setAuth();
         $this->setContent();
         $this->setUploads();
+
+        $this->xhr = isset($this->server['HTTP_X_REQUESTED_WITH'])
+            && strtolower($this->server['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
     }
 
     protected function importGlobal($global, $descr)
@@ -157,7 +160,6 @@ class ServerRequest
 
         if ($this->method == 'POST' && isset($this->server['HTTP_X_HTTP_METHOD_OVERRIDE'])) {
             $this->method = strtoupper($this->server['HTTP_X_HTTP_METHOD_OVERRIDE']);
-            $this->xhr = true;
         }
     }
 
