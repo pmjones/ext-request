@@ -231,7 +231,7 @@ class ServerRequest
             }
             list($key, $val) = explode('=', $part);
             $key = strtolower(trim($key));
-            $val = trim($val, '\t\n\r\0\x0B\"\''); // spaces and quotes
+            $val = trim($val, '\t\n\r\v\"\''); // spaces and quotes
             $forward[$key] = $val;
         }
         return $forward;

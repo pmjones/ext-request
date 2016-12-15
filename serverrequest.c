@@ -22,6 +22,8 @@
 extern void server_request_parse_accept(zval *return_value, const unsigned char *str, size_t len);
 extern void server_request_parse_content_type(zval *return_value, const unsigned char *str, size_t len);
 extern void server_request_parse_digest_auth(zval *return_value, const unsigned char *str, size_t len);
+extern void server_request_parse_x_forwarded_for(zval *return_value, const unsigned char *str, size_t len);
+extern void server_request_parse_x_forwarded(zval *return_value, const unsigned char *str, size_t len);
 extern void server_request_normalize_header_name(char *key, size_t key_length);
 
 zend_class_entry *ServerRequest_ce_ptr;
@@ -607,6 +609,42 @@ static inline void server_request_copy_global(
 }
 #define server_request_copy_global_lit(obj, obj_key, glob, glob_key) server_request_copy_global(obj, ZEND_STRL(obj_key), glob, ZEND_STRL(glob_key))
 
+static inline void server_request_set_forwarded(zval *object, zval *server)
+{
+    zval forwardedFor;
+    zval forwardedHost;
+    zval forwardedProto;
+    zval forwarded;
+    zval *tmp;
+    zend_string *tmp_str;
+
+    if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_X_FORWARDED_FOR"))) ) {
+        array_init(&forwardedFor);
+        server_request_parse_x_forwarded_for(&forwardedFor, Z_STRVAL_P(tmp), Z_STRLEN_P(tmp));
+        zend_update_property(ServerRequest_ce_ptr, object, ZEND_STRL("forwardedFor"), &forwardedFor);
+    }
+
+    if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_X_FORWARDED_HOST"))) ) {
+        convert_to_string(tmp);
+        tmp_str = php_trim(Z_STR_P(tmp), ZEND_STRL(" \t\r\n\v"), 3);
+        ZVAL_STR(&forwardedHost, tmp_str);
+        zend_update_property(ServerRequest_ce_ptr, object, ZEND_STRL("forwardedHost"), &forwardedHost);
+    }
+
+    if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_X_FORWARDED_PROTO"))) ) {
+        convert_to_string(tmp);
+        tmp_str = php_trim(Z_STR_P(tmp), ZEND_STRL(" \t\r\n\v"), 3);
+        ZVAL_STR(&forwardedProto, tmp_str);
+        zend_update_property(ServerRequest_ce_ptr, object, ZEND_STRL("forwardedProto"), &forwardedProto);
+    }
+
+    if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_FORWARDED"))) ) {
+        array_init(&forwarded);
+        server_request_parse_forwarded(&forwarded, Z_STRVAL_P(tmp), Z_STRLEN_P(tmp));
+        zend_update_property(ServerRequest_ce_ptr, object, ZEND_STRL("forwarded"), &forwarded);
+    }
+}
+
 static inline void server_request_set_url(zval *object, zval *server)
 {
     zend_string *tmp;
@@ -843,6 +881,9 @@ PHP_METHOD(ServerRequest, __construct)
         // headers
         server_request_normalize_headers(&headers, server);
         zend_update_property(ServerRequest_ce_ptr, _this_zval, ZEND_STRL("headers"), &headers);
+
+        // forwarded
+        server_request_set_forwarded(_this_zval, server);
 
         // url
         server_request_set_url(_this_zval, server);
@@ -1279,6 +1320,14 @@ PHP_MINIT_FUNCTION(serverrequest)
     register_default_prop_handlers(ZEND_STRL("env"));
     zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("files"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("files"));
+    zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("forwarded"), ZEND_ACC_PUBLIC);
+    register_default_prop_handlers(ZEND_STRL("forwarded"));
+    zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("forwardedFor"), ZEND_ACC_PUBLIC);
+    register_default_prop_handlers(ZEND_STRL("forwardedFor"));
+    zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("forwardedHost"), ZEND_ACC_PUBLIC);
+    register_default_prop_handlers(ZEND_STRL("forwardedHost"));
+    zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("forwardedProto"), ZEND_ACC_PUBLIC);
+    register_default_prop_handlers(ZEND_STRL("forwardedProto"));
     zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("get"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("get"));
     zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("headers"), ZEND_ACC_PUBLIC);

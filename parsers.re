@@ -435,3 +435,122 @@ void server_request_parse_digest_auth(zval *return_value, const YYCTYPE *str, si
     efree(str2);
 }
 /* }}} server_request_parse_digest_auth */
+
+/* }}} server_request_parse_x_forwarded_for */
+void server_request_parse_x_forwarded_for(zval *return_value, const YYCTYPE *str, size_t len)
+{
+    // Pad the buffer
+    YYCTYPE *str2 = emalloc(len + YYMAXFILL + 1);
+    memcpy(str2, str, len);
+    memset(str2 + len, 0, YYMAXFILL + 1);
+
+    struct scanner_input in = {
+        str2,
+        str2,
+        str2,
+        0,
+        str2 + len + YYMAXFILL
+    };
+    struct scanner_token tok;
+    struct scanner_token left;
+    struct scanner_token right;
+
+    // Parse digest auth
+    array_init(return_value);
+    for( ;; ) {
+        // Read ID
+        tok = lex(&in);
+        if( tok.type != TOKEN_ID ) {
+            break;
+        }
+
+        // Save
+        add_next_index_stringl(return_value, tok.yytext, tok.yyleng);
+
+        // Read comma
+        tok = lex(&in);
+        if( tok.type != TOKEN_COMMA ) {
+            break;
+        }
+    };
+
+    efree(str2);
+}
+/* }}} server_request_parse_x_forwarded_for */
+
+/* }}} server_request_parse_forwarded */
+static inline struct scanner_token server_request_parser_forwarded_assignment(struct scanner_input *in, zval *params)
+{
+    struct scanner_token tok;
+    struct scanner_token left;
+    struct scanner_token right;
+
+    for( ;; ) {
+        tok = lex(in);
+        if (tok.type != TOKEN_ID && tok.type != TOKEN_STRING) {
+            return tok;
+        }
+        left = tok;
+
+        tok = lex(in);
+        if (tok.type != TOKEN_EQUALS) {
+            return tok;
+        }
+
+        tok = lex(in);
+        if (tok.type != TOKEN_ID && tok.type != TOKEN_STRING) {
+            return tok;
+        }
+        right = tok;
+
+        // Save value, convert key to lowercase
+        char *key_lower = estrndup(left.yytext, left.yyleng);
+        php_strtolower(left.yytext, left.yyleng);
+        add_assoc_stringl_ex(params, left.yytext, left.yyleng, right.yytext, right.yyleng);
+        efree(key_lower);
+
+        // Check for semicolon
+        tok = lex(in);
+
+        if( tok.type == TOKEN_SEMICOLON ) {
+            continue;
+        } else {
+            return tok;
+        }
+    }
+}
+
+void server_request_parse_forwarded(zval *return_value, const YYCTYPE *str, size_t len)
+{
+    // Pad the buffer
+    YYCTYPE *str2 = emalloc(len + YYMAXFILL + 1);
+    memcpy(str2, str, len);
+    memset(str2 + len, 0, YYMAXFILL + 1);
+
+    struct scanner_input in = {
+        str2,
+        str2,
+        str2,
+        0,
+        str2 + len + YYMAXFILL
+    };
+    struct scanner_token tok;
+    struct scanner_token left;
+    struct scanner_token right;
+
+    // Parse digest auth
+    array_init(return_value);
+    for( ;; ) {
+        zval current = {0};
+        array_init(&current);
+        tok = server_request_parser_forwarded_assignment(&in, &current);
+        add_next_index_zval(return_value, &current);
+
+        if( tok.type != TOKEN_COMMA ) {
+            break;
+        }
+    };
+
+    efree(str2);
+}
+/* }}} server_request_parse_forwarded */
