@@ -78,17 +78,24 @@ These properties are read-only and cannot be modified.
 
 These properties are read-only and cannot be modified.
 
-- `$accept`: An array computed from `$_SERVER['HTTP_ACCEPT']`.
-- `$acceptCharset`: An array computed from `$_SERVER['HTTP_ACCEPT_CHARSET']`.
-- `$acceptEncoding`: An array computed from `$_SERVER['HTTP_ACCEPT_ENCODING']`.
-- `$acceptLanguage`: An array computed from `$_SERVER['HTTP_ACCEPT_LANGUAGE']`.
-- `$headers`: An array of all `HTTP_*` header keys from `$_SERVER`, plus RFC
-  3875 headers not prefixed with `HTTP_`.
+- `$accept`: An array of arrays computed from `$_SERVER['HTTP_ACCEPT']`.
+- `$acceptCharset`: An array of arrays computed from `$_SERVER['HTTP_ACCEPT_CHARSET']`.
+- `$acceptEncoding`: An array of arrays computed from `$_SERVER['HTTP_ACCEPT_ENCODING']`.
+- `$acceptLanguage`: An array of arrays computed from `$_SERVER['HTTP_ACCEPT_LANGUAGE']`.
+- `$forwarded`: An array of arrays computed from `$_SERVER['HTTP_FORWARDED']`.
+- `$forwardedFor`: An array computed from treating `$_SERVER['HTTP_X_FORWARDED_FOR']`
+  as comma-separated values.
+- `$forwardedHost`: The `$_SERVER['HTTP_X_FORWARDED_HOST']` value.
+- `$forwardedProto`: The `$_SERVER['HTTP_X_FORWARDED_PROTO']` value.
+- `$headers`: An array of key/value pairs computed from `$_SERVER` using all
+  `HTTP_*` header keys, plus RFC 3875 headers not prefixed with `HTTP_`.
 - `$method`: The `$_SERVER['REQUEST_METHOD']` value, or the
-  `$_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE']` when appropriate.
+  `$_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE']` value when appropriate.
 - `$xhr`: A boolean indicating if this is an XmlHttpRequest.
 
-Each element of the `$accept*` arrays has these sub-array keys:
+##### The `$accept*` Arrays
+
+Each element of the `$accept*` arrays is an array with these keys:
 
 ```
 'value' => The "main" value of the accept specifier
@@ -96,10 +103,24 @@ Each element of the `$accept*` arrays has these sub-array keys:
 'params' => A key-value array of all other parameters
 ```
 
-In addition, each `$acceptLanguage` array element has two additional sub-array
-keys: `'type'` and `'subtype'`.
+In addition, each `$acceptLanguage` array element has two additional keys:
+`'type'` and `'subtype'`.
 
 The `$accept*` array elements are sorted by highest `q` value to lowest.
+
+##### The `$forwarded` Array
+
+> Cf. the [Forwarded HTTP Extension](https://tools.ietf.org/html/rfc7239)
+
+Each element of the `$forwarded` array is an array composed of one or more of
+the following keys:
+
+```
+'by' => The interface where the request came in to the proxy server.
+'for' => Discloses information about the client that initiated the request.
+'host' =>  The original value of the Host header field.
+'proto' => The value of the used protocol type.
+```
 
 #### Content-related
 
