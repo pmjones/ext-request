@@ -19,6 +19,10 @@
  * @property-read $cookie
  * @property-read $env
  * @property-read $files
+ * @property-read $forwarded
+ * @property-read $forwardedFor
+ * @property-read $forwardedHost
+ * @property-read $forwardedProto
  * @property-read $get
  * @property-read $headers
  * @property-read $input
@@ -49,6 +53,10 @@ class ServerRequest
     private $cookie = [];
     private $env = [];
     private $files = [];
+    private $forwarded = [];
+    private $forwardedFor = [];
+    private $forwardedHost;
+    private $forwardedProto;
     private $get = [];
     private $headers = [];
     private $input;
@@ -103,6 +111,7 @@ class ServerRequest
 
         $this->setMethod();
         $this->setHeaders();
+        $this->setForwarded();
         $this->setUrl();
         $this->setAccepts();
         $this->setAuth();
@@ -182,6 +191,50 @@ class ServerRequest
         if (isset($this->server['CONTENT_TYPE'])) {
             $this->headers['content-type'] = $this->server['CONTENT_TYPE'];
         }
+    }
+
+    protected function setForwarded()
+    {
+        if (isset($this->headers['x-forwarded-for'])) {
+            $ips = explode(',', $this->headers['x-forwarded-for']);
+            foreach ($ips as $ip) {
+                $this->forwardedFor[] = trim($ip);
+            }
+        }
+
+        if (isset($this->headers['x-forwarded-host'])) {
+            $this->forwardedHost = trim($this->headers['x-forwarded-host']);
+        }
+
+        if (isset($this->headers['x-forwarded-proto'])) {
+            $this->forwardedProto = trim($this->headers['x-forwarded-proto']);
+        }
+
+        if (! isset($this->headers['forwarded'])) {
+            return;
+        }
+
+        $forwards = explode(',', $this->headers['forwarded']);
+        foreach ($forwards as $forward) {
+            $this->forwarded[] = $this->parseForward($forward);
+        }
+    }
+
+    protected function parseForward($string)
+    {
+        $forward = [];
+        $parts = explode(';', $string);
+        foreach ($parts as $part) {
+            if (! strpos($part, '=')) {
+                // malformed
+                continue;
+            }
+            list($key, $val) = explode('=', $part);
+            $key = strtolower(trim($key));
+            $val = trim($val, '\t\n\r\v\"\''); // spaces and quotes
+            $forward[$key] = $val;
+        }
+        return $forward;
     }
 
     protected function setUrl() // : void
