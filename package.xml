@@ -47,18 +47,24 @@ https://packagist.org/packages/pmjones/request .
         <email>pmjones@php.net</email>
         <active>yes</active>
     </lead>
-    <date>2016-11-21</date>
+    <date>2016-12-18</date>
     <version>
-        <release>1.0.0a2</release>
-        <api>1.0.0a2</api>
+        <release>1.0.0b1</release>
+        <api>1.0.0b1</api>
     </version>
     <stability>
-        <release>alpha</release>
-        <api>alpha</api>
+        <release>beta</release>
+        <api>beta</api>
     </stability>
     <license uri="https://opensource.org/licenses/MIT">MIT</license>
     <notes><![CDATA[
-Please see CHANGELOG.md for release notes.
+Added:
+
+- ServerRequest::$forwarded property, computed from
+  $_SERVER['HTTP_FORWARDED']
+
+- ServerRequest::$forwarded(For|Host|Proto), computed from
+  $_SERVER['HTTP_X_FORWARDED(FOR|HOST|PROTO)']
 ]]></notes>
     <contents>
         <dir name="/">
@@ -100,6 +106,7 @@ Please see CHANGELOG.md for release notes.
                     <file role="test" name="cookie.phpt" />
                     <file role="test" name="env.phpt" />
                     <file role="test" name="files.phpt" />
+                    <file role="test" name="forward.phpt" />
                     <file role="test" name="get.phpt" />
                     <file role="test" name="headers.phpt" />
                     <file role="test" name="inheritance.phpt" />
