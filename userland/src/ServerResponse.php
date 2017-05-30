@@ -11,6 +11,7 @@ class ServerResponse
     protected $headers = [];
     protected $cookies = [];
     protected $content;
+    protected $callback;
 
     public function getVersion() // : string
     {
