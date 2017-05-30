@@ -240,15 +240,44 @@ class ServerResponse
         return implode(';', $semicsv);
     }
 
+    // the $callback should have the signature
+    // `function (ServerResponse $response)` -- returns are ignored.
+    public function setHeaderCallback($callback) // : void
+    {
+        if (empty($callback)) {
+            $this->callback = null;
+            return true;
+        }
+
+        if (! is_callable($callback)) {
+            return false;
+        }
+
+        $this->callback = $callback;
+        return true;
+    }
+
+    public function getHeaderCallback($callback) // : callable | null
+    {
+        return $this->callback;
+    }
 
     // if headers_sent() then fail?
     public function send() // : void
     {
         // if headers_sent() then fail?
+        $this->runHeaderCallback();
         $this->sendStatus();
         $this->sendHeaders();
         $this->sendCookies();
         $this->sendContent();
+    }
+
+    protected function runHeaderCallback() // : void
+    {
+        if ($this->callback) {
+            call_user_func($this->callback, $this);
+        }
     }
 
     protected function sendStatus() // : void
