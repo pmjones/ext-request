@@ -241,6 +241,8 @@ class ServerResponse
         return implode(';', $semicsv);
     }
 
+    // header_register_callback($callback)
+    //
     // the $callback should have the signature
     // `function (ServerResponse $response)` -- returns are ignored.
     public function setHeaderCallback($callback) // : void
