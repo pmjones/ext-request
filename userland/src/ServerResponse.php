@@ -260,7 +260,7 @@ class ServerResponse
         return true;
     }
 
-    public function getHeaderCallback($callback) // : callable | null
+    public function getHeaderCallback() // : callable | null
     {
         return $this->callback;
     }
