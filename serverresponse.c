@@ -89,6 +89,13 @@ ZEND_BEGIN_ARG_INFO_EX(AI(setContentDownload), 0, 0, 2)
     ZEND_ARG_TYPE_INFO(0, params, IS_ARRAY, 0)
 ZEND_END_ARG_INFO()
 
+ZEND_BEGIN_ARG_INFO_EX(AI(setHeaderCallback), 0, 0, 1)
+    ZEND_ARG_INFO(0, callback)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(AI(getHeaderCallback), 0, 0, 0)
+ZEND_END_ARG_INFO()
+
 REQUEST_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(AI(date), 0, 1, IS_STRING, 0)
     ZEND_ARG_INFO(0, date)
 ZEND_END_ARG_INFO()
@@ -699,6 +706,45 @@ PHP_METHOD(ServerResponse, setContentDownload)
 }
 /* }}} ServerResponse::setContentDownload */
 
+/* {{{ proto void ServerResponse::setHeaderCallback(callable $callback) */
+PHP_METHOD(ServerResponse, setHeaderCallback)
+{
+    zval *callback_func;
+    zval *_this_zval = getThis();
+
+    ZEND_PARSE_PARAMETERS_START(1, 1)
+            Z_PARAM_ZVAL(callback_func)
+    ZEND_PARSE_PARAMETERS_END();
+
+    if( Z_TYPE_P(callback_func) == IS_NULL ) {
+        // do nothing
+    } else if( !zend_is_callable(callback_func, 0, NULL) ) {
+        RETURN_FALSE;
+    }
+
+    // Update content
+    zend_update_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("callback"), callback_func);
+
+    RETURN_TRUE;
+}
+/* }}} ServerResponse::setHeaderCallback */
+
+/* {{{ proto callback ServerResponse::getHeaderCallback() */
+PHP_METHOD(ServerResponse, getHeaderCallback)
+{
+    zval *_this_zval = getThis();
+    zval *retval;
+
+    ZEND_PARSE_PARAMETERS_START(0, 0)
+    ZEND_PARSE_PARAMETERS_END();
+
+    retval = zend_read_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("callback"), 0, NULL);
+    if( retval ) {
+        RETVAL_ZVAL(retval, 1, 0);
+    }
+}
+/* }}} ServerResponse::getHeaderCallback */
+
 /* {{{ proto string ServerResponse::date(mixed $date) */
 PHP_METHOD(ServerResponse, date)
 {
@@ -748,6 +794,7 @@ PHP_METHOD(ServerResponse, send)
     ZEND_PARSE_PARAMETERS_START(0, 0)
     ZEND_PARSE_PARAMETERS_END();
 
+    zend_call_method_with_0_params(_this_zval, NULL, NULL, "runHeaderCallback", &rv);
     zend_call_method_with_0_params(_this_zval, NULL, NULL, "sendStatus", &rv);
     zend_call_method_with_0_params(_this_zval, NULL, NULL, "sendHeaders", &rv);
     zend_call_method_with_0_params(_this_zval, NULL, NULL, "sendCookies", &rv);
@@ -756,6 +803,53 @@ PHP_METHOD(ServerResponse, send)
     zval_ptr_dtor(&rv);
 }
 /* }}} ServerResponse::send */
+
+/* {{{ proto void ServerResponse::runHeaderCallback() */
+PHP_METHOD(ServerResponse, runHeaderCallback)
+{
+    zval *_this_zval = getThis();
+    zval *tmp;
+    zend_fcall_info fci = empty_fcall_info;
+    zend_fcall_info_cache fcic = empty_fcall_info_cache;
+    int error;
+    char *callback_error = NULL;
+    zval retval;
+    zval params[1] = {{0}};
+
+    ZEND_PARSE_PARAMETERS_START(0, 0)
+    ZEND_PARSE_PARAMETERS_END();
+
+    // Make status
+    tmp = zend_read_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("callback"), 0, NULL);
+
+    if( !tmp || Z_TYPE_P(tmp) == IS_NULL ) {
+        return;
+    }
+
+    if( zend_fcall_info_init(tmp, 0, &fci, &fcic, NULL, &callback_error) == SUCCESS ) {
+        ZVAL_ZVAL(&params[0], _this_zval, 1, 0);
+        fci.retval = &retval;
+        fci.params = &params;
+        fci.param_count = 1;
+
+        error = zend_call_function(&fci, &fcic);
+        if (error == FAILURE) {
+            goto callback_failed;
+        } else {
+            zval_ptr_dtor(&retval);
+        }
+
+        zval_ptr_dtor(&params[0]);
+    } else {
+        callback_failed:
+        php_error_docref(NULL, E_WARNING, "Could not call the header callback");
+    }
+
+    if (callback_error) {
+        efree(callback_error);
+    }
+}
+/* }}} ServerResponse::runHeaderCallback */
 
 /* {{{ proto void ServerResponse::sendStatus() */
 PHP_METHOD(ServerResponse, sendStatus)
@@ -992,8 +1086,11 @@ static zend_function_entry ServerResponse_methods[] = {
     PHP_ME(ServerResponse, setContent, AI(setContent), ZEND_ACC_PUBLIC)
     PHP_ME(ServerResponse, setContentJson, AI(setContentJson), ZEND_ACC_PUBLIC)
     PHP_ME(ServerResponse, setContentDownload, AI(setContentDownload), ZEND_ACC_PUBLIC)
+    PHP_ME(ServerResponse, setHeaderCallback, AI(setHeaderCallback), ZEND_ACC_PUBLIC)
+    PHP_ME(ServerResponse, getHeaderCallback, AI(getHeaderCallback), ZEND_ACC_PUBLIC)
     PHP_ME(ServerResponse, date, AI(date), ZEND_ACC_PUBLIC)
     PHP_ME(ServerResponse, send, AI(send), ZEND_ACC_PUBLIC)
+    PHP_ME(ServerResponse, runHeaderCallback, AI(send), ZEND_ACC_PROTECTED)
     PHP_ME(ServerResponse, sendStatus, AI(send), ZEND_ACC_PROTECTED)
     PHP_ME(ServerResponse, sendHeaders, AI(send), ZEND_ACC_PROTECTED)
     PHP_ME(ServerResponse, sendCookies, AI(send), ZEND_ACC_PROTECTED)
@@ -1015,6 +1112,7 @@ PHP_MINIT_FUNCTION(serverresponse)
     zend_declare_property_null(ServerResponse_ce_ptr, ZEND_STRL("headers"), ZEND_ACC_PROTECTED);
     zend_declare_property_null(ServerResponse_ce_ptr, ZEND_STRL("cookies"), ZEND_ACC_PROTECTED);
     zend_declare_property_null(ServerResponse_ce_ptr, ZEND_STRL("content"), ZEND_ACC_PROTECTED);
+    zend_declare_property_null(ServerResponse_ce_ptr, ZEND_STRL("callback"), ZEND_ACC_PROTECTED);
 
     return SUCCESS;
 }
