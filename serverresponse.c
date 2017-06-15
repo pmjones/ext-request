@@ -34,14 +34,14 @@ ZEND_END_ARG_INFO()
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(AI(getVersion), 0, 0, IS_STRING, NULL, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(AI(setVersion), 0, 1, IS_NULL, NULL, 0)
+ZEND_BEGIN_ARG_INFO_EX(AI(setVersion), 0, 0, 1)
     ZEND_ARG_TYPE_INFO(0, version, IS_STRING, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(AI(getStatus), 0, 0, IS_LONG, NULL, 0)
+ZEND_BEGIN_ARG_INFO_EX(AI(getStatus), 0, 0, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(AI(setStatus), 0, 1, IS_NULL, NULL, 0)
+ZEND_BEGIN_ARG_INFO_EX(AI(setStatus), 0, 0, 1)
     ZEND_ARG_TYPE_INFO(0, status, IS_LONG, 0)
 ZEND_END_ARG_INFO()
 
@@ -51,7 +51,7 @@ ZEND_END_ARG_INFO()
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(AI(getHeaders), 0, 0, IS_ARRAY, NULL, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(AI(addSetHeader), 0, 2, IS_NULL, NULL, 0)
+ZEND_BEGIN_ARG_INFO_EX(AI(addSetHeader), 0, 0, 2)
     ZEND_ARG_TYPE_INFO(0, label, IS_STRING, 0)
     ZEND_ARG_INFO(0, value)
 ZEND_END_ARG_INFO()
@@ -59,7 +59,7 @@ ZEND_END_ARG_INFO()
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(AI(getCookies), 0, 0, IS_ARRAY, NULL, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(AI(setCookie), 0, 1, IS_NULL, NULL, 0)
+ZEND_BEGIN_ARG_INFO_EX(AI(setCookie), 0, 0, 1)
     ZEND_ARG_INFO(0, name)
     ZEND_ARG_TYPE_INFO(0, value, IS_STRING, 0)
     ZEND_ARG_TYPE_INFO(0, expires, IS_LONG, 0)
@@ -72,18 +72,18 @@ ZEND_END_ARG_INFO()
 ZEND_BEGIN_ARG_INFO_EX(AI(getContent), 0, 0, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(AI(setContent), 0, 1, IS_NULL, NULL, 0)
+ZEND_BEGIN_ARG_INFO_EX(AI(setContent), 0, 0, 1)
     ZEND_ARG_INFO(0, content)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(AI(setContentJson), 0, 1, IS_NULL, NULL, 0)
+ZEND_BEGIN_ARG_INFO_EX(AI(setContentJson), 0, 0, 1)
     ZEND_ARG_INFO(0, content)
     ZEND_ARG_TYPE_INFO(0, options, IS_LONG, 0)
     ZEND_ARG_TYPE_INFO(0, depth, IS_LONG, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(AI(setContentDownload), 0, 1, IS_NULL, NULL, 0)
-    ZEND_ARG_TYPE_INFO(0, fh, IS_RESOURCE, 0)
+ZEND_BEGIN_ARG_INFO_EX(AI(setContentDownload), 0, 0, 2)
+    ZEND_ARG_INFO(0, fh)
     ZEND_ARG_TYPE_INFO(0, name, IS_STRING, 0)
     ZEND_ARG_TYPE_INFO(0, disposition, IS_STRING, 0)
     ZEND_ARG_TYPE_INFO(0, params, IS_ARRAY, 0)
@@ -93,7 +93,7 @@ ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(AI(date), 0, 1, IS_STRING, NULL, 0)
     ZEND_ARG_INFO(0, date)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(AI(send), 0, 0, IS_NULL, NULL, 0)
+ZEND_BEGIN_ARG_INFO_EX(AI(send), 0, 0, 0)
 ZEND_END_ARG_INFO()
 /* }}} Argument Info */
 
@@ -648,12 +648,18 @@ PHP_METHOD(ServerResponse, setContentDownload)
     smart_str buf2 = {0};
 
     ZEND_PARSE_PARAMETERS_START(2, 4)
-        Z_PARAM_RESOURCE(zstream)
+        Z_PARAM_ZVAL(zstream)
         Z_PARAM_STR(name)
         Z_PARAM_OPTIONAL
         Z_PARAM_STR(disposition)
         Z_PARAM_ARRAY(params)
     ZEND_PARSE_PARAMETERS_END();
+
+    // Check type of resource parameter
+    if( Z_TYPE_P(zstream) != IS_RESOURCE ) {
+        zend_throw_exception_ex(spl_ce_InvalidArgumentException, 0, "Argument 1 passed to ServerResponse::setContentDownload() must be of the type resource, string given");
+        return;
+    }
 
     // Initialize params
     if( !params || Z_TYPE_P(params) != IS_ARRAY ) {

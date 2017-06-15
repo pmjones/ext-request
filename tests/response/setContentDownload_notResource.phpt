@@ -14,11 +14,7 @@ json
 $response = new ServerResponse();
 try {
     $response->setContentDownload('not-a-resource', 'disposition');
-} catch( TypeError $e ) {
-    // php 7 (extension)
-    var_dump($e->getMessage());
-} catch( RuntimeException $e ) {
-    // php 5 (userland)
+} catch( InvalidArgumentException $e ) {
     var_dump($e->getMessage());
 }
 --EXPECT--
