@@ -176,7 +176,7 @@ class ServerResponse
     {
         if (! is_resource($fh)) {
             $class = get_class($this);
-            throw new RuntimeException("Argument 1 passed to {$class}::setContentDownload() must be of the type resource, string given");
+            throw new InvalidArgumentException("Argument 1 passed to {$class}::setContentDownload() must be of the type resource, string given");
         }
 
         $params['filename'] = '"' . rawurlencode($name) . '"';

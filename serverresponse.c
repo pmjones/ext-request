@@ -648,12 +648,18 @@ PHP_METHOD(ServerResponse, setContentDownload)
     smart_str buf2 = {0};
 
     ZEND_PARSE_PARAMETERS_START(2, 4)
-        Z_PARAM_RESOURCE(zstream)
+        Z_PARAM_ZVAL(zstream)
         Z_PARAM_STR(name)
         Z_PARAM_OPTIONAL
         Z_PARAM_STR(disposition)
         Z_PARAM_ARRAY(params)
     ZEND_PARSE_PARAMETERS_END();
+
+    // Check type of resource parameter
+    if( Z_TYPE_P(zstream) != IS_RESOURCE ) {
+        zend_throw_exception_ex(spl_ce_InvalidArgumentException, 0, "Argument 1 passed to ServerResponse::setContentDownload() must be of the type resource, string given");
+        return;
+    }
 
     // Initialize params
     if( !params || Z_TYPE_P(params) != IS_ARRAY ) {
