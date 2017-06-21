@@ -11,7 +11,7 @@ class ServerResponse
     protected $headers = [];
     protected $cookies = [];
     protected $content;
-    protected $callback;
+    protected $callbacks = [];
 
     public function getVersion() // : string
     {
@@ -241,45 +241,43 @@ class ServerResponse
         return implode(';', $semicsv);
     }
 
-    // header_register_callback($callback)
-    //
-    // the $callback should have the signature
-    // `function (ServerResponse $response)` -- returns are ignored.
-    public function setHeaderCallback($callback) // : void
+    public function addHeaderCallback(callable $callback) // : void
     {
-        if (empty($callback)) {
-            $this->callback = null;
-            return true;
-        }
-
-        if (! is_callable($callback)) {
-            return false;
-        }
-
-        $this->callback = $callback;
-        return true;
+        $this->callbacks[] = $callback;
     }
 
-    public function getHeaderCallback() // : callable | null
+    // header_register_callback($callback)
+    //
+    // each callback in the array should have the signature
+    // `function (ServerResponse $response)` -- returns will be ignored.
+    public function setHeaderCallbacks(array $callbacks) // : void
     {
-        return $this->callback;
+        $this->callbacks = [];
+        foreach ($callbacks as $callback) {
+            $this->addHeaderCallback($callback);
+        }
+    }
+
+    public function getHeaderCallbacks() // : array
+    {
+        return $this->callbacks;
     }
 
     // if headers_sent() then fail?
     public function send() // : void
     {
         // if headers_sent() then fail?
-        $this->runHeaderCallback();
+        $this->runHeaderCallbacks();
         $this->sendStatus();
         $this->sendHeaders();
         $this->sendCookies();
         $this->sendContent();
     }
 
-    protected function runHeaderCallback() // : void
+    protected function runHeaderCallbacks() // : void
     {
-        if ($this->callback) {
-            call_user_func($this->callback, $this);
+        foreach ($this->callbacks as $callback) {
+            call_user_func($callback, $this);
         }
     }
 
