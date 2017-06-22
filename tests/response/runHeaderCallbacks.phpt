@@ -13,7 +13,7 @@ expose_php=0
 --FILE--
 <?php
 $response = new ServerResponse();
-$response->setHeaderCallback(function($response) {
+$response->addHeaderCallback(function($response) {
     $response->setHeader('Foo', 'bar');
     $response->setHeader('Baz', 'dib');
     $response->addHeader('Baz', 'zim');
