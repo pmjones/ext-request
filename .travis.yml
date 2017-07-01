@@ -1,0 +1,30 @@
+language: php
+
+php:
+  - 5.6
+  - 7.0
+  - 7.1
+
+branches:
+  only:
+    - master
+    - travisci
+
+sudo: required
+
+dist: trusty
+
+before_install:
+  - travis_retry sudo apt-get update -y
+  - travis_retry sudo apt-get install -y lcov valgrind
+  - travis_retry gem install coveralls-lcov
+
+script:
+  - ./run-tests.sh userland
+  - sh -c "if [ '$TRAVIS_PHP_VERSION' != '5.6' ]; then ./run-tests.sh valgrind; fi"
+  - sh -c "if [ '$TRAVIS_PHP_VERSION' != '5.6' ]; then ./run-tests.sh coverage; fi"
+
+after_success: sh -c "if [ '$TRAVIS_PHP_VERSION' != '5.6' ]; then ./run-tests.sh after_success; fi"
+
+after_failure: ./run-tests.sh after_failure
+

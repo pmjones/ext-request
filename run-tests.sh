@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 set -e
 
@@ -32,6 +32,11 @@ valgrind)
     ./configure
     make clean all
     make test TEST_PHP_ARGS=-m
+    ;;
+after_success)
+    lcov --no-checksum --directory . --capture --compat-libtool --output-file coverage.info
+    lcov --remove coverage.info "/usr*" --remove coverage.info "*/.phpenv/*" --remove coverage.info "/home/travis/build/include/*" --compat-libtool --output-file coverage.info
+    coveralls-lcov coverage.info
     ;;
 after_failure)
     for i in `find tests -name "*.out" 2>/dev/null`; do
