@@ -89,6 +89,17 @@ ZEND_BEGIN_ARG_INFO_EX(AI(setContentDownload), 0, 0, 2)
     ZEND_ARG_TYPE_INFO(0, params, IS_ARRAY, 0)
 ZEND_END_ARG_INFO()
 
+ZEND_BEGIN_ARG_INFO_EX(AI(addHeaderCallback), 0, 0, 1)
+    ZEND_ARG_TYPE_INFO(0, callback, IS_CALLABLE, 0)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(AI(setHeaderCallbacks), 0, 0, 1)
+    ZEND_ARG_TYPE_INFO(0, callbacks, IS_ARRAY, 0)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(AI(getHeaderCallbacks), 0, 0, 0)
+ZEND_END_ARG_INFO()
+
 REQUEST_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(AI(date), 0, 1, IS_STRING, 0)
     ZEND_ARG_INFO(0, date)
 ZEND_END_ARG_INFO()
@@ -282,6 +293,8 @@ PHP_METHOD(ServerResponse, __construct)
     zend_update_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("headers"), &arr);
     array_init(&arr);
     zend_update_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("cookies"), &arr);
+    array_init(&arr);
+    zend_update_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("callbacks"), &arr);
 }
 /* }}} ServerResponse::getVersion */
 
@@ -699,6 +712,85 @@ PHP_METHOD(ServerResponse, setContentDownload)
 }
 /* }}} ServerResponse::setContentDownload */
 
+/* {{{ proto void ServerResponse::addHeaderCallback(callable $callback) */
+PHP_METHOD(ServerResponse, addHeaderCallback)
+{
+    zval *callback_func;
+    zval *_this_zval = getThis();
+    zval member;
+    zval *prop_ptr;
+
+    ZEND_PARSE_PARAMETERS_START(1, 1)
+        Z_PARAM_ZVAL(callback_func)
+    ZEND_PARSE_PARAMETERS_END();
+
+    if( Z_TYPE_P(callback_func) == IS_NULL || !zend_is_callable(callback_func, 0, NULL) ) {
+        RETURN_FALSE;
+    }
+
+    // Read property pointer
+    if( !Z_OBJ_HT_P(_this_zval)->get_property_ptr_ptr ) {
+        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "ServerResponse::addHeaderCallback requires get_property_ptr_ptr");
+        return;
+    }
+
+    ZVAL_STRING(&member, "callbacks");
+    prop_ptr = Z_OBJ_HT_P(_this_zval)->get_property_ptr_ptr(_this_zval, &member, BP_VAR_RW, NULL);
+    if( !prop_ptr || Z_TYPE_P(prop_ptr) != IS_ARRAY ) {
+        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "ServerResponse::$callbacks must be an array");
+        goto done;
+    }
+
+    // Append callback
+    zval tmp = {0};
+    ZVAL_ZVAL(&tmp, callback_func, 1, 0);
+    add_next_index_zval(prop_ptr, &tmp);
+
+    // Cleanup
+done:
+    zval_ptr_dtor(&member);
+}
+/* }}} ServerResponse::setHeaderCallbacks */
+
+/* {{{ proto void ServerResponse::setHeaderCallbacks(array $callbacks) */
+PHP_METHOD(ServerResponse, setHeaderCallbacks)
+{
+    zval *callbacks;
+    zval *callback;
+    zval *_this_zval = getThis();
+    zval arr;
+
+    ZEND_PARSE_PARAMETERS_START(1, 1)
+        Z_PARAM_ARRAY(callbacks)
+    ZEND_PARSE_PARAMETERS_END();
+
+    // Reset callbacks property
+    array_init(&arr);
+    zend_update_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("callbacks"), &arr);
+
+    // Forward each item to addHeaderCallback
+    ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(callbacks), callback) {
+        zend_call_method_with_1_params(_this_zval, NULL, NULL, "addHeaderCallback", NULL, callback);
+    } ZEND_HASH_FOREACH_END();
+}
+/* }}} ServerResponse::setHeaderCallbacks */
+
+/* {{{ proto callback ServerResponse::getHeaderCallbacks() */
+PHP_METHOD(ServerResponse, getHeaderCallbacks)
+{
+    zval *_this_zval = getThis();
+    zval *retval;
+
+    ZEND_PARSE_PARAMETERS_START(0, 0)
+    ZEND_PARSE_PARAMETERS_END();
+
+    retval = zend_read_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("callbacks"), 0, NULL);
+    if( retval ) {
+        RETVAL_ZVAL(retval, 1, 0);
+    }
+}
+/* }}} ServerResponse::getHeaderCallback */
+
 /* {{{ proto string ServerResponse::date(mixed $date) */
 PHP_METHOD(ServerResponse, date)
 {
@@ -748,6 +840,7 @@ PHP_METHOD(ServerResponse, send)
     ZEND_PARSE_PARAMETERS_START(0, 0)
     ZEND_PARSE_PARAMETERS_END();
 
+    zend_call_method_with_0_params(_this_zval, NULL, NULL, "runHeaderCallbacks", &rv);
     zend_call_method_with_0_params(_this_zval, NULL, NULL, "sendStatus", &rv);
     zend_call_method_with_0_params(_this_zval, NULL, NULL, "sendHeaders", &rv);
     zend_call_method_with_0_params(_this_zval, NULL, NULL, "sendCookies", &rv);
@@ -756,6 +849,58 @@ PHP_METHOD(ServerResponse, send)
     zval_ptr_dtor(&rv);
 }
 /* }}} ServerResponse::send */
+
+/* {{{ proto void ServerResponse::runHeaderCallbacks() */
+PHP_METHOD(ServerResponse, runHeaderCallbacks)
+{
+    zval *_this_zval = getThis();
+    zval *callbacks;
+    zval *callback;
+
+    ZEND_PARSE_PARAMETERS_START(0, 0)
+    ZEND_PARSE_PARAMETERS_END();
+
+    // Make status
+    callbacks = zend_read_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("callbacks"), 0, NULL);
+
+    if( !callbacks || Z_TYPE_P(callbacks) != IS_ARRAY ) {
+        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "ServerResponse::$callbacks must be an array");
+        return;
+    }
+
+    ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(callbacks), callback) {
+        int error;
+        char *callback_error = NULL;
+        zval retval = {0};
+        zval params[1] = {{0}};
+        zend_fcall_info fci = empty_fcall_info;
+        zend_fcall_info_cache fcic = empty_fcall_info_cache;
+
+        if( zend_fcall_info_init(callback, 0, &fci, &fcic, NULL, &callback_error) == SUCCESS ) {
+            ZVAL_ZVAL(&params[0], _this_zval, 1, 0);
+            fci.retval = &retval;
+            fci.params = &params;
+            fci.param_count = 1;
+
+            error = zend_call_function(&fci, &fcic);
+            if (error == FAILURE) {
+                goto callback_failed;
+            } else {
+                zval_ptr_dtor(&retval);
+            }
+
+            zval_ptr_dtor(&params[0]);
+        } else {
+            callback_failed:
+            php_error_docref(NULL, E_WARNING, "Could not call the header callback");
+        }
+
+        if (callback_error) {
+            efree(callback_error);
+        }
+    } ZEND_HASH_FOREACH_END();
+}
+/* }}} ServerResponse::runHeaderCallbacks */
 
 /* {{{ proto void ServerResponse::sendStatus() */
 PHP_METHOD(ServerResponse, sendStatus)
@@ -992,8 +1137,12 @@ static zend_function_entry ServerResponse_methods[] = {
     PHP_ME(ServerResponse, setContent, AI(setContent), ZEND_ACC_PUBLIC)
     PHP_ME(ServerResponse, setContentJson, AI(setContentJson), ZEND_ACC_PUBLIC)
     PHP_ME(ServerResponse, setContentDownload, AI(setContentDownload), ZEND_ACC_PUBLIC)
+    PHP_ME(ServerResponse, addHeaderCallback, AI(addHeaderCallback), ZEND_ACC_PUBLIC)
+    PHP_ME(ServerResponse, setHeaderCallbacks, AI(setHeaderCallbacks), ZEND_ACC_PUBLIC)
+    PHP_ME(ServerResponse, getHeaderCallbacks, AI(getHeaderCallbacks), ZEND_ACC_PUBLIC)
     PHP_ME(ServerResponse, date, AI(date), ZEND_ACC_PUBLIC)
     PHP_ME(ServerResponse, send, AI(send), ZEND_ACC_PUBLIC)
+    PHP_ME(ServerResponse, runHeaderCallbacks, AI(send), ZEND_ACC_PROTECTED)
     PHP_ME(ServerResponse, sendStatus, AI(send), ZEND_ACC_PROTECTED)
     PHP_ME(ServerResponse, sendHeaders, AI(send), ZEND_ACC_PROTECTED)
     PHP_ME(ServerResponse, sendCookies, AI(send), ZEND_ACC_PROTECTED)
@@ -1015,6 +1164,7 @@ PHP_MINIT_FUNCTION(serverresponse)
     zend_declare_property_null(ServerResponse_ce_ptr, ZEND_STRL("headers"), ZEND_ACC_PROTECTED);
     zend_declare_property_null(ServerResponse_ce_ptr, ZEND_STRL("cookies"), ZEND_ACC_PROTECTED);
     zend_declare_property_null(ServerResponse_ce_ptr, ZEND_STRL("content"), ZEND_ACC_PROTECTED);
+    zend_declare_property_null(ServerResponse_ce_ptr, ZEND_STRL("callbacks"), ZEND_ACC_PROTECTED);
 
     return SUCCESS;
 }
