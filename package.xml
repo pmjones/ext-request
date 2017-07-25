@@ -47,7 +47,7 @@ https://packagist.org/packages/pmjones/request .
         <email>pmjones@php.net</email>
         <active>yes</active>
     </lead>
-    <date>2015-07-25</date>
+    <date>2017-07-25</date>
     <version>
         <release>1.0.0b2</release>
         <api>1.0.0b2</api>
