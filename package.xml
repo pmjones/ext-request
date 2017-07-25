@@ -30,7 +30,7 @@ This extension defines two classes in the global namespace:
   related PHP functions, with some additional convenience methods, and self-
   sending capability.
 
-Documentation: https://gitlab.com/pmjones/ext-request
+Documentation: https://github.com/pmjones/ext-request
 
 A PHP 5 userland implementation that tracks this extension is available at
 https://packagist.org/packages/pmjones/request .
@@ -47,10 +47,10 @@ https://packagist.org/packages/pmjones/request .
         <email>pmjones@php.net</email>
         <active>yes</active>
     </lead>
-    <date>2016-12-18</date>
+    <date>2015-07-25</date>
     <version>
-        <release>1.0.0b1</release>
-        <api>1.0.0b1</api>
+        <release>1.0.0b2</release>
+        <api>1.0.0b2</api>
     </version>
     <stability>
         <release>beta</release>
@@ -60,11 +60,10 @@ https://packagist.org/packages/pmjones/request .
     <notes><![CDATA[
 Added:
 
-- ServerRequest::$forwarded property, computed from
-  $_SERVER['HTTP_FORWARDED']
+- Support for multiple header callbacks, a la header_register_callback, with
+  new methods ServerResponse::setHeaderCallbacks(), addHeaderCallback(), and
+  getHeaderCallbacks().
 
-- ServerRequest::$forwarded(For|Host|Proto), computed from
-  $_SERVER['HTTP_X_FORWARDED(FOR|HOST|PROTO)']
 ]]></notes>
     <contents>
         <dir name="/">
@@ -81,6 +80,7 @@ Added:
             <file role="src" name="serverrequest.c" />
             <file role="src" name="serverresponse.c" />
             <dir name="tests">
+                <file role="test" name="phpinfo.phpt" />
                 <dir name="request">
                     <file role="test" name="__clone.phpt" />
                     <file role="test" name="__construct.phpt" />
@@ -129,10 +129,10 @@ Added:
                     <file role="test" name="xhr.phpt" />
                 </dir>
                 <dir name="response">
-                    <file role="test" name="addHeader_array.phpt" />
                     <file role="test" name="addHeader.phpt" />
-                    <file role="test" name="date_invalid.phpt" />
+                    <file role="test" name="addHeader_array.phpt" />
                     <file role="test" name="date.phpt" />
+                    <file role="test" name="date_invalid.phpt" />
                     <file role="test" name="getStatus.phpt" />
                     <file role="test" name="getVersion.phpt" />
                     <file role="test" name="sendContent_callable.phpt" />
@@ -143,15 +143,18 @@ Added:
                     <file role="test" name="sendHeaders.phpt" />
                     <file role="test" name="sendStatus.phpt" />
                     <file role="test" name="setContent.phpt" />
-                    <file role="test" name="setContentDownload_notResource.phpt" />
                     <file role="test" name="setContentDownload.phpt" />
-                    <file role="test" name="setContentJson_failed.phpt" />
+                    <file role="test" name="setContentDownload_notResource.phpt" />
                     <file role="test" name="setContentJson.phpt" />
+                    <file role="test" name="setContentJson_failed.phpt" />
                     <file role="test" name="setCookie.phpt" />
-                    <file role="test" name="setHeader_array.phpt" />
                     <file role="test" name="setHeader.phpt" />
+                    <file role="test" name="setHeader_array.phpt" />
                     <file role="test" name="setStatus.phpt" />
                     <file role="test" name="setVersion.phpt" />
+                    <file role="text" name="addHeaderCallback.phpt" />
+                    <file role="text" name="getHeaderCallbacks.phpt" />
+                    <file role="text" name="runHeaderCallbacks.phpt" />
                 </dir>
             </dir>
         </dir>

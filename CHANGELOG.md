@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0b2] - ???
+
+### Added
+
+- Support for multiple header callbacks, a la header_register_callback, with
+  new methods ServerResponse::setHeaderCallbacks(), addHeaderCallback(), and
+  getHeaderCallbacks().
+
+### Changed
+
+- Updated docs and tests.
 
 ## [1.0.0b1] - 2016-12-18
 
@@ -33,6 +44,7 @@ Initial release.
 
 * * *
 
+[1.0.0b2]: https://gitlab.com/pmjones/ext-request/tags/1.0.0b2
 [1.0.0b1]: https://gitlab.com/pmjones/ext-request/tags/1.0.0b1
 [1.0.0a2]: https://gitlab.com/pmjones/ext-request/tags/1.0.0a2
 [1.0.0a1]: https://gitlab.com/pmjones/ext-request/tags/1.0.0a1
