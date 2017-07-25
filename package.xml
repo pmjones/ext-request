@@ -152,9 +152,9 @@ Added:
                     <file role="test" name="setHeader_array.phpt" />
                     <file role="test" name="setStatus.phpt" />
                     <file role="test" name="setVersion.phpt" />
-                    <file role="text" name="addHeaderCallback.phpt" />
-                    <file role="text" name="getHeaderCallbacks.phpt" />
-                    <file role="text" name="runHeaderCallbacks.phpt" />
+                    <file role="test" name="addHeaderCallback.phpt" />
+                    <file role="test" name="getHeaderCallbacks.phpt" />
+                    <file role="test" name="runHeaderCallbacks.phpt" />
                 </dir>
             </dir>
         </dir>
