@@ -480,8 +480,9 @@ while HTTP/1.x has no such requirement, lower-case is also recognized as valid.
 
 #### Sending
 
-- `send()`: This sends the response version, status, headers, and cookies using
-  native PHP functions `header()`, `setcookie()`, and `setrawcookie()`. Then,
-  if the response content is a resource, it is sent with `fpassthru()`; if a
-  callable object or closure, it is invoked; otherwise, the content is `echo`ed
-  (which calls `__toString()` if the content is an object).
+- `send()`: This invokes the header callbacks, then sends the response version,
+  status, headers, and cookies using native PHP functions `header()`,
+  `setcookie()`, and `setrawcookie()`. Finally, if the response content is a
+  resource, it is sent with `fpassthru()`; if a callable object or closure, it
+  is invoked; otherwise, the content is `echo`ed (which calls `__toString()` if
+  the content is an object).
