@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.0.0b2] - ???
+## [1.0.0b2] - 2017-07-25
 
 ### Added
 
@@ -44,7 +44,7 @@ Initial release.
 
 * * *
 
-[1.0.0b2]: https://gitlab.com/pmjones/ext-request/tags/1.0.0b2
-[1.0.0b1]: https://gitlab.com/pmjones/ext-request/tags/1.0.0b1
-[1.0.0a2]: https://gitlab.com/pmjones/ext-request/tags/1.0.0a2
-[1.0.0a1]: https://gitlab.com/pmjones/ext-request/tags/1.0.0a1
+[1.0.0b2]: https://github.com/pmjones/ext-request/releases/tag/1.0.0b2
+[1.0.0b1]: https://github.com/pmjones/ext-request/releases/tag/1.0.0b1
+[1.0.0a2]: https://github.com/pmjones/ext-request/releases/tag/1.0.0a2
+[1.0.0a1]: https://github.com/pmjones/ext-request/releases/tag/1.0.0a1
