@@ -447,6 +447,18 @@ while HTTP/1.x has no such requirement, lower-case is also recognized as valid.
 
 - `getCookies()`: Returns the array of cookies to be sent.
 
+#### Header Callbacks
+
+- `setHeaderCallbacks($callbacks)`: Sets an array of callbacks to be invoked
+  just before headers are sent. It replaces any existing callbacks. This is similar to
+  [`header_register_callback()`](https://secure.php.net/header_register_callback),
+  except that *multiple* callbacks may be registered with the Response.
+
+- `addHeaderCallback($callback)`: Appends one callback to the current array of
+  header callbacks.
+
+- `getHeaderCallbacks()`: Returns the array of header callbacks.
+
 #### Content
 
 - `setContent($content)`: Sets the content of the response. This may be a
