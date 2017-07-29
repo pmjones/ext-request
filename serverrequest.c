@@ -558,10 +558,10 @@ static inline void register_prop_handlers(
     zend_object_unset_property_t unset_property
 ) {
     struct prop_handlers hnd = {0};
-    hnd.has_property = has_property ?: std_object_handlers.has_property;
-    hnd.read_property = read_property ?: std_object_handlers.read_property;
-    hnd.write_property = write_property ?: std_object_handlers.write_property;
-    hnd.unset_property = unset_property ?: std_object_handlers.unset_property;
+    hnd.has_property = has_property ? has_property : std_object_handlers.has_property;
+    hnd.read_property = read_property ? read_property : std_object_handlers.read_property;
+    hnd.write_property = write_property ? write_property : std_object_handlers.write_property;
+    hnd.unset_property = unset_property ? unset_property : std_object_handlers.unset_property;
     zend_hash_str_update_mem(&ServerRequest_prop_handlers, name, name_length, &hnd, sizeof(hnd));
 }
 static inline void register_default_prop_handlers(const char *name, size_t name_length)
