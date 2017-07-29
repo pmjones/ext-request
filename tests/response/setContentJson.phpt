@@ -7,8 +7,6 @@ ServerResponse::setContentJson
 ) {
     die('skip ');
 } ?>
---EXTENSIONS--
-json
 --FILE--
 <?php
 $response = new ServerResponse();
