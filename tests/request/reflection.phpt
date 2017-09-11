@@ -15,8 +15,7 @@ foreach(['withInput', 'withParam', 'withParams', 'withoutParam', 'withoutParams'
 }
 ?>
 Done
---EXPECTF--
-string(5) "array"
+--EXPECT--
 string(13) "ServerRequest"
 string(13) "ServerRequest"
 string(13) "ServerRequest"
