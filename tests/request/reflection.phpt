@@ -9,7 +9,7 @@ ServerRequest return type reflection
 } ?>
 --FILE--
 <?php
-foreach(['parseAccept', 'withInput', 'withParam', 'withParams', 'withoutParam', 'withoutParams', 'withUrl'] as $method) {
+foreach(['withInput', 'withParam', 'withParams', 'withoutParam', 'withoutParams', 'withUrl'] as $method) {
   $r = new ReflectionMethod("ServerRequest", $method);
   var_dump((string)$r->getReturnType());
 }
