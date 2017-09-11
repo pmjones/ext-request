@@ -1,0 +1,26 @@
+--TEST--
+ServerRequest return type reflection
+--SKIPIF--
+<?php if (
+    ! extension_loaded('request')
+    && ! getenv('TEST_USERLAND_REQUEST')
+) {
+    die('skip ');
+} ?>
+--FILE--
+<?php
+foreach(['parseAccept', 'withInput', 'withParam', 'withParams', 'withoutParam', 'withoutParams', 'withUrl'] as $method) {
+  $r = new ReflectionMethod("ServerRequest", $method);
+  var_dump((string)$r->getReturnType());
+}
+?>
+Done
+--EXPECTF--
+string(5) "array"
+string(13) "ServerRequest"
+string(13) "ServerRequest"
+string(13) "ServerRequest"
+string(13) "ServerRequest"
+string(13) "ServerRequest"
+string(13) "ServerRequest"
+Done

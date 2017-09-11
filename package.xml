@@ -114,6 +114,7 @@ Added:
                     <file role="test" name="parseContentType.phpt" />
                     <file role="test" name="parseDigestAuth.phpt" />
                     <file role="test" name="post.phpt" />
+                    <file role="test" name="reflection.phpt" />
                     <file role="test" name="superglobals-are-copied.phpt" />
                     <file role="test" name="uploads-complex.phpt" />
                     <file role="test" name="uploads-real.phpt" />
