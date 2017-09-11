@@ -19,7 +19,7 @@ extern zend_module_entry request_module_entry;
            ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(name, return_reference, required_num_args, type, NULL, allow_null)
 
 #define REQUEST_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(name, return_reference, required_num_args,            classname, allow_null) \
-          ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(name, return_reference, required_num_args, IS_OBJECT, classname, allow_null)
+          ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(name, return_reference, required_num_args, IS_OBJECT, #classname, allow_null)
 
 #endif
 

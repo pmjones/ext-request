@@ -67,28 +67,28 @@ REQUEST_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerRequest_parseDigestAuth_args, 0
     ZEND_ARG_TYPE_INFO(0, header, IS_STRING, 0)
 ZEND_END_ARG_INFO()
 
-REQUEST_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(ServerRequest_withInput_args, 0, 1, "ServerRequest", 0)
+REQUEST_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(ServerRequest_withInput_args, 0, 1, ServerRequest, 0)
     ZEND_ARG_INFO(0, input)
 ZEND_END_ARG_INFO()
 
-REQUEST_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(ServerRequest_withParam_args, 0, 2, "ServerRequest", 0)
+REQUEST_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(ServerRequest_withParam_args, 0, 2, ServerRequest, 0)
     ZEND_ARG_TYPE_INFO(0, key, IS_STRING, 0)
     ZEND_ARG_INFO(0, val)
 ZEND_END_ARG_INFO()
 
-REQUEST_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(ServerRequest_withParams_args, 0, 1, "ServerRequest", 0)
+REQUEST_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(ServerRequest_withParams_args, 0, 1, ServerRequest, 0)
     ZEND_ARG_ARRAY_INFO(0, params, 0)
 ZEND_END_ARG_INFO()
 
-REQUEST_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(ServerRequest_withoutParam_args, 0, 1, "ServerRequest", 0)
+REQUEST_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(ServerRequest_withoutParam_args, 0, 1, ServerRequest, 0)
     ZEND_ARG_TYPE_INFO(0, key, IS_STRING, 0)
 ZEND_END_ARG_INFO()
 
-REQUEST_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(ServerRequest_withoutParams_args, 0, 1, "ServerRequest", 0)
+REQUEST_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(ServerRequest_withoutParams_args, 0, 1, ServerRequest, 0)
     ZEND_ARG_ARRAY_INFO(0, keys, 1)
 ZEND_END_ARG_INFO()
 
-REQUEST_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(ServerRequest_withUrl_args, 0, 1, "ServerRequest", 0)
+REQUEST_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(ServerRequest_withUrl_args, 0, 1, ServerRequest, 0)
     ZEND_ARG_ARRAY_INFO(0, url, 0)
 ZEND_END_ARG_INFO()
 /* }}} Argument Info */
