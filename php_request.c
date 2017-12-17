@@ -14,7 +14,7 @@
 #include "php_request.h"
 
 extern PHP_MINIT_FUNCTION(serverrequest);
-extern PHP_MINIT_FUNCTION(serverresponse);
+extern PHP_MINFO_FUNCTION(serverresponse);
 extern PHP_MSHUTDOWN_FUNCTION(serverrequest);
 
 /* {{{ server_request_normalize_header_name */
