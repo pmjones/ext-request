@@ -64,7 +64,7 @@ build_script:
 - if "%platform%" == "x64" if "%PHP_BUILD_TYPE%" == "nts-Win32" set RELEASE_FOLDER=%APPVEYOR_BUILD_FOLDER%\%platform%\Release
 - if "%platform%" == "x64" if "%PHP_BUILD_TYPE%" == "Win32" set RELEASE_FOLDER=%APPVEYOR_BUILD_FOLDER%\%platform%\Release_TS
 - set RELEASE_ZIPBALL=request_%platform%_%VC_VER%_%PHP_VER%_%APPVEYOR_BUILD_VERSION%
-- echo Release folder: %RELEASE_FOLDER%
+- "echo Release folder: %RELEASE_FOLDER%"
 - cmd: >-
     wget https://github.com/OSTC/php-sdk-binary-tools/archive/%PHP_SDK_BINARY_TOOLS_VER%.zip --no-check-certificate -q -O php-sdk-binary-tools-%PHP_SDK_BINARY_TOOLS_VER%.zip
 
