@@ -56,13 +56,13 @@ build_script:
 - if "%VC_VER%" == "vc15" set VSCOMNTOOLS=%VS140COMNTOOLS%
 - set PATH=%PATH%;C:\projects\php-sdk\bin;C:\projects\php\bin;C:\projects\php
 - set TEST_PHP_EXECUTABLE=C:\projects\php\bin\php.exe
-- if "%platform%" == "x86" call "%VSCOMNTOOLS%\..\..\VC\vcvarsall.bat"
-- if "%platform%" == "x64" "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64
-- if "%platform%" == "x64" call "%VSCOMNTOOLS%\..\..\VC\vcvarsall.bat" amd64
-- if "%platform%" == "x86" if "%PHP_BUILD_TYPE%" == "nts-Win32" set RELEASE_FOLDER=%APPVEYOR_BUILD_FOLDER%\Release
-- if "%platform%" == "x86" if "%PHP_BUILD_TYPE%" == "Win32" set RELEASE_FOLDER=%APPVEYOR_BUILD_FOLDER%\Release_TS
-- if "%platform%" == "x64" if "%PHP_BUILD_TYPE%" == "nts-Win32" set RELEASE_FOLDER=%APPVEYOR_BUILD_FOLDER%\%platform%\Release
-- if "%platform%" == "x64" if "%PHP_BUILD_TYPE%" == "Win32" set RELEASE_FOLDER=%APPVEYOR_BUILD_FOLDER%\%platform%\Release_TS
+- if /I "%platform%" == "x86" call "%VSCOMNTOOLS%\..\..\VC\vcvarsall.bat"
+- if /I "%platform%" == "x64" "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64
+- if /I "%platform%" == "x64" call "%VSCOMNTOOLS%\..\..\VC\vcvarsall.bat" amd64
+- if /I "%platform%" == "x86" if "%PHP_BUILD_TYPE%" == "nts-Win32" set RELEASE_FOLDER=%APPVEYOR_BUILD_FOLDER%\Release
+- if /I "%platform%" == "x86" if "%PHP_BUILD_TYPE%" == "Win32" set RELEASE_FOLDER=%APPVEYOR_BUILD_FOLDER%\Release_TS
+- if /I "%platform%" == "x64" if "%PHP_BUILD_TYPE%" == "nts-Win32" set RELEASE_FOLDER=%APPVEYOR_BUILD_FOLDER%\%platform%\Release
+- if /I "%platform%" == "x64" if "%PHP_BUILD_TYPE%" == "Win32" set RELEASE_FOLDER=%APPVEYOR_BUILD_FOLDER%\%platform%\Release_TS
 - set RELEASE_ZIPBALL=request_%platform%_%VC_VER%_%PHP_VER%_%APPVEYOR_BUILD_VERSION%
 - cmd: >-
     echo Vars "%platform%" "%PHP_BUILD_TYPE%" "%RELEASE_FOLDER%"
