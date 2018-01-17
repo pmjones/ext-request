@@ -79,7 +79,7 @@ function is_otherwise_ignored($file) {
         "./package.xml", "./package2.xml", "./.travis.yml", "./.editorconfig",
         "./userland/src/ServerRequest.php", "./userland/src/ServerResponse.php",
         "./userland/tests/prepend.php", "./run-tests.sh", "./reflect.php",
-        "./clean.sh", "./export-userland.sh", "./prepackage.php"
+        "./clean.sh", "./export-userland.sh", "./prepackage.php", "./appveyor.yml"
     ];
     return fnmatch("./.git*", $file)
         || in_array($file, $ignored, true);
