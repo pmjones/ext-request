@@ -645,6 +645,12 @@ static inline void server_request_set_forwarded(zval *object, zval *server)
     }
 }
 
+#if PHP_VERSION_ID < 70300
+#define URL_STR(a) (a)
+#else
+#define URL_STR(a) ZSTR_VAL(a)
+#endif
+
 static inline void server_request_set_url(zval *object, zval *server)
 {
     zend_string *tmp;
@@ -666,12 +672,12 @@ static inline void server_request_set_url(zval *object, zval *server)
     // Form array
     array_init_size(&arr, 8);
     if( url->scheme ) {
-        add_assoc_string(&arr, "scheme", url->scheme);
+        add_assoc_string(&arr, "scheme", ZSTR_VAL(url->scheme));
     } else {
         add_assoc_null(&arr, "scheme");
     }
     if( url->host ) {
-        add_assoc_string(&arr, "host", url->host);
+        add_assoc_string(&arr, "host", ZSTR_VAL(url->host));
     } else {
         add_assoc_null(&arr, "host");
     }
@@ -681,27 +687,27 @@ static inline void server_request_set_url(zval *object, zval *server)
         add_assoc_null(&arr, "port");
     }
     if( url->user ) {
-        add_assoc_string(&arr, "user", url->user);
+        add_assoc_string(&arr, "user", ZSTR_VAL(url->user));
     } else {
         add_assoc_null(&arr, "user");
     }
     if( url->pass ) {
-        add_assoc_string(&arr, "pass", url->pass);
+        add_assoc_string(&arr, "pass", ZSTR_VAL(url->pass));
     } else {
         add_assoc_null(&arr, "pass");
     }
     if( url->path ) {
-        add_assoc_string(&arr, "path", url->path);
+        add_assoc_string(&arr, "path", ZSTR_VAL(url->path));
     } else {
         add_assoc_null(&arr, "path");
     }
     if( url->query ) {
-        add_assoc_string(&arr, "query", url->query);
+        add_assoc_string(&arr, "query", ZSTR_VAL(url->query));
     } else {
         add_assoc_null(&arr, "query");
     }
     if( url->fragment ) {
-        add_assoc_string(&arr, "fragment", url->fragment);
+        add_assoc_string(&arr, "fragment", ZSTR_VAL(url->fragment));
     } else {
         add_assoc_null(&arr, "fragment");
     }
