@@ -585,7 +585,7 @@ static inline void throw_json_exception()
 
     convert_to_string(&json_errmsg);
     zend_throw_exception_ex(spl_ce_RuntimeException, zval_get_long(&json_errno),
-                            "JSON encoding failed: %.*s", Z_STRLEN(json_errmsg), Z_STRVAL(json_errmsg));
+                            "JSON encoding failed: %.*s", (int)Z_STRLEN(json_errmsg), Z_STRVAL(json_errmsg));
 
     zval_ptr_dtor(&func_name);
     zval_ptr_dtor(&json_errmsg);

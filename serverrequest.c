@@ -418,7 +418,7 @@ static int server_request_is_immutable(zval *value)
 static void server_request_assert_immutable(zval *value, const char *desc, size_t desc_len)
 {
     if( !server_request_is_immutable(value) ) {
-        zend_throw_exception_ex(spl_ce_UnexpectedValueException, 0, "All $%.*s values must be null, scalar, or array.", desc_len, desc);
+        zend_throw_exception_ex(spl_ce_UnexpectedValueException, 0, "All $%.*s values must be null, scalar, or array.", (int)desc_len, desc);
     }
 }
 /* }}} */
@@ -435,7 +435,7 @@ static inline void server_request_throw_readonly_exception(zval *object, zval *m
 {
     zend_string *ce_name = Z_OBJCE_P(object)->name;
     zend_string *member_str = zval_get_string(member);
-    zend_throw_exception_ex(spl_ce_RuntimeException, 0, "%.*s::$%.*s is read-only.", ZSTR_LEN(ce_name), ZSTR_VAL(ce_name), ZSTR_LEN(member_str), ZSTR_VAL(member_str));
+    zend_throw_exception_ex(spl_ce_RuntimeException, 0, "%.*s::$%.*s is read-only.", (int)ZSTR_LEN(ce_name), ZSTR_VAL(ce_name), (int)ZSTR_LEN(member_str), ZSTR_VAL(member_str));
     zend_string_release(member_str);
 }
 /* }}} */
@@ -519,7 +519,7 @@ static zval *server_request_object_read_property(zval *object, zval *member, int
     if( !Z_OBJCE_P(object)->__get && !std_object_handlers.has_property(object, member, 2, cache_slot) ) {
         zend_string *ce_name = Z_OBJCE_P(object)->name;
         zend_string *member_str = zval_get_string(member);
-        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "%.*s::$%.*s does not exist.", ZSTR_LEN(ce_name), ZSTR_VAL(ce_name), ZSTR_LEN(member_str), ZSTR_VAL(member_str));
+        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "%.*s::$%.*s does not exist.", (int)ZSTR_LEN(ce_name), ZSTR_VAL(ce_name), (int)ZSTR_LEN(member_str), ZSTR_VAL(member_str));
         zend_string_release(member_str);
         return rv;
     }
@@ -855,7 +855,7 @@ PHP_METHOD(ServerRequest, __construct)
     init = zend_read_property(ServerRequest_ce_ptr, _this_zval, ZEND_STRL("_initialized"), 0, &rv);
     if( zend_is_true(init) ) {
         zend_string *ce_name = Z_OBJCE_P(_this_zval)->name;
-        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "%.*s::__construct() called after construction.", ZSTR_LEN(ce_name), ZSTR_VAL(ce_name));
+        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "%.*s::__construct() called after construction.", (int)ZSTR_LEN(ce_name), ZSTR_VAL(ce_name));
         return;
     }
     zend_update_property_bool(ServerRequest_ce_ptr, _this_zval, ZEND_STRL("_initialized"), 1);
