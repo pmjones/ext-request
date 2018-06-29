@@ -17,32 +17,32 @@ environment:
 
   matrix:
     - PHP_VER: 7.0
-      PHP_FULL_VER: 7.0.26
+      PHP_FULL_VER: 7.0.29
       VC_VER: vc14
       PHP_BUILD_TYPE: Win32
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
     - PHP_VER: 7.0
-      PHP_FULL_VER: 7.0.26
+      PHP_FULL_VER: 7.0.29
       VC_VER: vc14
       PHP_BUILD_TYPE: nts-Win32
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
     - PHP_VER: 7.1
-      PHP_FULL_VER: 7.1.12
+      PHP_FULL_VER: 7.1.18
       VC_VER: vc14
       PHP_BUILD_TYPE: Win32
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
     - PHP_VER: 7.1
-      PHP_FULL_VER: 7.1.12
+      PHP_FULL_VER: 7.1.18
       VC_VER: vc14
       PHP_BUILD_TYPE: nts-Win32
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
     - PHP_VER: 7.2
-      PHP_FULL_VER: 7.2.0
+      PHP_FULL_VER: 7.2.6
       VC_VER: vc15
       PHP_BUILD_TYPE: Win32
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
     - PHP_VER: 7.2
-      PHP_FULL_VER: 7.2.0
+      PHP_FULL_VER: 7.2.6
       VC_VER: vc15
       PHP_BUILD_TYPE: nts-Win32
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
@@ -73,11 +73,11 @@ build_script:
 
     C:\projects\php-sdk\bin\phpsdk_setvars.bat
 
-    wget http://windows.php.net/downloads/releases/php-%PHP_FULL_VER%-%PHP_BUILD_TYPE%-%VC_VER%-%platform%.zip
+    wget http://windows.php.net/downloads/releases/archives/php-%PHP_FULL_VER%-%PHP_BUILD_TYPE%-%VC_VER%-%platform%.zip
 
     7z x -y php-%PHP_FULL_VER%-%PHP_BUILD_TYPE%-%VC_VER%-%platform%.zip -oC:\projects\php
 
-    wget http://windows.php.net/downloads/releases/php-devel-pack-%PHP_FULL_VER%-%PHP_BUILD_TYPE%-%VC_VER%-%platform%.zip
+    wget http://windows.php.net/downloads/releases/archives/php-devel-pack-%PHP_FULL_VER%-%PHP_BUILD_TYPE%-%VC_VER%-%platform%.zip
 
     7z x -y php-devel-pack-%PHP_FULL_VER%-%PHP_BUILD_TYPE%-%VC_VER%-%platform%.zip -oC:\projects
 
