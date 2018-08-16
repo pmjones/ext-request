@@ -1031,7 +1031,11 @@ static inline void send_cookie(zend_string *name, zval *arr)
         raw = zval_is_true(tmp);
     }
 
+#if PHP_VERSION_ID < 70300
     php_setcookie(name, value, expires, path, domain, secure, !raw, httponly);
+#else
+    php_setcookie(name, value, expires, path, domain, secure, httponly, NULL, !raw);
+#endif
 }
 
 PHP_METHOD(ServerResponse, sendCookies)
