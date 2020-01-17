@@ -16,7 +16,7 @@ foo=bar&baz=bat
 // Currently if a variable is missing from variables_order, it's not available
 $_SERVER['HTTP_HOST'] = 'example.com';
 var_dump($_POST);
-$request = new ServerRequest();
+$request = new ServerRequest($GLOBALS);
 var_dump($request->post);
 --EXPECT--
 array(0) {

@@ -13,7 +13,7 @@ forcecgi
 <?php
 $_SERVER['HTTP_HOST'] = 'localhost';
 
-$request = new ServerRequest();
+$request = new ServerRequest($GLOBALS);
 $expect = [];
 
 if( $request === $request->withParam('foo', 'bar') ) echo "fail\n";

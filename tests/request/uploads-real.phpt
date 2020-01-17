@@ -32,7 +32,7 @@ Content-Type: text/plain-file3;
 --FILE--
 <?php
 $_SERVER['HTTP_HOST'] = 'example.com';
-$request = new ServerRequest();
+$request = new ServerRequest($GLOBALS);
 var_dump($request->uploads);
 --EXPECTF--
 array(3) {

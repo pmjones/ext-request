@@ -10,7 +10,7 @@ ServerRequest::__get
 --FILE--
 <?php
 $_SERVER['HTTP_HOST'] = 'localhost';
-$request = new ServerRequest();
+$request = new ServerRequest($GLOBALS);
 var_dump(isset($request->method));
 try {
     $request->noSuchProperty;

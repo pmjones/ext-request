@@ -80,32 +80,32 @@ class ServerRequest
         $this->_initialized = true;
 
         $this->env = $this->importGlobal(
-            isset($globals['_ENV']) ? $globals['_ENV'] : $_ENV,
+            isset($globals['_ENV']) ? $globals['_ENV'] : [],
             '$_ENV'
         );
 
         $this->server = $this->importGlobal(
-            isset($globals['_SERVER']) ? $globals['_SERVER'] : $_SERVER,
+            isset($globals['_SERVER']) ? $globals['_SERVER'] : [],
             '$_SERVER'
         );
 
         $this->cookie = $this->importGlobal(
-            isset($globals['_COOKIE']) ? $globals['_COOKIE'] : $_COOKIE,
+            isset($globals['_COOKIE']) ? $globals['_COOKIE'] : [],
             '$_COOKIE'
         );
 
         $this->files = $this->importGlobal(
-            isset($globals['_FILES']) ? $globals['_FILES'] : $_FILES,
+            isset($globals['_FILES']) ? $globals['_FILES'] : [],
             '$_FILES'
         );
 
         $this->get = $this->importGlobal(
-            isset($globals['_GET']) ? $globals['_GET'] : $_GET,
+            isset($globals['_GET']) ? $globals['_GET'] : [],
             '$_GET'
         );
 
         $this->post = $this->importGlobal(
-            isset($globals['_POST']) ? $globals['_POST'] : $_POST,
+            isset($globals['_POST']) ? $globals['_POST'] : [],
             '$_POST'
         );
 

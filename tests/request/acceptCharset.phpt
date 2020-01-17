@@ -13,7 +13,7 @@ $_SERVER += [
     'HTTP_HOST' => 'example.com',
     'HTTP_ACCEPT_CHARSET' => 'iso-8859-5;q=0.8, unicode-1-1',
 ];
-$request = new ServerRequest();
+$request = new ServerRequest($GLOBALS);
 var_dump($request->acceptCharset);
 --EXPECTF--
 array(2) {

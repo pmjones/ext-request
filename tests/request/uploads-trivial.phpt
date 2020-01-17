@@ -87,7 +87,7 @@ $_FILES = [
     ],
   ],
 ];
-$request = new ServerRequest();
+$request = new ServerRequest($GLOBALS);
 var_dump($request->uploads);
 --EXPECTF--
 array(5) {

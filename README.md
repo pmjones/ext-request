@@ -36,12 +36,11 @@ Instantiation of _ServerRequest_ is straightforward:
 
 ```php
 <?php
-$request = new ServerRequest();
+$request = new ServerRequest($GLOBALS);
 ?>
 ```
 
-The _ServerRequest_ object builds itself from the PHP superglobals. If you want
-to provide custom values in place of the superglobals, pass an array that mimics
+If you want to provide custom values to the object, pass an array that mimics
 `$GLOBALS` to the constructor:
 
 ```php
@@ -53,10 +52,6 @@ $request = new ServerRequest([
 ]);
 ?>
 ```
-
-If a superglobal is represented in the array of custom values, it will be used
-instead of the real superglobal. If it is not represented in the array,
-_ServerRequest_ will use the real superglobal.
 
 ### Properties
 
@@ -167,7 +162,7 @@ For example:
 
 ```php
 <?php
-$request = new ServerRequest();
+$request = new ServerRequest($GLOBALS);
 if ($request->contentType == 'application/json') {
     $input = json_decode($request->content, true);
     $request = $request->withInput($input);
@@ -192,7 +187,7 @@ For example:
 
 ```php
 <?php
-$request = new ServerRequest();
+$request = new ServerRequest($GLOBALS);
 var_dump($request->params); // []
 
 $request = $request->withParam('foo', 'bar');
@@ -216,7 +211,7 @@ For example:
 
 ```php
 <?php
-$request = new ServerRequest();
+$request = new ServerRequest($GLOBALS);
 var_dump($request->params); // []
 
 $request = $request->withParams(['foo' => 'bar']);
@@ -240,7 +235,7 @@ For example:
 
 ```php
 <?php
-$request = new ServerRequest();
+$request = new ServerRequest($GLOBALS);
 $request = $request->withParams(['foo' => 'bar', 'baz' => 'dib']);
 var_dump($request->params); // ['foo' => 'bar', 'baz' => 'dib']
 
@@ -262,7 +257,7 @@ For example:
 
 ```php
 <?php
-$request = new ServerRequest();
+$request = new ServerRequest($GLOBALS);
 $request = $request->withParams([
     'foo' => 'bar',
     'baz' => 'dib',
@@ -280,7 +275,7 @@ the called _ServerRequest_ instance:
 
 ```php
 <?php
-$request = new ServerRequest();
+$request = new ServerRequest($GLOBALS);
 $request = $request->withParams([
     'foo' => 'bar',
     'baz' => 'dib',
@@ -306,7 +301,7 @@ For example:
 
 ```php
 <?php
-$request = new ServerRequest();
+$request = new ServerRequest($GLOBALS);
 
 $request = $request->withUrl([
     'scheme' => 'https',

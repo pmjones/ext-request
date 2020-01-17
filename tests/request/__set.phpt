@@ -10,7 +10,7 @@ ServerRequest::__set
 --FILE--
 <?php
 $_SERVER['HTTP_HOST'] = 'localhost';
-$request = new ServerRequest();
+$request = new ServerRequest($GLOBALS);
 try {
     $request->method = 'PATCH';
 } catch( Exception $e ) {

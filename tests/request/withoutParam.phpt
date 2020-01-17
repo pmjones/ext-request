@@ -13,7 +13,7 @@ forcecgi
 <?php
 $_SERVER['HTTP_HOST'] = 'localhost';
 
-$request = new ServerRequest();
+$request = new ServerRequest($GLOBALS);
 
 $clone = $request->withoutParam('foo');
 if( $request === $clone ) echo "fail\n";

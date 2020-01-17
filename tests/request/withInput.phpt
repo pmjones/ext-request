@@ -13,7 +13,7 @@ forcecgi
 <?php
 $_SERVER['HTTP_HOST'] = 'localhost';
 
-$request = new ServerRequest();
+$request = new ServerRequest($GLOBALS);
 
 $clone = $request->withInput([]);
 var_dump($clone->input);

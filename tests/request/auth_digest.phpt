@@ -22,7 +22,7 @@ $_SERVER += [
         'response="irk"',
     ]),
 ];
-$request = new ServerRequest();
+$request = new ServerRequest($GLOBALS);
 var_dump($request->authDigest);
 
 // missing parts
@@ -35,7 +35,7 @@ $_SERVER = [
         'cnonce=baz',
     ]),
 ];
-$request = new ServerRequest();
+$request = new ServerRequest($GLOBALS);
 var_dump($request->authDigest);
 
 --EXPECTF--

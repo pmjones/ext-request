@@ -13,7 +13,7 @@ $_SERVER += [
     'HTTP_HOST' => 'example.com',
     'HTTP_ACCEPT_LANGUAGE' => 'en-US, en-GB, en, *',
 ];
-$request = new ServerRequest();
+$request = new ServerRequest($GLOBALS);
 var_dump($request->acceptLanguage);
 --EXPECTF--
 array(4) {

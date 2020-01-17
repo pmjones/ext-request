@@ -9,7 +9,7 @@ ServerRequest::__get userland indirect modification
 --FILE--
 <?php
 $_SERVER['HTTP_HOST'] = 'localhost';
-$request = new ServerRequest();
+$request = new ServerRequest($GLOBALS);
 try {
     $request->accept[0] = array();
 } catch( Exception $e ) {
