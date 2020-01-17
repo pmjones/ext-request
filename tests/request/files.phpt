@@ -22,7 +22,7 @@ Content-Type: text/plain-file1
 --FILE--
 <?php
 $_SERVER['HTTP_HOST'] = 'example.com';
-$request = new ServerRequest();
+$request = new ServerRequest($GLOBALS);
 var_dump($request->files);
 var_dump($request->files == $_FILES);
 --EXPECTF--

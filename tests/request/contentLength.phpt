@@ -13,11 +13,11 @@ $_SERVER = [
     'HTTP_HOST' => 'example.com',
     'HTTP_CONTENT_LENGTH' => '123',
 ];
-$request = new ServerRequest();
+$request = new ServerRequest($GLOBALS);
 var_dump($request->contentLength);
 
 unset($_SERVER['HTTP_CONTENT_LENGTH']);
-$request = new ServerRequest();
+$request = new ServerRequest($GLOBALS);
 var_dump($request->contentMd5);
 --EXPECT--
 string(3) "123"

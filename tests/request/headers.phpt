@@ -16,7 +16,7 @@ $_SERVER = [
     'CONTENT_LENGTH' => '123',
     'CONTENT_TYPE' => 'text/plain',
 ];
-$request = new ServerRequest();
+$request = new ServerRequest($GLOBALS);
 var_dump($request->headers);
 --EXPECT--
 array(4) {

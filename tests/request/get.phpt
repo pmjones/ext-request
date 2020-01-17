@@ -12,7 +12,7 @@ foo=bar&baz=bat
 --FILE--
 <?php
 $_SERVER['HTTP_HOST'] = 'example.com';
-$request = new ServerRequest();
+$request = new ServerRequest($GLOBALS);
 var_dump($request->get);
 --EXPECT--
 array(2) {

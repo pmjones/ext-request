@@ -590,12 +590,6 @@ static inline void server_request_copy_global(
     if( globals && Z_TYPE_P(globals) == IS_ARRAY ) {
         tmp = zend_hash_str_find(Z_ARRVAL_P(globals), glob_key, glob_key_length);
     }
-    if( !tmp ) {
-        if( PG(auto_globals_jit) ) {
-            zend_is_auto_global_str(glob_key, glob_key_length);
-        }
-        tmp = zend_hash_str_find(&EG(symbol_table), glob_key, glob_key_length);
-    }
     if( tmp ) {
         // Assert immutable
         server_request_assert_immutable(tmp, glob_key, glob_key_length);

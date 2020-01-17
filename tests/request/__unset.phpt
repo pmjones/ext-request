@@ -10,7 +10,7 @@ ServerRequest::__unset
 --FILE--
 <?php
 $_SERVER['HTTP_HOST'] = 'localhost';
-$request = new ServerRequest();
+$request = new ServerRequest($GLOBALS);
 try {
     unset($request->method);
 } catch( Exception $e ) {

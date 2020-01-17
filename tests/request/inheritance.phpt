@@ -34,7 +34,7 @@ class MagicServerRequest extends ServerRequest {
         $this->$key = $value;
     }
 }
-$request = new SubServerRequest();
+$request = new SubServerRequest($GLOBALS);
 var_dump($request->method);
 $request->publicTest = 'foo';
 var_dump($request->publicTest);
@@ -44,7 +44,7 @@ try {
 } catch( Exception $e ) {
     var_dump(get_class($e), $e->getMessage());
 }
-$request = new MagicServerRequest();
+$request = new MagicServerRequest($GLOBALS);
 $request->magicTest = 'baz';
 var_dump($request->magicTest);
 $request->magicTestUndef = 'bat';

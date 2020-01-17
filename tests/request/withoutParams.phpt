@@ -14,7 +14,7 @@ forcecgi
 $_SERVER['HTTP_HOST'] = 'localhost';
 
 // Named
-$request = new ServerRequest();
+$request = new ServerRequest($GLOBALS);
 
 $params = [
     'foo' => null,
@@ -32,7 +32,7 @@ if( $request->params !== $params ) echo "fail\n";
 var_dump($clone->params);
 
 // Reset
-$request = new ServerRequest();
+$request = new ServerRequest($GLOBALS);
 $params = [
     'foo' => null,
     'bar' => 'baz',

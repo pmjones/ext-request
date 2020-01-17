@@ -14,13 +14,13 @@ $_SERVER += [
     'REQUEST_URI' => '/foo/bar?baz=dib',
     'SERVER_PORT' => '8080',
 ];
-$request = new ServerRequest();
+$request = new ServerRequest($GLOBALS);
 var_dump($request->url);
 
 // without host
 unset($_SERVER['HTTP_HOST']);
 try {
-    $request = new ServerRequest();
+    $request = new ServerRequest($GLOBALS);
 } catch( Exception $e ) {
     var_dump(get_class($e), $e->getMessage());
 }
@@ -30,21 +30,21 @@ $_SERVER = [
     'SERVER_NAME' => 'example.com',
     'HTTPS' => 'on',
 ];
-$request = new ServerRequest();
+$request = new ServerRequest($GLOBALS);
 var_dump($request->url['scheme']);
 
 // hostn
 $_SERVER = [
     'SERVER_NAME' => 'example.com',
 ];
-$request = new ServerRequest();
+$request = new ServerRequest($GLOBALS);
 var_dump($request->url['host']);
 
 // host/port
 $_SERVER = [
     'HTTP_HOST' => 'example.com:8080',
 ];
-$request = new ServerRequest();
+$request = new ServerRequest($GLOBALS);
 var_dump($request->url['host']);
 var_dump($request->url['port']);
 
@@ -53,7 +53,7 @@ $_SERVER = [
     'HTTP_HOST' => 'example.com',
     'SERVER_PORT' => '8080',
 ];
-$request = new ServerRequest();
+$request = new ServerRequest($GLOBALS);
 var_dump($request->url['host']);
 var_dump($request->url['port']);
 

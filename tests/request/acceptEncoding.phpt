@@ -13,7 +13,7 @@ $_SERVER += [
     'HTTP_HOST' => 'example.com',
     'HTTP_ACCEPT_ENCODING' => 'compress;q=0.5, gzip;q=1.0',
 ];
-$request = new ServerRequest();
+$request = new ServerRequest($GLOBALS);
 var_dump($request->acceptEncoding);
 --EXPECTF--
 array(2) {

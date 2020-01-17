@@ -12,7 +12,7 @@ ServerRequest::__construct
 $_SERVER['HTTP_HOST'] = 'localhost';
 
 // Basic construct
-$request = new ServerRequest();
+$request = new ServerRequest($GLOBALS);
 var_dump(get_class($request));
 
 // Globals argument
@@ -49,11 +49,13 @@ var_dump(
 );
 
 // Partial globals argument
-$_SERVER['HTTP_HOST'] = 'foo.bar';
 $request = new ServerRequest(array(
     '_GET' => array(
         'foo' => 'bar',
-    )
+    ),
+    '_SERVER' => [
+        'HTTP_HOST' => 'foo.bar',
+    ],
 ));
 var_dump($request->url['host']);
 var_dump($request->get['foo']);
@@ -61,7 +63,7 @@ var_dump($request->get['foo']);
 // Check for immutability in globals
 $_GET['foo'] = new stdClass();
 try {
-    $request = new ServerRequest();
+    $request = new ServerRequest($GLOBALS);
     echo 'fail';
 } catch( UnexpectedValueException $e ) {}
 

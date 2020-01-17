@@ -13,7 +13,7 @@ a=1&b=ZYX
 --FILE--
 <?php
 $_SERVER['HTTP_HOST'] = 'localhost';
-$request = new ServerRequest();
+$request = new ServerRequest($GLOBALS);
 var_dump($request->content);
 try {
     $request->content = 'foo';

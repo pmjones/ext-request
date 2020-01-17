@@ -11,7 +11,7 @@ ServerRequest::__clone
 <?php
 $_SERVER['HTTP_HOST'] = 'localhost';
 
-$request = new ServerRequest();
+$request = new ServerRequest($GLOBALS);
 
 $_SERVER['HTTP_HOST'] = 'example.com';
 $clone = clone $request;
