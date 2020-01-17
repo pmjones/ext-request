@@ -1202,47 +1202,6 @@ PHP_METHOD(ServerRequest, withUrl)
 }
 /* }}} ServerRequest::withUrl */
 
-/* {{{ proto array ServerRequest::parseAccept(string $header) */
-PHP_METHOD(ServerRequest, parseAccept)
-{
-    zend_string *header;
-
-    ZEND_PARSE_PARAMETERS_START(1, 1)
-        Z_PARAM_STR(header)
-    ZEND_PARSE_PARAMETERS_END();
-
-    //array_init(return_value);
-    server_request_parse_accept(return_value, ZSTR_VAL(header), ZSTR_LEN(header));
-
-}
-/* }}} ServerRequest::parseAccept */
-
-/* {{{ proto array ServerRequest::parseContentType(string $header) */
-PHP_METHOD(ServerRequest, parseContentType)
-{
-    zend_string *header;
-
-    ZEND_PARSE_PARAMETERS_START(1, 1)
-        Z_PARAM_STR(header)
-    ZEND_PARSE_PARAMETERS_END();
-
-    server_request_parse_content_type(return_value, ZSTR_VAL(header), ZSTR_LEN(header));
-}
-/* }}} ServerRequest::parseContentType */
-
-/* {{{ proto array ServerRequest::parseDigestAuth(string $header) */
-PHP_METHOD(ServerRequest, parseDigestAuth)
-{
-    zend_string *header;
-
-    ZEND_PARSE_PARAMETERS_START(1, 1)
-        Z_PARAM_STR(header)
-    ZEND_PARSE_PARAMETERS_END();
-
-    server_request_parse_digest_auth(return_value, ZSTR_VAL(header), ZSTR_LEN(header));
-}
-/* }}} ServerRequest::parseDigestAuth */
-
 /* {{{ ServerRequest methods */
 static zend_function_entry ServerRequest_methods[] = {
     PHP_ME(ServerRequest, __construct, ServerRequest_construct_args, ZEND_ACC_PUBLIC)
@@ -1252,9 +1211,6 @@ static zend_function_entry ServerRequest_methods[] = {
     PHP_ME(ServerRequest, withoutParam, ServerRequest_withoutParam_args, ZEND_ACC_PUBLIC | ZEND_ACC_FINAL)
     PHP_ME(ServerRequest, withoutParams, ServerRequest_withoutParams_args, ZEND_ACC_PUBLIC | ZEND_ACC_FINAL)
     PHP_ME(ServerRequest, withUrl, ServerRequest_withUrl_args, ZEND_ACC_PUBLIC | ZEND_ACC_FINAL)
-    PHP_ME(ServerRequest, parseAccept, ServerRequest_parseAccept_args, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
-    PHP_ME(ServerRequest, parseContentType, ServerRequest_parseContentType_args, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
-    PHP_ME(ServerRequest, parseDigestAuth, ServerRequest_parseDigestAuth_args, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
     PHP_FE_END
 };
 /* }}} ServerRequest methods */

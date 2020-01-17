@@ -5,24 +5,54 @@ ServerRequest::parseAccept
 --FILE--
 <?php
 try {
-    var_dump(ServerRequest::parseAccept(null));
+    $request = new ServerRequest([
+        '_SERVER' => [
+            'HTTP_ACCEPT' => null,
+        ],
+    ]);
+    var_dump($request->accept);
 } catch( Throwable $e ) {
     var_dump(get_class($e), $e->getMessage());
 }
 
-var_dump(ServerRequest::parseAccept(''));
+$request = new ServerRequest([
+    '_SERVER' => [
+        'HTTP_ACCEPT' => '',
+    ],
+]);
+var_dump($request->accept);
 
 // Accept
-var_dump(ServerRequest::parseAccept('application/xml;q=0.8, application/json;foo=bar, text/*;q=0.2, */*;q=0.1'));
+$request = new ServerRequest([
+    '_SERVER' => [
+        'HTTP_ACCEPT' => 'application/xml;q=0.8, application/json;foo=bar, text/*;q=0.2, */*;q=0.1',
+    ],
+]);
+var_dump($request->accept);
 
 // Accept-Charset
-var_dump(ServerRequest::parseAccept('iso-8859-5;q=0.8, unicode-1-1'));
+$request = new ServerRequest([
+    '_SERVER' => [
+        'HTTP_ACCEPT_CHARSET' => 'iso-8859-5;q=0.8, unicode-1-1',
+    ],
+]);
+var_dump($request->acceptCharset);
 
 // Accept-Encoding
-var_dump(ServerRequest::parseAccept('compress;q=0.5, gzip;q=1.0'));
+$request = new ServerRequest([
+    '_SERVER' => [
+        'HTTP_ACCEPT_ENCODING' => 'compress;q=0.5, gzip;q=1.0',
+    ],
+]);
+var_dump($request->acceptEncoding);
 
 // Accept-Language
-var_dump(ServerRequest::parseAccept('en-US, en-GB, en, *'));
+$request = new ServerRequest([
+    '_SERVER' => [
+        'HTTP_ACCEPT_LANGUAGE' => 'en-US, en-GB, en, *',
+    ],
+]);
+var_dump($request->acceptLanguage);
 --EXPECTF--
 string(9) "TypeError"
 string(%d) "Argument 1 passed to ServerRequest::parseAccept() must be of the type string, null given"
