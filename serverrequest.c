@@ -173,6 +173,7 @@ static inline zend_string *extract_host_from_server(zval *server)
 {
     zval *tmp;
     zend_string *host;
+    const char *fake_host = "___";
 
     // Get host
     if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_HOST"))) &&
@@ -182,7 +183,7 @@ static inline zend_string *extract_host_from_server(zval *server)
                Z_TYPE_P(tmp) == IS_STRING ) {
         host = Z_STR_P(tmp);
     } else {
-        host = NULL;
+        host = zend_string_init(fake_host, strlen(fake_host), 0);
     }
 
     return host;
@@ -650,13 +651,9 @@ static inline void server_request_set_url(zval *object, zval *server)
     zend_string *tmp;
     php_url *url;
     zval arr = {0};
+    const char *fake_host = "___";
 
     tmp = server_request_detect_url(server);
-    if( !tmp ) {
-        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "Could not determine host for ServerRequest.");
-        return;
-    }
-
     url = php_url_parse_ex(ZSTR_VAL(tmp), ZSTR_LEN(tmp));
     zend_string_release(tmp);
     if( !url ) {
@@ -670,7 +667,8 @@ static inline void server_request_set_url(zval *object, zval *server)
     } else {
         add_assoc_null(&arr, "scheme");
     }
-    if( url->host ) {
+    if( url->host && strcmp(URL_STR(url->host), fake_host)) {
+        // not a fake
         add_assoc_string(&arr, "host", URL_STR(url->host));
     } else {
         add_assoc_null(&arr, "host");

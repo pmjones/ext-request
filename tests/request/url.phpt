@@ -19,11 +19,8 @@ var_dump($request->url);
 
 // without host
 unset($_SERVER['HTTP_HOST']);
-try {
-    $request = new ServerRequest($GLOBALS);
-} catch( Exception $e ) {
-    var_dump(get_class($e), $e->getMessage());
-}
+$request = new ServerRequest($GLOBALS);
+var_dump($request->url);
 
 // secure
 $_SERVER = [
@@ -76,8 +73,24 @@ array(8) {
   ["fragment"]=>
   NULL
 }
-string(16) "RuntimeException"
-string(43) "Could not determine host for ServerRequest."
+array(8) {
+  ["scheme"]=>
+  string(4) "http"
+  ["host"]=>
+  NULL
+  ["port"]=>
+  int(8080)
+  ["user"]=>
+  NULL
+  ["pass"]=>
+  NULL
+  ["path"]=>
+  string(8) "/foo/bar"
+  ["query"]=>
+  string(7) "baz=dib"
+  ["fragment"]=>
+  NULL
+}
 string(5) "https"
 string(11) "example.com"
 string(11) "example.com"
