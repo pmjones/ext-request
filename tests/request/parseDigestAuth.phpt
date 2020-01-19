@@ -4,18 +4,23 @@ ServerRequest::parseDigestAuth
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --FILE--
 <?php
-try {
-    var_dump(ServerRequest::parseDigestAuth(null));
-} catch( Throwable $e ) {
-    var_dump(get_class($e), $e->getMessage());
-}
-var_dump(ServerRequest::parseDigestAuth(''));
-var_dump(ServerRequest::parseDigestAuth('nonce="foo",nc=\'bar\',cnonce=baz,qop="dib",username="zim",uri="gir",response="irk"'));
-var_dump(ServerRequest::parseDigestAuth(' nonce="foo\\"",nc=\'bar\' ,cnonce= baz , qop="dib",username="zim " , uri="gir" ,response= "irk" '));
-var_dump(ServerRequest::parseDigestAuth('nonce="foo",nc=\'bar\',cnonce=baz'));
+$request = new ServerRequest(['_SERVER' => ['PHP_AUTH_TYPE' => 'Digest', 'PHP_AUTH_DIGEST' => null]]);
+var_dump($request->authDigest);
+
+$request = new ServerRequest(['_SERVER' => ['PHP_AUTH_TYPE' => 'Digest', 'PHP_AUTH_DIGEST' => '']]);
+var_dump($request->authDigest);
+
+$request = new ServerRequest(['_SERVER' => ['PHP_AUTH_TYPE' => 'Digest', 'PHP_AUTH_DIGEST' => 'nonce="foo",nc=\'bar\',cnonce=baz,qop="dib",username="zim",uri="gir",response="irk"']]);
+var_dump($request->authDigest);
+
+$request = new ServerRequest(['_SERVER' => ['PHP_AUTH_TYPE' => 'Digest', 'PHP_AUTH_DIGEST' => ' nonce="foo\\"",nc=\'bar\' ,cnonce= baz , qop="dib",username="zim " , uri="gir" ,response= "irk" ']]);
+var_dump($request->authDigest);
+
+$request = new ServerRequest(['_SERVER' => ['PHP_AUTH_TYPE' => 'Digest', 'PHP_AUTH_DIGEST' => 'nonce="foo",nc=\'bar\',cnonce=baz']]);
+var_dump($request->authDigest);
+
 --EXPECTF--
-string(9) "TypeError"
-string(%d) "Argument 1 passed to ServerRequest::parseDigestAuth() must be of the type string, null given"
+NULL
 NULL
 array(7) {
   ["nonce"]=>
