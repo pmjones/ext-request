@@ -4,16 +4,12 @@ ServerRequest::parseAccept
 <?php if( !extension_loaded('request') ) die('skip '); ?>
 --FILE--
 <?php
-try {
-    $request = new ServerRequest([
-        '_SERVER' => [
-            'HTTP_ACCEPT' => null,
-        ],
-    ]);
-    var_dump($request->accept);
-} catch( Throwable $e ) {
-    var_dump(get_class($e), $e->getMessage());
-}
+$request = new ServerRequest([
+    '_SERVER' => [
+        'HTTP_ACCEPT' => null,
+    ],
+]);
+var_dump($request->accept);
 
 $request = new ServerRequest([
     '_SERVER' => [
@@ -54,8 +50,8 @@ $request = new ServerRequest([
 ]);
 var_dump($request->acceptLanguage);
 --EXPECTF--
-string(9) "TypeError"
-string(%d) "Argument 1 passed to ServerRequest::parseAccept() must be of the type string, null given"
+array(0) {
+}
 array(0) {
 }
 array(4) {
@@ -148,7 +144,7 @@ array(2) {
 }
 array(4) {
   [0]=>
-  array(3) {
+  array(5) {
     ["value"]=>
     string(5) "en-US"
     ["quality"]=>
@@ -156,9 +152,13 @@ array(4) {
     ["params"]=>
     array(0) {
     }
+    ["type"]=>
+    string(2) "en"
+    ["subtype"]=>
+    string(2) "US"
   }
   [1]=>
-  array(3) {
+  array(5) {
     ["value"]=>
     string(5) "en-GB"
     ["quality"]=>
@@ -166,9 +166,13 @@ array(4) {
     ["params"]=>
     array(0) {
     }
+    ["type"]=>
+    string(2) "en"
+    ["subtype"]=>
+    string(2) "GB"
   }
   [2]=>
-  array(3) {
+  array(5) {
     ["value"]=>
     string(2) "en"
     ["quality"]=>
@@ -176,9 +180,13 @@ array(4) {
     ["params"]=>
     array(0) {
     }
+    ["type"]=>
+    string(2) "en"
+    ["subtype"]=>
+    NULL
   }
   [3]=>
-  array(3) {
+  array(5) {
     ["value"]=>
     string(1) "*"
     ["quality"]=>
@@ -186,5 +194,9 @@ array(4) {
     ["params"]=>
     array(0) {
     }
+    ["type"]=>
+    string(1) "*"
+    ["subtype"]=>
+    NULL
   }
 }

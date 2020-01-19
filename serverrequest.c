@@ -715,7 +715,8 @@ static inline void server_request_set_accept_by_name(zval *object, zval *server,
     zval *tmp;
 
     array_init(&val);
-    if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), src, src_length)) ) {
+    tmp = zend_hash_str_find(Z_ARRVAL_P(server), src, src_length);
+    if( tmp && Z_TYPE_P(tmp) == IS_STRING ) {
         server_request_parse_accept(&val, Z_STRVAL_P(tmp), Z_STRLEN_P(tmp));
     }
     zend_update_property(ServerRequest_ce_ptr, object, dest, dest_length, &val);
