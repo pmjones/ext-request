@@ -55,18 +55,6 @@ ZEND_BEGIN_ARG_INFO_EX(ServerRequest_construct_args, 0, 0, 0)
     ZEND_ARG_TYPE_INFO(0, globals, IS_ARRAY, 1)
 ZEND_END_ARG_INFO()
 
-REQUEST_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerRequest_parseAccept_args, 0, 1, IS_ARRAY, 1)
-    ZEND_ARG_TYPE_INFO(0, header, IS_STRING, 0)
-ZEND_END_ARG_INFO()
-
-REQUEST_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerRequest_parseContentType_args, 0, 1, IS_ARRAY, 1)
-    ZEND_ARG_TYPE_INFO(0, header, IS_STRING, 0)
-ZEND_END_ARG_INFO()
-
-REQUEST_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerRequest_parseDigestAuth_args, 0, 1, IS_ARRAY, 1)
-    ZEND_ARG_TYPE_INFO(0, header, IS_STRING, 0)
-ZEND_END_ARG_INFO()
-
 REQUEST_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(ServerRequest_withInput_args, 0, 1, ServerRequest, 0)
     ZEND_ARG_INFO(0, input)
 ZEND_END_ARG_INFO()
