@@ -51,8 +51,8 @@ static inline zend_class_entry *get_scope()
 }
 
 /* {{{ Argument Info */
-ZEND_BEGIN_ARG_INFO_EX(ServerRequest_construct_args, 0, 0, 0)
-    ZEND_ARG_TYPE_INFO(0, globals, IS_ARRAY, 1)
+ZEND_BEGIN_ARG_INFO_EX(ServerRequest_construct_args, 0, 0, 1)
+    ZEND_ARG_ARRAY_INFO(0, globals, 0)
 ZEND_END_ARG_INFO()
 /* }}} Argument Info */
 
@@ -962,7 +962,6 @@ PHP_MINIT_FUNCTION(serverrequest)
     register_default_prop_handlers(ZEND_STRL("url"));
     zend_declare_property_bool(ServerRequest_ce_ptr, ZEND_STRL("xhr"), 0, ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("xhr"));
-
     return SUCCESS;
 }
 /* }}} */
