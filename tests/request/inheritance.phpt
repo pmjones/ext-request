@@ -34,6 +34,12 @@ class MagicServerRequest extends ServerRequest {
         $this->$key = $value;
     }
 }
+class CtorServerRequest extends ServerRequest {
+    public function __construct(array $globals = null) {
+        parent::__construct($globals);
+        $this->method = 'FOO';
+    }
+}
 $request = new SubServerRequest($GLOBALS);
 var_dump($request->method);
 $request->publicTest = 'foo';
@@ -58,6 +64,14 @@ try {
 } catch( Exception $e ) {
     echo 'ok';
 }
+echo PHP_EOL;
+
+// constructor overrides of parent properties not allowed
+try {
+    $request = new CtorServerRequest($GLOBALS);
+} catch (Exception $e) {
+    var_dump(get_class($e), $e->getMessage());
+}
 --EXPECT--
 string(3) "PUT"
 string(3) "foo"
@@ -67,3 +81,5 @@ string(39) "SubServerRequest::$method is read-only."
 string(3) "baz"
 string(3) "bat"
 ok
+string(16) "RuntimeException"
+string(40) "CtorServerRequest::$method is read-only."

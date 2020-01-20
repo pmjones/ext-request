@@ -64,17 +64,34 @@ var_dump($request->get['foo']);
 $_GET['foo'] = new stdClass();
 try {
     $request = new ServerRequest($GLOBALS);
-    echo 'fail';
-} catch( UnexpectedValueException $e ) {}
+    echo 'fail immutable' . PHP_EOL;
+} catch( UnexpectedValueException $e ) {
+    echo 'ok immutable' . PHP_EOL;
+}
+
+// check for references in immutables
+$ref = 'ref';
+$_GET['ref'] =& $ref;
+try {
+    $request = new ServerRequest($GLOBALS);
+    echo 'fail references' . PHP_EOL;
+} catch( UnexpectedValueException $e ) {
+    echo 'ok references' . PHP_EOL;
+}
 
 // Check __construct can't be called twice
 try {
     $request->__construct();
-    echo 'fail';
-} catch( RuntimeException $e ) {}
+    echo 'fail reconstruct' . PHP_EOL;
+} catch( RuntimeException $e ) {
+    echo 'ok reconstruct' . PHP_EOL;
+}
 
 --EXPECT--
 string(13) "ServerRequest"
 bool(true)
 string(7) "foo.bar"
 string(3) "bar"
+ok immutable
+ok references
+ok reconstruct
