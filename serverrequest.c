@@ -65,6 +65,7 @@ static void server_request_detect_method(zval *return_value, zval *server)
     // determine method from request
     val = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("REQUEST_METHOD"));
     if( !val || Z_TYPE_P(val) != IS_STRING ) {
+        ZVAL_NULL(return_value);
         return;
     }
     method = Z_STR_P(val);
@@ -831,7 +832,6 @@ PHP_METHOD(ServerRequest, __construct)
         }
 
         // method
-        ZVAL_STRING(&method, "");
         server_request_detect_method(&method, server);
         zend_update_property(ServerRequest_ce_ptr, _this_zval, ZEND_STRL("method"), &method);
 
@@ -941,7 +941,7 @@ PHP_MINIT_FUNCTION(serverrequest)
     register_default_prop_handlers(ZEND_STRL("get"));
     zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("headers"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("headers"));
-    zend_declare_property_string(ServerRequest_ce_ptr, ZEND_STRL("method"), "", ZEND_ACC_PUBLIC);
+    zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("method"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("method"));
     zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("post"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("post"));

@@ -27,7 +27,7 @@ $_SERVER['REQUEST_METHOD'] = 'POST';
 $request = new ServerRequest($GLOBALS);
 var_dump($request->method);
 --EXPECT--
-string(0) ""
+NULL
 string(3) "GET"
 string(3) "GET"
 string(5) "PATCH"
