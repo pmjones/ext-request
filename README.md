@@ -17,15 +17,17 @@ This extension defines two classes in the global namespace:
 
 ## ServerRequest
 
-An object representing the PHP request received by the server; use it in place
-of the `$_GET`, `$_POST`, etc. superglobals. It provides:
+An object of public read-only properties representing the PHP request received
+by the server. Use it in place of the `$_GET`, `$_POST`, etc. superglobals. It
+provides:
 
-- non-session superglobals as read-only properties;
+- non-session superglobals as public read-only properties;
 
-- other read-only properties calculated from the superglobals (`$method`,
+- other public read-only properties calculated from the superglobals (`$method`,
   `$headers`, `$content`, `$accept`, `$uploads`, etc.);
 
-- extensibility.
+Note that ServerRequest can be extended to provide other userland functionality;
+however, the public read-only properties cannot be modified or overridden.
 
 ### Instantiation
 
@@ -56,7 +58,7 @@ _ServerRequest_ has these public properties.
 
 #### Superglobal-related
 
-These properties are read-only and cannot be modified.
+These properties are public, read-only, and cannot be modified or overridden.
 
 - `$env`: A copy of `$_ENV`.
 - `$files`: A copy of `$_FILES`.
@@ -68,7 +70,7 @@ These properties are read-only and cannot be modified.
 
 #### HTTP-related
 
-These properties are read-only and cannot be modified.
+These properties are public, read-only, and cannot be modified or overridden.
 
 - `$accept`: An array of arrays computed from `$_SERVER['HTTP_ACCEPT']`.
 - `$acceptCharset`: An array of arrays computed from `$_SERVER['HTTP_ACCEPT_CHARSET']`.
@@ -116,7 +118,7 @@ the following keys:
 
 #### Content-related
 
-These properties are read-only and cannot be modified.
+These properties are public, read-only, and cannot be modified or overridden.
 
 - `$content`: The value of `file_get_contents('php://input')`.
 - `$contentCharset`: The `charset` parameter value of `$_SERVER['CONTENT_TYPE']`.
@@ -126,7 +128,7 @@ These properties are read-only and cannot be modified.
 
 #### Authentication-related
 
-These properties are read-only and cannot be modified.
+These properties are public, read-only, and cannot be modified or overridden.
 
 - `$authDigest`: An array of digest values computed from
   `$_SERVER['PHP_AUTH_DIGEST']`.
