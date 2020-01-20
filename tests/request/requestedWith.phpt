@@ -12,11 +12,11 @@ ServerRequest::$xhr
 $_SERVER['HTTP_HOST'] = 'example.com';
 
 $request = new ServerRequest($GLOBALS);
-var_dump($request->xhr);
+var_dump($request->requestedWith);
 
-$_SERVER['HTTP_X_REQUESTED_WITH'] = 'XmlHttpRequest';
+$_SERVER['HTTP_X_REQUESTED_WITH'] = 'xmlHttpRequest';
 $request = new ServerRequest($GLOBALS);
-var_dump($request->xhr);
+var_dump($request->requestedWith);
 --EXPECT--
-bool(false)
-bool(true)
+NULL
+string(14) "xmlHttpRequest"

@@ -85,7 +85,7 @@ These properties are public, read-only, and cannot be modified or overridden.
   `HTTP_*` header keys, plus RFC 3875 headers not prefixed with `HTTP_`.
 - `$method`: The `$_SERVER['REQUEST_METHOD']` value, or the
   `$_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE']` value when appropriate.
-- `$xhr`: A boolean indicating if this is an XmlHttpRequest.
+- `$requestedWith`: The value of `$_SERVER['HTTP_X_REQUESTED_WITH']`.
 
 ##### The `$accept*` Arrays
 
