@@ -947,12 +947,12 @@ PHP_MINIT_FUNCTION(serverrequest)
     register_default_prop_handlers(ZEND_STRL("method"));
     zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("post"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("post"));
+    zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("requestedWith"), ZEND_ACC_PUBLIC);
+    register_default_prop_handlers(ZEND_STRL("requestedWith"));
     zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("server"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("server"));
     zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("uploads"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("uploads"));
-    zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("requestedWith"), ZEND_ACC_PUBLIC);
-    register_default_prop_handlers(ZEND_STRL("requestedWith"));
     zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("url"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("url"));
     return SUCCESS;
