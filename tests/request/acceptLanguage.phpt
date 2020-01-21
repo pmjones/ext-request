@@ -19,7 +19,8 @@ $_SERVER += [
 $request = new ServerRequest($GLOBALS);
 var_dump($request->acceptLanguage);
 --EXPECTF--
-NULL
+array(0) {
+}
 array(4) {
   [0]=>
   array(5) {

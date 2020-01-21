@@ -60,32 +60,32 @@ _ServerRequest_ has these public properties.
 
 These properties are public, read-only, and cannot be modified or overridden.
 
-- `$env`: A copy of `$_ENV`.
-- `$files`: A copy of `$_FILES`.
-- `$get`: A copy of `$_GET`.
-- `$cookie`: A copy of `$_COOKIE`.
-- `$post`: A copy of `$_POST`.
-- `$server`: A copy of `$_SERVER`.
-- `$uploads`: A copy of `$_FILES`, restructured to look more like `$_POST`.
+- `array $env`: A copy of `$_ENV`.
+- `array $files`: A copy of `$_FILES`.
+- `array $get`: A copy of `$_GET`.
+- `array $cookie`: A copy of `$_COOKIE`.
+- `array $post`: A copy of `$_POST`.
+- `array $server`: A copy of `$_SERVER`.
+- `array $uploads`: A copy of `$_FILES`, restructured to look more like `$_POST`.
 
 #### HTTP-related
 
 These properties are public, read-only, and cannot be modified or overridden.
 
-- `$accept`: An array of arrays computed from `$_SERVER['HTTP_ACCEPT']`.
-- `$acceptCharset`: An array of arrays computed from `$_SERVER['HTTP_ACCEPT_CHARSET']`.
-- `$acceptEncoding`: An array of arrays computed from `$_SERVER['HTTP_ACCEPT_ENCODING']`.
-- `$acceptLanguage`: An array of arrays computed from `$_SERVER['HTTP_ACCEPT_LANGUAGE']`.
-- `$forwarded`: An array of arrays computed from `$_SERVER['HTTP_FORWARDED']`.
-- `$forwardedFor`: An array computed from treating `$_SERVER['HTTP_X_FORWARDED_FOR']`
+- `array $accept`: An array of arrays computed from `$_SERVER['HTTP_ACCEPT']`.
+- `array $acceptCharset`: An array of arrays computed from `$_SERVER['HTTP_ACCEPT_CHARSET']`.
+- `array $acceptEncoding`: An array of arrays computed from `$_SERVER['HTTP_ACCEPT_ENCODING']`.
+- `array $acceptLanguage`: An array of arrays computed from `$_SERVER['HTTP_ACCEPT_LANGUAGE']`.
+- `array $forwarded`: An array of arrays computed from `$_SERVER['HTTP_FORWARDED']`.
+- `array $forwardedFor`: An array computed from treating `$_SERVER['HTTP_X_FORWARDED_FOR']`
   as comma-separated values.
-- `$forwardedHost`: The `$_SERVER['HTTP_X_FORWARDED_HOST']` value.
-- `$forwardedProto`: The `$_SERVER['HTTP_X_FORWARDED_PROTO']` value.
-- `$headers`: An array of key/value pairs computed from `$_SERVER` using all
+- `?string $forwardedHost`: The `$_SERVER['HTTP_X_FORWARDED_HOST']` value.
+- `?string $forwardedProto`: The `$_SERVER['HTTP_X_FORWARDED_PROTO']` value.
+- `array $headers`: An array of key/value pairs computed from `$_SERVER` using all
   `HTTP_*` header keys, plus RFC 3875 headers not prefixed with `HTTP_`.
-- `$method`: The `$_SERVER['REQUEST_METHOD']` value, or the
+- `?string $method`: The `$_SERVER['REQUEST_METHOD']` value, or the
   `$_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE']` value when appropriate.
-- `$requestedWith`: The value of `$_SERVER['HTTP_X_REQUESTED_WITH']`.
+- `?string $requestedWith`: The value of `$_SERVER['HTTP_X_REQUESTED_WITH']`.
 
 ##### The `$accept*` Arrays
 
@@ -120,21 +120,21 @@ the following keys:
 
 These properties are public, read-only, and cannot be modified or overridden.
 
-- `$content`: The value of `file_get_contents('php://input')`.
-- `$contentCharset`: The `charset` parameter value of `$_SERVER['CONTENT_TYPE']`.
-- `$contentLength`: The value of `$_SERVER['CONTENT_LENGTH']`.
-- `$contentMd5`: The value of `$_SERVER['HTTP_CONTENT_MD5']`.
-- `$contentType`: The value of `$_SERVER['CONTENT_TYPE']`, minus any parameters.
+- `string $content`: The value of `file_get_contents('php://input')`.
+- `?string $contentCharset`: The `charset` parameter value of `$_SERVER['CONTENT_TYPE']`.
+- `?string $contentLength`: The value of `$_SERVER['CONTENT_LENGTH']`.
+- `?string $contentMd5`: The value of `$_SERVER['HTTP_CONTENT_MD5']`.
+- `?string $contentType`: The value of `$_SERVER['CONTENT_TYPE']`, minus any parameters.
 
 #### Authentication-related
 
 These properties are public, read-only, and cannot be modified or overridden.
 
-- `$authDigest`: An array of digest values computed from
+- `array $authDigest`: An array of digest values computed from
   `$_SERVER['PHP_AUTH_DIGEST']`.
-- `$authPw`: The value of `$_SERVER['PHP_AUTH_PW']`.
-- `$authType`: The value of `$_SERVER['PHP_AUTH_TYPE']`.
-- `$authUser`: The value of `$_SERVER['PHP_AUTH_USER']`.
+- `?string $authPw`: The value of `$_SERVER['PHP_AUTH_PW']`.
+- `?string $authType`: The value of `$_SERVER['PHP_AUTH_TYPE']`.
+- `?string $authUser`: The value of `$_SERVER['PHP_AUTH_USER']`.
 
 ### Methods
 

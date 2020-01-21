@@ -59,7 +59,8 @@ var_dump($request->url['host']);
 var_dump($request->url['port']);
 
 --EXPECTF--
-NULL
+array(0) {
+}
 array(8) {
   ["scheme"]=>
   string(4) "http"

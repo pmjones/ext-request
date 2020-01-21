@@ -536,6 +536,7 @@ static inline void server_request_copy_global(
     size_t glob_key_length
 ) {
     zval *tmp = NULL;
+
     if( globals && Z_TYPE_P(globals) == IS_ARRAY ) {
         tmp = zend_hash_str_find(Z_ARRVAL_P(globals), glob_key, glob_key_length);
     }
@@ -551,6 +552,17 @@ static inline void server_request_copy_global(
     }
 }
 #define server_request_copy_global_lit(obj, obj_key, glob, glob_key) server_request_copy_global(obj, ZEND_STRL(obj_key), glob, ZEND_STRL(glob_key))
+
+static inline void server_request_init_array_prop(
+    zval *obj,
+    const char *obj_key,
+    size_t obj_key_length
+) {
+    zval *tmp;
+    array_init(&tmp);
+    zend_update_property(ServerRequest_ce_ptr, obj, obj_key, obj_key_length, &tmp);
+}
+#define server_request_init_array_prop_lit(obj, obj_key) server_request_init_array_prop(obj, ZEND_STRL(obj_key))
 
 static inline void server_request_set_forwarded(zval *object, zval *server)
 {
@@ -776,6 +788,7 @@ static inline void server_request_set_content(zval *object, zval *server)
     }
 }
 
+
 PHP_METHOD(ServerRequest, __construct)
 {
     zval *_this_zval;
@@ -804,6 +817,24 @@ PHP_METHOD(ServerRequest, __construct)
         return;
     }
     zend_update_property_bool(ServerRequest_ce_ptr, _this_zval, ZEND_STRL("_initialized"), 1);
+
+    // initialize array properties
+    server_request_init_array_prop_lit(_this_zval, "accept");
+    server_request_init_array_prop_lit(_this_zval, "acceptCharset");
+    server_request_init_array_prop_lit(_this_zval, "acceptEncoding");
+    server_request_init_array_prop_lit(_this_zval, "acceptLanguage");
+    server_request_init_array_prop_lit(_this_zval, "authDigest");
+    server_request_init_array_prop_lit(_this_zval, "cookie");
+    server_request_init_array_prop_lit(_this_zval, "env");
+    server_request_init_array_prop_lit(_this_zval, "files");
+    server_request_init_array_prop_lit(_this_zval, "forwarded");
+    server_request_init_array_prop_lit(_this_zval, "forwardedFor");
+    server_request_init_array_prop_lit(_this_zval, "get");
+    server_request_init_array_prop_lit(_this_zval, "headers");
+    server_request_init_array_prop_lit(_this_zval, "post");
+    server_request_init_array_prop_lit(_this_zval, "server");
+    server_request_init_array_prop_lit(_this_zval, "uploads");
+    server_request_init_array_prop_lit(_this_zval, "url");
 
     // Copy superglobals
     server_request_copy_global_lit(_this_zval, "env", zv_globals, "_ENV");
