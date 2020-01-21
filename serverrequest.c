@@ -172,16 +172,15 @@ static zend_string *server_request_detect_url(zval *server)
     zend_string *uri;
     smart_str buf = {0};
     zend_bool is_secure = server_request_is_secure(server);
+    const char *fake_host = "___";
 
-    // Get host
-    if( !(host = extract_host_from_server(server)) ) {
+    host = extract_host_from_server(server);
+    port = extract_port_from_server(server, host);
+    uri = extract_uri_from_server(server);
+
+    if( ! strcmp(ZSTR_VAL(host), fake_host) && ! port && ! uri ) {
         return NULL;
     }
-
-    port = extract_port_from_server(server, host);
-
-    // Get uri
-    uri = extract_uri_from_server(server);
 
     // Form URL
     smart_str_alloc(&buf, 1024, 0);
@@ -603,6 +602,9 @@ static inline void server_request_set_url(zval *object, zval *server)
     const char *fake_host = "___";
 
     tmp = server_request_detect_url(server);
+    if( !tmp ) {
+        return;
+    }
     url = php_url_parse_ex(ZSTR_VAL(tmp), ZSTR_LEN(tmp));
     zend_string_release(tmp);
     if( !url ) {
