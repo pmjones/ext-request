@@ -667,8 +667,8 @@ static inline void server_request_set_accept_by_name(zval *object, zval *server,
     tmp = zend_hash_str_find(Z_ARRVAL_P(server), src, src_length);
     if( tmp && Z_TYPE_P(tmp) == IS_STRING ) {
         server_request_parse_accept(&val, Z_STRVAL_P(tmp), Z_STRLEN_P(tmp));
+        zend_update_property(ServerRequest_ce_ptr, object, dest, dest_length, &val);
     }
-    zend_update_property(ServerRequest_ce_ptr, object, dest, dest_length, &val);
 }
 
 static inline void server_request_parse_accept_language(zval *lang)
@@ -712,8 +712,8 @@ static inline void server_request_set_accept_language(zval *object, zval *server
     if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_ACCEPT_LANGUAGE"))) ) {
         server_request_parse_accept(&val, Z_STRVAL_P(tmp), Z_STRLEN_P(tmp));
         server_request_parse_accept_language(&val);
+        zend_update_property(ServerRequest_ce_ptr, object, ZEND_STRL("acceptLanguage"), &val);
     }
-    zend_update_property(ServerRequest_ce_ptr, object, ZEND_STRL("acceptLanguage"), &val);
 }
 
 static inline void server_request_set_auth(zval *object, zval *server)

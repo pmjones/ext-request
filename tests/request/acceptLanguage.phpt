@@ -9,6 +9,9 @@ ServerRequest::$acceptLanguage
 } ?>
 --FILE--
 <?php
+$request = new ServerRequest([]);
+var_dump($request->acceptLanguage);
+
 $_SERVER += [
     'HTTP_HOST' => 'example.com',
     'HTTP_ACCEPT_LANGUAGE' => 'en-US, en-GB, en, *',
@@ -16,6 +19,7 @@ $_SERVER += [
 $request = new ServerRequest($GLOBALS);
 var_dump($request->acceptLanguage);
 --EXPECTF--
+NULL
 array(4) {
   [0]=>
   array(5) {

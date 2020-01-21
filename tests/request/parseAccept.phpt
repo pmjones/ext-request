@@ -50,8 +50,7 @@ $request = new ServerRequest([
 ]);
 var_dump($request->acceptLanguage);
 --EXPECTF--
-array(0) {
-}
+NULL
 array(0) {
 }
 array(4) {

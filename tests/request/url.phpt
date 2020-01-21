@@ -9,6 +9,10 @@ ServerRequest::$url
 } ?>
 --FILE--
 <?php
+// empty
+$request = new ServerRequest([]);
+var_dump($request->url);
+
 $_SERVER += [
     'HTTP_HOST' => 'example.com',
     'REQUEST_URI' => '/foo/bar?baz=dib',
@@ -55,6 +59,7 @@ var_dump($request->url['host']);
 var_dump($request->url['port']);
 
 --EXPECTF--
+NULL
 array(8) {
   ["scheme"]=>
   string(4) "http"
