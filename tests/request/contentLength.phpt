@@ -9,16 +9,29 @@ ServerRequest::$contentLength
 } ?>
 --FILE--
 <?php
+$request = new ServerRequest($GLOBALS);
+var_dump($request->contentLength);
+
 $_SERVER = [
-    'HTTP_HOST' => 'example.com',
     'HTTP_CONTENT_LENGTH' => '123',
 ];
 $request = new ServerRequest($GLOBALS);
 var_dump($request->contentLength);
 
-unset($_SERVER['HTTP_CONTENT_LENGTH']);
+$_SERVER = [
+    'HTTP_CONTENT_LENGTH' => ' 123',
+];
 $request = new ServerRequest($GLOBALS);
-var_dump($request->contentMd5);
+var_dump($request->contentLength);
+
+$_SERVER = [
+    'HTTP_CONTENT_LENGTH' => 'non-integer',
+];
+$request = new ServerRequest($GLOBALS);
+var_dump($request->contentLength);
+
 --EXPECT--
-string(3) "123"
 NULL
+int(123)
+int(123)
+int(0)

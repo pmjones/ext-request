@@ -767,7 +767,8 @@ static inline void server_request_set_content(zval *object, zval *server)
         zend_update_property(ServerRequest_ce_ptr, object, ZEND_STRL("contentMd5"), tmp);
     }
 
-    if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_CONTENT_LENGTH"))) ) {
+    if( tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_CONTENT_LENGTH")) ) {
+        convert_to_long(tmp);
         zend_update_property(ServerRequest_ce_ptr, object, ZEND_STRL("contentLength"), tmp);
     }
 
@@ -787,7 +788,6 @@ static inline void server_request_set_content(zval *object, zval *server)
         }
     }
 }
-
 
 PHP_METHOD(ServerRequest, __construct)
 {
