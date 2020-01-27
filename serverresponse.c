@@ -296,18 +296,19 @@ PHP_METHOD(ServerResponse, __construct)
 /* }}} ServerResponse::getVersion */
 
 /* {{{ proto string ServerResponse::getVersion() */
+zval *server_response_get_version(zval *response)
+{
+    return zend_read_property(Z_OBJCE_P(response), response, ZEND_STRL("version"), 0, NULL);
+}
+
 PHP_METHOD(ServerResponse, getVersion)
 {
     zval *_this_zval = getThis();
-    zval *retval;
 
     ZEND_PARSE_PARAMETERS_START(0, 0)
     ZEND_PARSE_PARAMETERS_END();
 
-    retval = zend_read_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("version"), 0, NULL);
-    if( retval ) {
-        RETVAL_ZVAL(retval, 1, 0);
-    }
+    RETVAL_ZVAL(server_response_get_version(_this_zval), 1, 0);
 }
 /* }}} ServerResponse::getVersion */
 
@@ -326,19 +327,22 @@ PHP_METHOD(ServerResponse, setVersion)
 /* }}} ServerResponse::setVersion */
 
 /* {{{ proto int ServerResponse::getStatus() */
+zval *server_response_get_status(zval *response)
+{
+    zval *status;
+    status = zend_read_property(Z_OBJCE_P(response), response, ZEND_STRL("status"), 0, NULL);
+    convert_to_long(status);
+    return status;
+}
+
 PHP_METHOD(ServerResponse, getStatus)
 {
     zval *_this_zval = getThis();
-    zval *retval;
 
     ZEND_PARSE_PARAMETERS_START(0, 0)
     ZEND_PARSE_PARAMETERS_END();
 
-    retval = zend_read_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("status"), 0, NULL);
-    if( retval ) {
-        RETVAL_ZVAL(retval, 1, 0);
-    }
-    convert_to_long(return_value);
+    RETVAL_ZVAL(server_response_get_status(_this_zval), 1, 0);
 }
 /* }}} ServerResponse::getStatus */
 
@@ -386,19 +390,19 @@ PHP_METHOD(ServerResponse, getHeader)
 /* }}} ServerResponse::getHeader */
 
 /* {{{ proto array ServerResponse::getHeaders() */
+zval *server_response_get_headers(zval *response)
+{
+    return zend_read_property(Z_OBJCE_P(response), response, ZEND_STRL("headers"), 0, NULL);
+}
+
 PHP_METHOD(ServerResponse, getHeaders)
 {
     zval *_this_zval = getThis();
 
-    zval *retval;
-
     ZEND_PARSE_PARAMETERS_START(0, 0)
     ZEND_PARSE_PARAMETERS_END();
 
-    retval = zend_read_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("headers"), 0, NULL);
-    if( retval ) {
-        RETVAL_ZVAL(retval, 1, 0);
-    }
+    RETVAL_ZVAL(server_response_get_headers(_this_zval), 1, 0);
 }
 /* }}} ServerResponse::getHeaders */
 
@@ -433,18 +437,19 @@ PHP_METHOD(ServerResponse, addHeader)
 /* }}} ServerResponse::addHeader */
 
 /* {{{ proto array ServerResponse::getCookies() */
+zval *server_response_get_cookies(zval *response)
+{
+    return zend_read_property(Z_OBJCE_P(response), response, ZEND_STRL("cookies"), 0, NULL);
+}
+
 PHP_METHOD(ServerResponse, getCookies)
 {
     zval *_this_zval = getThis();
-    zval *retval;
 
     ZEND_PARSE_PARAMETERS_START(0, 0)
     ZEND_PARSE_PARAMETERS_END();
 
-    retval = zend_read_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("cookies"), 0, NULL);
-    if( retval ) {
-        RETVAL_ZVAL(retval, 1, 0);
-    }
+    RETVAL_ZVAL(server_response_get_cookies(_this_zval), 1, 0);
 }
 /* }}} ServerResponse::getCookies */
 
@@ -538,6 +543,11 @@ PHP_METHOD(ServerResponse, setRawCookie)
 /* }}} ServerResponse::setRawCookie */
 
 /* {{{ proto mixed ServerResponse::getContent() */
+zval *server_response_get_content(zval *response)
+{
+    return zend_read_property(Z_OBJCE_P(response), response, ZEND_STRL("content"), 0, NULL);
+}
+
 PHP_METHOD(ServerResponse, getContent)
 {
     zval *_this_zval = getThis();
@@ -546,10 +556,7 @@ PHP_METHOD(ServerResponse, getContent)
     ZEND_PARSE_PARAMETERS_START(0, 0)
     ZEND_PARSE_PARAMETERS_END();
 
-    retval = zend_read_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("content"), 0, NULL);
-    if( retval ) {
-        RETVAL_ZVAL(retval, 1, 0);
-    }
+    RETVAL_ZVAL(server_response_get_content(_this_zval), 1, 0);
 }
 /* }}} ServerResponse::getContent */
 
@@ -773,6 +780,11 @@ PHP_METHOD(ServerResponse, setHeaderCallbacks)
 /* }}} ServerResponse::setHeaderCallbacks */
 
 /* {{{ proto callback ServerResponse::getHeaderCallbacks() */
+zval *server_response_get_header_callbacks(zval *response)
+{
+    return zend_read_property(Z_OBJCE_P(response), response, ZEND_STRL("callbacks"), 0, NULL);
+}
+
 PHP_METHOD(ServerResponse, getHeaderCallbacks)
 {
     zval *_this_zval = getThis();
@@ -781,10 +793,7 @@ PHP_METHOD(ServerResponse, getHeaderCallbacks)
     ZEND_PARSE_PARAMETERS_START(0, 0)
     ZEND_PARSE_PARAMETERS_END();
 
-    retval = zend_read_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("callbacks"), 0, NULL);
-    if( retval ) {
-        RETVAL_ZVAL(retval, 1, 0);
-    }
+    RETVAL_ZVAL(server_response_get_header_callbacks(_this_zval), 1, 0);
 }
 /* }}} ServerResponse::getHeaderCallback */
 
