@@ -25,41 +25,38 @@ extern zend_string *server_request_normalize_header_name_ex(zend_string *in);
 
 zend_class_entry * ServerResponse_ce_ptr;
 
-/* {{{ Argument Info */
-#define AI(method) ServerResponse_##method##_args
-
-ZEND_BEGIN_ARG_INFO_EX(AI(__construct), 0, 0, 0)
+ZEND_BEGIN_ARG_INFO_EX(ServerResponse___construct_args, 0, 0, 0)
 ZEND_END_ARG_INFO()
 
-REQUEST_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(AI(getVersion), 0, 0, IS_STRING, 0)
+REQUEST_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_getVersion_args, 0, 0, IS_STRING, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(AI(setVersion), 0, 0, 1)
+ZEND_BEGIN_ARG_INFO_EX(ServerResponse_setVersion_args, 0, 0, 1)
     ZEND_ARG_TYPE_INFO(0, version, IS_STRING, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(AI(getStatus), 0, 0, 0)
+ZEND_BEGIN_ARG_INFO_EX(ServerResponse_getStatus_args, 0, 0, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(AI(setStatus), 0, 0, 1)
+ZEND_BEGIN_ARG_INFO_EX(ServerResponse_setStatus_args, 0, 0, 1)
     ZEND_ARG_TYPE_INFO(0, status, IS_LONG, 0)
 ZEND_END_ARG_INFO()
 
-REQUEST_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(AI(getHeader), 0, 0, IS_STRING, 1)
+REQUEST_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_getHeader_args, 0, 0, IS_STRING, 1)
 ZEND_END_ARG_INFO()
 
-REQUEST_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(AI(getHeaders), 0, 0, IS_ARRAY, 0)
+REQUEST_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_getHeaders_args, 0, 0, IS_ARRAY, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(AI(addSetHeader), 0, 0, 2)
+ZEND_BEGIN_ARG_INFO_EX(ServerResponse_addSetHeader_args, 0, 0, 2)
     ZEND_ARG_TYPE_INFO(0, label, IS_STRING, 0)
     ZEND_ARG_INFO(0, value)
 ZEND_END_ARG_INFO()
 
-REQUEST_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(AI(getCookies), 0, 0, IS_ARRAY, 0)
+REQUEST_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_getCookies_args, 0, 0, IS_ARRAY, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(AI(setCookie), 0, 0, 1)
+ZEND_BEGIN_ARG_INFO_EX(ServerResponse_setCookie_args, 0, 0, 1)
     ZEND_ARG_INFO(0, name)
     ZEND_ARG_TYPE_INFO(0, value, IS_STRING, 0)
     ZEND_ARG_TYPE_INFO(0, expires, IS_LONG, 0)
@@ -69,42 +66,42 @@ ZEND_BEGIN_ARG_INFO_EX(AI(setCookie), 0, 0, 1)
     ZEND_ARG_INFO(0, httponly)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(AI(getContent), 0, 0, 0)
+ZEND_BEGIN_ARG_INFO_EX(ServerResponse_getContent_args, 0, 0, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(AI(setContent), 0, 0, 1)
+ZEND_BEGIN_ARG_INFO_EX(ServerResponse_setContent_args, 0, 0, 1)
     ZEND_ARG_INFO(0, content)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(AI(setContentJson), 0, 0, 1)
+ZEND_BEGIN_ARG_INFO_EX(ServerResponse_setContentJson_args, 0, 0, 1)
     ZEND_ARG_INFO(0, content)
     ZEND_ARG_TYPE_INFO(0, options, IS_LONG, 0)
     ZEND_ARG_TYPE_INFO(0, depth, IS_LONG, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(AI(setContentDownload), 0, 0, 2)
+ZEND_BEGIN_ARG_INFO_EX(ServerResponse_setContentDownload_args, 0, 0, 2)
     ZEND_ARG_INFO(0, fh)
     ZEND_ARG_TYPE_INFO(0, name, IS_STRING, 0)
     ZEND_ARG_TYPE_INFO(0, disposition, IS_STRING, 0)
     ZEND_ARG_TYPE_INFO(0, params, IS_ARRAY, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(AI(addHeaderCallback), 0, 0, 1)
+ZEND_BEGIN_ARG_INFO_EX(ServerResponse_addHeaderCallback_args, 0, 0, 1)
     ZEND_ARG_TYPE_INFO(0, callback, IS_CALLABLE, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(AI(setHeaderCallbacks), 0, 0, 1)
+ZEND_BEGIN_ARG_INFO_EX(ServerResponse_setHeaderCallbacks_args, 0, 0, 1)
     ZEND_ARG_TYPE_INFO(0, callbacks, IS_ARRAY, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(AI(getHeaderCallbacks), 0, 0, 0)
+ZEND_BEGIN_ARG_INFO_EX(ServerResponse_getHeaderCallbacks_args, 0, 0, 0)
 ZEND_END_ARG_INFO()
 
-REQUEST_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(AI(date), 0, 1, IS_STRING, 0)
+REQUEST_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_date_args, 0, 1, IS_STRING, 0)
     ZEND_ARG_INFO(0, date)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(AI(send), 0, 0, 0)
+ZEND_BEGIN_ARG_INFO_EX(ServerResponse_send_args, 0, 0, 0)
 ZEND_END_ARG_INFO()
 /* }}} Argument Info */
 
@@ -1121,32 +1118,32 @@ PHP_METHOD(ServerResponse, sendContent)
 
 /* {{{ ServerResponse methods */
 static zend_function_entry ServerResponse_methods[] = {
-    PHP_ME(ServerResponse, __construct, AI(__construct), ZEND_ACC_PUBLIC)
-    PHP_ME(ServerResponse, getVersion, AI(getVersion), ZEND_ACC_PUBLIC)
-    PHP_ME(ServerResponse, setVersion, AI(setVersion), ZEND_ACC_PUBLIC)
-    PHP_ME(ServerResponse, getStatus, AI(getStatus), ZEND_ACC_PUBLIC)
-    PHP_ME(ServerResponse, setStatus, AI(setStatus), ZEND_ACC_PUBLIC)
-    PHP_ME(ServerResponse, getHeader, AI(getHeader), ZEND_ACC_PUBLIC)
-    PHP_ME(ServerResponse, getHeaders, AI(getHeaders), ZEND_ACC_PUBLIC)
-    PHP_ME(ServerResponse, setHeader, AI(addSetHeader), ZEND_ACC_PUBLIC)
-    PHP_ME(ServerResponse, addHeader, AI(addSetHeader), ZEND_ACC_PUBLIC)
-    PHP_ME(ServerResponse, getCookies, AI(getCookies), ZEND_ACC_PUBLIC)
-    PHP_ME(ServerResponse, setCookie, AI(setCookie), ZEND_ACC_PUBLIC)
-    PHP_ME(ServerResponse, setRawCookie, AI(setCookie), ZEND_ACC_PUBLIC)
-    PHP_ME(ServerResponse, getContent, AI(getContent), ZEND_ACC_PUBLIC)
-    PHP_ME(ServerResponse, setContent, AI(setContent), ZEND_ACC_PUBLIC)
-    PHP_ME(ServerResponse, setContentJson, AI(setContentJson), ZEND_ACC_PUBLIC)
-    PHP_ME(ServerResponse, setContentDownload, AI(setContentDownload), ZEND_ACC_PUBLIC)
-    PHP_ME(ServerResponse, addHeaderCallback, AI(addHeaderCallback), ZEND_ACC_PUBLIC)
-    PHP_ME(ServerResponse, setHeaderCallbacks, AI(setHeaderCallbacks), ZEND_ACC_PUBLIC)
-    PHP_ME(ServerResponse, getHeaderCallbacks, AI(getHeaderCallbacks), ZEND_ACC_PUBLIC)
-    PHP_ME(ServerResponse, date, AI(date), ZEND_ACC_PUBLIC)
-    PHP_ME(ServerResponse, send, AI(send), ZEND_ACC_PUBLIC)
-    PHP_ME(ServerResponse, runHeaderCallbacks, AI(send), ZEND_ACC_PROTECTED)
-    PHP_ME(ServerResponse, sendStatus, AI(send), ZEND_ACC_PROTECTED)
-    PHP_ME(ServerResponse, sendHeaders, AI(send), ZEND_ACC_PROTECTED)
-    PHP_ME(ServerResponse, sendCookies, AI(send), ZEND_ACC_PROTECTED)
-    PHP_ME(ServerResponse, sendContent, AI(send), ZEND_ACC_PROTECTED)
+    PHP_ME(ServerResponse, __construct, ServerResponse___construct_args, ZEND_ACC_PUBLIC)
+    PHP_ME(ServerResponse, getVersion, ServerResponse_getVersion_args, ZEND_ACC_PUBLIC)
+    PHP_ME(ServerResponse, setVersion, ServerResponse_setVersion_args, ZEND_ACC_PUBLIC)
+    PHP_ME(ServerResponse, getStatus, ServerResponse_getStatus_args, ZEND_ACC_PUBLIC)
+    PHP_ME(ServerResponse, setStatus, ServerResponse_setStatus_args, ZEND_ACC_PUBLIC)
+    PHP_ME(ServerResponse, getHeader, ServerResponse_getHeader_args, ZEND_ACC_PUBLIC)
+    PHP_ME(ServerResponse, getHeaders, ServerResponse_getHeaders_args, ZEND_ACC_PUBLIC)
+    PHP_ME(ServerResponse, setHeader, ServerResponse_addSetHeader_args, ZEND_ACC_PUBLIC)
+    PHP_ME(ServerResponse, addHeader, ServerResponse_addSetHeader_args, ZEND_ACC_PUBLIC)
+    PHP_ME(ServerResponse, getCookies, ServerResponse_getCookies_args, ZEND_ACC_PUBLIC)
+    PHP_ME(ServerResponse, setCookie, ServerResponse_setCookie_args, ZEND_ACC_PUBLIC)
+    PHP_ME(ServerResponse, setRawCookie, ServerResponse_setCookie_args, ZEND_ACC_PUBLIC)
+    PHP_ME(ServerResponse, getContent, ServerResponse_getContent_args, ZEND_ACC_PUBLIC)
+    PHP_ME(ServerResponse, setContent, ServerResponse_setContent_args, ZEND_ACC_PUBLIC)
+    PHP_ME(ServerResponse, setContentJson, ServerResponse_setContentJson_args, ZEND_ACC_PUBLIC)
+    PHP_ME(ServerResponse, setContentDownload, ServerResponse_setContentDownload_args, ZEND_ACC_PUBLIC)
+    PHP_ME(ServerResponse, addHeaderCallback, ServerResponse_addHeaderCallback_args, ZEND_ACC_PUBLIC)
+    PHP_ME(ServerResponse, setHeaderCallbacks, ServerResponse_setHeaderCallbacks_args, ZEND_ACC_PUBLIC)
+    PHP_ME(ServerResponse, getHeaderCallbacks, ServerResponse_getHeaderCallbacks_args, ZEND_ACC_PUBLIC)
+    PHP_ME(ServerResponse, date, ServerResponse_date_args, ZEND_ACC_PUBLIC)
+    PHP_ME(ServerResponse, send, ServerResponse_send_args, ZEND_ACC_PUBLIC)
+    PHP_ME(ServerResponse, runHeaderCallbacks, ServerResponse_send_args, ZEND_ACC_PROTECTED)
+    PHP_ME(ServerResponse, sendStatus, ServerResponse_send_args, ZEND_ACC_PROTECTED)
+    PHP_ME(ServerResponse, sendHeaders, ServerResponse_send_args, ZEND_ACC_PROTECTED)
+    PHP_ME(ServerResponse, sendCookies, ServerResponse_send_args, ZEND_ACC_PROTECTED)
+    PHP_ME(ServerResponse, sendContent, ServerResponse_send_args, ZEND_ACC_PROTECTED)
     PHP_FE_END
 };
 /* }}} ServerResponse methods */
