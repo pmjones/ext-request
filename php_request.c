@@ -49,7 +49,7 @@ static PHP_MINIT_FUNCTION(request)
 {
     PHP_MINIT(serverrequest)(INIT_FUNC_ARGS_PASSTHRU);
     PHP_MINIT(serverresponse)(INIT_FUNC_ARGS_PASSTHRU);
-
+    PHP_MINIT(serverresponsesender)(INIT_FUNC_ARGS_PASSTHRU);
     return SUCCESS;
 }
 /* }}} */

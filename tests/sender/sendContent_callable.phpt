@@ -1,5 +1,5 @@
 --TEST--
-ServerResponse::sendContent (resource)
+ServerResponse::sendContent (callable)
 --SKIPIF--
 <?php if (
     ! extension_loaded('request')
@@ -13,9 +13,10 @@ expose_php=0
 --FILE--
 <?php
 $response = new ServerResponse();
-$fh = fopen('php://temp', 'w+');
-fwrite($fh, 'foo');
-$response->setContent($fh);
-$response->send();
+$response->setContent(function (ServerResponse $arg) use ($response) {
+    if($response !== $arg) echo 'fail';
+    echo 'foo';
+});
+(new ServerResponseSender())->send($response);
 --EXPECT--
 foo

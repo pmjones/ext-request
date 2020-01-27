@@ -18,6 +18,6 @@ $response->setContent(function (ServerResponse $arg) use ($response) {
     echo 'foo';
     return 'bar';
 });
-$response->send();
+(new ServerResponseSender())->send($response);
 --EXPECT--
 foobar

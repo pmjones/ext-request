@@ -14,7 +14,7 @@ expose_php=0
 <?php
 $response = new ServerResponse();
 $response->setStatus(400);
-$response->send();
+(new ServerResponseSender())->send($response);
 var_dump(headers_list());
 var_dump(http_response_code());
 --EXPECTHEADERS--

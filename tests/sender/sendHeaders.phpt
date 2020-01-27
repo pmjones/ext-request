@@ -1,5 +1,5 @@
 --TEST--
-ServerResponse::sendCookies
+ServerResponse::sendHeaders
 --SKIPIF--
 <?php if (
     ! extension_loaded('request')
@@ -13,17 +13,19 @@ expose_php=0
 --FILE--
 <?php
 $response = new ServerResponse();
-$response->setCookie('cookie1', 'value1');
-$response->setRawCookie('cookie2', 'value2');
-$response->send();
+$response->setHeader('Foo', 'bar');
+$response->setHeader('Baz', 'dib');
+$response->addHeader('Baz', 'zim');
+(new ServerResponseSender())->send($response);
 var_dump(headers_list());
 // it appears EXPECTHEADERS can't handle duplicate headers
 --EXPECTHEADERS--
-Set-Cookie: cookie2=value2
+foo: bar
+baz: dib, zim
 --EXPECT--
 array(2) {
   [0]=>
-  string(26) "Set-Cookie: cookie1=value1"
+  string(8) "foo: bar"
   [1]=>
-  string(26) "Set-Cookie: cookie2=value2"
+  string(13) "baz: dib, zim"
 }
