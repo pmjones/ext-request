@@ -554,7 +554,6 @@ zval *server_response_get_content(zval *response)
 PHP_METHOD(ServerResponse, getContent)
 {
     zval *_this_zval = getThis();
-    zval *retval;
 
     ZEND_PARSE_PARAMETERS_START(0, 0)
     ZEND_PARSE_PARAMETERS_END();
@@ -791,7 +790,6 @@ zval *server_response_get_header_callbacks(zval *response)
 PHP_METHOD(ServerResponse, getHeaderCallbacks)
 {
     zval *_this_zval = getThis();
-    zval *retval;
 
     ZEND_PARSE_PARAMETERS_START(0, 0)
     ZEND_PARSE_PARAMETERS_END();
