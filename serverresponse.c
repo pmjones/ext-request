@@ -457,7 +457,7 @@ PHP_METHOD(ServerResponse, getCookies)
 /* }}} ServerResponse::getCookies */
 
 /* {{{ proto void ServerResponse::setCookie(string name [, string value [, int expires [, string path [, string domain [, bool secure[, bool httponly]]]]]]) */
-static void php_response_setcookie(INTERNAL_FUNCTION_PARAMETERS, zend_bool raw)
+static void server_response_setcookie(INTERNAL_FUNCTION_PARAMETERS, zend_bool raw)
 {
     zend_string *name;
     zend_string *value = NULL;
@@ -534,14 +534,14 @@ static void php_response_setcookie(INTERNAL_FUNCTION_PARAMETERS, zend_bool raw)
 
 PHP_METHOD(ServerResponse, setCookie)
 {
-    php_response_setcookie(INTERNAL_FUNCTION_PARAM_PASSTHRU, 0);
+    server_response_setcookie(INTERNAL_FUNCTION_PARAM_PASSTHRU, 0);
 }
 /* }}} ServerResponse::setCookie */
 
 /* {{{ proto void ServerResponse::setRawCookie(string name [, string value [, int expires [, string path [, string domain [, bool secure[, bool httponly]]]]]]) */
 PHP_METHOD(ServerResponse, setRawCookie)
 {
-    php_response_setcookie(INTERNAL_FUNCTION_PARAM_PASSTHRU, 1);
+    server_response_setcookie(INTERNAL_FUNCTION_PARAM_PASSTHRU, 1);
 }
 /* }}} ServerResponse::setRawCookie */
 
