@@ -151,14 +151,14 @@ ZEND_END_ARG_INFO()
 REQUEST_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_getCookies_args, 0, 0, IS_ARRAY, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(ServerResponse_setCookie_args, 0, 0, 1)
-    ZEND_ARG_INFO(0, name)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_setCookie_args, 0, 1, _IS_BOOL, 0)
+    ZEND_ARG_TYPE_INFO(0, name, IS_STRING, 0)
     ZEND_ARG_TYPE_INFO(0, value, IS_STRING, 0)
-    ZEND_ARG_TYPE_INFO(0, expires, IS_LONG, 0)
+    ZEND_ARG_INFO(0, expires_or_options)
     ZEND_ARG_TYPE_INFO(0, path, IS_STRING, 0)
     ZEND_ARG_TYPE_INFO(0, domain, IS_STRING, 0)
-    ZEND_ARG_INFO(0, secure)
-    ZEND_ARG_INFO(0, httponly)
+    ZEND_ARG_TYPE_INFO(0, secure, _IS_BOOL, 0)
+    ZEND_ARG_TYPE_INFO(0, httponly, _IS_BOOL, 0)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO_EX(ServerResponse_getContent_args, 0, 0, 0)
@@ -457,31 +457,91 @@ PHP_METHOD(ServerResponse, getCookies)
 /* }}} ServerResponse::getCookies */
 
 /* {{{ proto void ServerResponse::setCookie(string name [, string value [, int expires [, string path [, string domain [, bool secure[, bool httponly]]]]]]) */
-static void server_response_setcookie(INTERNAL_FUNCTION_PARAMETERS, zend_bool raw)
-{
-    zend_string *name;
-    zend_string *value = NULL;
-    zend_long expires = 0;
-    zend_string *path = NULL;
-    zend_string *domain = NULL;
-    zend_bool secure = 0;
-    zend_bool httponly = 0;
 
+static void php_head_parse_cookie_options_array(zval *options, zend_long *expires, zend_string **path, zend_string **domain, zend_bool *secure, zend_bool *httponly, zend_string **samesite) {
+    int found = 0;
+    zend_string *key;
+    zval *value;
+
+    ZEND_HASH_FOREACH_STR_KEY_VAL(Z_ARRVAL_P(options), key, value) {
+        if (key) {
+            if (zend_string_equals_literal_ci(key, "expires")) {
+                *expires = zval_get_long(value);
+                found++;
+            } else if (zend_string_equals_literal_ci(key, "path")) {
+                *path = zval_get_string(value);
+                found++;
+            } else if (zend_string_equals_literal_ci(key, "domain")) {
+                *domain = zval_get_string(value);
+                found++;
+            } else if (zend_string_equals_literal_ci(key, "secure")) {
+                *secure = zval_is_true(value);
+                found++;
+            } else if (zend_string_equals_literal_ci(key, "httponly")) {
+                *httponly = zval_is_true(value);
+                found++;
+            } else if (zend_string_equals_literal_ci(key, "samesite")) {
+                *samesite = zval_get_string(value);
+                found++;
+            } else {
+                php_error_docref(NULL, E_WARNING, "Unrecognized key '%s' found in the options array", ZSTR_VAL(key));
+            }
+        } else {
+            php_error_docref(NULL, E_WARNING, "Numeric key found in the options array");
+        }
+    } ZEND_HASH_FOREACH_END();
+
+    /* Array is not empty but no valid keys were found */
+    if (found == 0 && zend_hash_num_elements(Z_ARRVAL_P(options)) > 0) {
+        php_error_docref(NULL, E_WARNING, "No valid options were found in the given array");
+    }
+}
+
+static void server_response_setcookie(INTERNAL_FUNCTION_PARAMETERS, zend_bool url_encode)
+{
     zval *_this_zval = getThis();
     zval *ptr;
     zval member = {0};
     zval cookie = {0};
 
+    zend_string *name;
+    zend_string *value = NULL;
+    zval *expires_or_options = NULL;
+    zend_long expires = 0;
+    zend_string *path = NULL;
+    zend_string *domain = NULL;
+    zend_bool secure = 0;
+    zend_bool httponly = 0;
+    zend_string *samesite = NULL;
+
     ZEND_PARSE_PARAMETERS_START(1, 7)
         Z_PARAM_STR(name)
         Z_PARAM_OPTIONAL
         Z_PARAM_STR(value)
-        Z_PARAM_LONG(expires)
+        Z_PARAM_ZVAL(expires_or_options)
         Z_PARAM_STR(path)
         Z_PARAM_STR(domain)
         Z_PARAM_BOOL(secure)
         Z_PARAM_BOOL(httponly)
     ZEND_PARSE_PARAMETERS_END();
+
+    if (expires_or_options) {
+        if (Z_TYPE_P(expires_or_options) == IS_ARRAY) {
+            if (UNEXPECTED(ZEND_NUM_ARGS() > 3)) {
+                php_error_docref(NULL, E_WARNING, "Cannot pass arguments after the options array");
+                RETURN_FALSE;
+            }
+            php_head_parse_cookie_options_array(expires_or_options, &expires, &path, &domain, &secure, &httponly, &samesite);
+        } else {
+            expires = zval_get_long(expires_or_options);
+        }
+    }
+
+    if (EG(exception)) {
+        RETURN_FALSE;
+    }
+
+    // retain in array
 
     if( !Z_OBJ_HT_P(_this_zval)->get_property_ptr_ptr ) {
         zend_throw_exception_ex(spl_ce_RuntimeException, 0, "ServerResponse::setCookie requires get_property_ptr_ptr");
@@ -499,27 +559,39 @@ static void server_response_setcookie(INTERNAL_FUNCTION_PARAMETERS, zend_bool ra
         //ptr = NULL;
     }
 
-    // Make cookies array
-    array_init_size(&cookie, 7);
-    add_assoc_bool_ex(&cookie, ZEND_STRL("raw"), raw);
+    // Make cookie info array
+    array_init_size(&cookie, 8);
+
     if( value ) {
         add_assoc_stringl_ex(&cookie, ZEND_STRL("value"), ZSTR_VAL(value), ZSTR_LEN(value));
     } else {
         add_assoc_stringl_ex(&cookie, ZEND_STRL("value"), ZEND_STRL(""));
     }
-    add_assoc_long_ex(&cookie, ZEND_STRL("expire"), expires);
+
+    add_assoc_long_ex(&cookie, ZEND_STRL("expires"), expires);
+
     if( path ) {
         add_assoc_str_ex(&cookie, ZEND_STRL("path"), path);
     } else {
         add_assoc_stringl_ex(&cookie, ZEND_STRL("path"), ZEND_STRL(""));
     }
+
     if( domain ) {
         add_assoc_str_ex(&cookie, ZEND_STRL("domain"), domain);
     } else {
         add_assoc_stringl_ex(&cookie, ZEND_STRL("domain"), ZEND_STRL(""));
     }
+
     add_assoc_bool_ex(&cookie, ZEND_STRL("secure"), secure);
     add_assoc_bool_ex(&cookie, ZEND_STRL("httponly"), httponly);
+
+    if( samesite ) {
+        add_assoc_str_ex(&cookie, ZEND_STRL("samesite"), samesite);
+    } else {
+        add_assoc_stringl_ex(&cookie, ZEND_STRL("samesite"), ZEND_STRL(""));
+    }
+
+    add_assoc_bool_ex(&cookie, ZEND_STRL("url_encode"), url_encode);
 
     // Update property
     if( ptr ) {
@@ -530,18 +602,32 @@ static void server_response_setcookie(INTERNAL_FUNCTION_PARAMETERS, zend_bool ra
 
     // Cleanup
     zval_ptr_dtor(&member);
+
+    if (expires_or_options && Z_TYPE_P(expires_or_options) == IS_ARRAY) {
+        if (path) {
+            zend_string_release(path);
+        }
+        if (domain) {
+            zend_string_release(domain);
+        }
+        if (samesite) {
+            zend_string_release(samesite);
+        }
+    }
+
+    RETURN_TRUE;
 }
 
 PHP_METHOD(ServerResponse, setCookie)
 {
-    server_response_setcookie(INTERNAL_FUNCTION_PARAM_PASSTHRU, 0);
+    return server_response_setcookie(INTERNAL_FUNCTION_PARAM_PASSTHRU, 1);
 }
 /* }}} ServerResponse::setCookie */
 
 /* {{{ proto void ServerResponse::setRawCookie(string name [, string value [, int expires [, string path [, string domain [, bool secure[, bool httponly]]]]]]) */
 PHP_METHOD(ServerResponse, setRawCookie)
 {
-    server_response_setcookie(INTERNAL_FUNCTION_PARAM_PASSTHRU, 1);
+    return server_response_setcookie(INTERNAL_FUNCTION_PARAM_PASSTHRU, 0);
 }
 /* }}} ServerResponse::setRawCookie */
 
@@ -1075,7 +1161,8 @@ static inline void server_response_sender_send_cookie(zend_string *name, zval *a
     zend_string *domain = NULL;
     zend_bool secure = 0;
     zend_bool httponly = 0;
-    zend_bool raw = 0;
+    zend_string *samesite = zend_string_init("", strlen(""), 0);
+    zend_bool url_encode = 0;
 
     if( (tmp = zend_hash_str_find(Z_ARRVAL_P(arr), ZEND_STRL("value"))) ) {
         value = zval_get_string(tmp);
@@ -1083,7 +1170,7 @@ static inline void server_response_sender_send_cookie(zend_string *name, zval *a
         return;
     }
 
-    if( (tmp = zend_hash_str_find(Z_ARRVAL_P(arr), ZEND_STRL("expire"))) ) {
+    if( (tmp = zend_hash_str_find(Z_ARRVAL_P(arr), ZEND_STRL("expires"))) ) {
         expires = zval_get_long(tmp);
     }
 
@@ -1103,11 +1190,15 @@ static inline void server_response_sender_send_cookie(zend_string *name, zval *a
         httponly = zval_is_true(tmp);
     }
 
-    if( (tmp = zend_hash_str_find(Z_ARRVAL_P(arr), ZEND_STRL("raw"))) ) {
-        raw = zval_is_true(tmp);
+    if( (tmp = zend_hash_str_find(Z_ARRVAL_P(arr), ZEND_STRL("samesite"))) ) {
+        samesite = zval_is_true(tmp);
     }
 
-    php_setcookie(name, value, expires, path, domain, secure, !raw, httponly);
+    if( (tmp = zend_hash_str_find(Z_ARRVAL_P(arr), ZEND_STRL("url_encode"))) ) {
+        url_encode = zval_is_true(tmp);
+    }
+
+    php_setcookie(name, value, expires, path, domain, secure, httponly, samesite, url_encode);
 }
 
 static void server_response_sender_send_cookies(zval *response)
