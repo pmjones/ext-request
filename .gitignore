@@ -14,6 +14,7 @@ config.nice
 config.status
 config.sub
 configure
+configure.ac
 configure.in
 coverage.info
 .deps
@@ -52,4 +53,5 @@ tests/**/*.exp
 tests/**/*.php
 tests/**/*.mem
 tests/**/*.sh
+tests/**/phpt.*
 tmp-php.ini
