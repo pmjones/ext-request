@@ -168,28 +168,28 @@ _ServerResponse_ has these public methods.
 
 #### HTTP Version
 
-- `setVersion($version)`: Sets the HTTP version for the response (typically
+- `setVersion(string $version) : void`: Sets the HTTP version for the response (typically
   '1.0' or '1.1').
 
-- `getVersion()`: Returns the HTTP version for the response.
+- `getVersion() : string`: Returns the HTTP version for the response.
 
 #### Status Code
 
-- `setStatus($status)`: Sets the HTTP response code; a buffered equivalent of
+- `setStatus(string $status) : void`: Sets the HTTP response code; a buffered equivalent of
   `http_response_code($status)`.
 
 - `getStatus()`: Gets the HTTP response code.
 
 #### Headers
 
-- `setHeader($label, $value)`: Overwrites an HTTP header; a buffered equivalent
+- `setHeader(string $label, string $value) : void`: Overwrites an HTTP header; a buffered equivalent
   of `header("$label: $value", true)`.
 
-- `addHeader($label, $value)`: Appends to an HTTP header, comma-separating it
+- `addHeader(string $label, string $value) : void`: Appends to an HTTP header, comma-separating it
   from the existing value; a buffered equivalent of
   `header("$label: $value", false)`.
 
-- `getHeaders()`: Returns the array of headers to be sent.
+- `getHeaders() : array`: Returns the array of headers to be sent.
 
 The header field labels are retained internally in lower-case, and are
 sent as lower-case. This is to
@@ -198,32 +198,35 @@ while HTTP/1.x has no such requirement, lower-case is also recognized as valid.
 
 #### Cookies
 
-- `setCookie(...)`: A buffered equivalent of [`setcookie()`](http://php.net/setcookie)
+- `setCookie(...) : bool`: A buffered equivalent of [`setcookie()`](http://php.net/setcookie)
   with identical arguments.
 
-- `setRawCookie(...)`: A buffered equivalent of [`setrawcookie()`](http://php.net/setrawcookie)
+- `setRawCookie(...) : bool`: A buffered equivalent of [`setrawcookie()`](http://php.net/setrawcookie)
   with identical arguments.
 
-- `getCookies()`: Returns the array of cookies to be sent.
+- `getCookies() : array`: Returns the array of cookies to be sent.
 
 #### Header Callbacks
 
-- `setHeaderCallbacks($callbacks)`: Sets an array of callbacks to be invoked
+- `setHeaderCallbacks(array $callbacks) : void`: Sets an array of callbacks to be invoked
   just before headers are sent. It replaces any existing callbacks. This is similar to
   [`header_register_callback()`](https://secure.php.net/header_register_callback),
   except that *multiple* callbacks may be registered with the Response.
 
-- `addHeaderCallback($callback)`: Appends one callback to the current array of
+- `addHeaderCallback(callable $callback) : void`: Appends one callback to the current array of
   header callbacks.
 
-- `getHeaderCallbacks()`: Returns the array of header callbacks.
+- `getHeaderCallbacks() : array`: Returns the array of header callbacks.
+
+The header callback signature should be `function (ServerResponse $response)`;
+any return value is ignored.
 
 #### Content
 
-- `setContent($content)`: Sets the content of the response. This may be a
+- `setContent(mixed $content) : void`: Sets the content of the response. This may be a
   string, resource, object, or anything else.
 
-- `getContent()`: Returns the content of the response. This may be a string,
+- `getContent() : mixed`: Returns the content of the response. This may be a string,
   resource, object, or anything else.
 
 ## ServerResponseSender
@@ -242,11 +245,10 @@ This class has no public properties.
 
 ### Methods
 
-The primary public method is `send(ServerResponse $response)`. It ...
+The primary public method is `send(ServerResponse $response) : void`. It ...
 
 - invokes the header callbacks
-- sends the response version using `header()`
-- sends the status using `header()`
+- sends the version and status using `header()`
 - sends the non-cookie headers using `header()`
 - sends the cookie headers using `setcookie()` and `setrawcookie()`
 - sends the content

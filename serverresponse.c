@@ -48,32 +48,29 @@ zend_class_entry *ServerResponse_ce_ptr;
 ZEND_BEGIN_ARG_INFO_EX(ServerResponse___construct_args, 0, 0, 0)
 ZEND_END_ARG_INFO()
 
-REQUEST_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_getVersion_args, 0, 0, IS_STRING, 0)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_getVersion_args, 0, 0, IS_STRING, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(ServerResponse_setVersion_args, 0, 0, 1)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_setVersion_args, 0, 1, IS_VOID, 0)
     ZEND_ARG_TYPE_INFO(0, version, IS_STRING, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(ServerResponse_getStatus_args, 0, 0, 0)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_getStatus_args, 0, 0, IS_LONG, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(ServerResponse_setStatus_args, 0, 0, 1)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_setStatus_args, 0, 1, IS_VOID, 0)
     ZEND_ARG_TYPE_INFO(0, status, IS_LONG, 0)
 ZEND_END_ARG_INFO()
 
-REQUEST_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_getHeader_args, 0, 0, IS_STRING, 1)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_getHeaders_args, 0, 0, IS_ARRAY, 0)
 ZEND_END_ARG_INFO()
 
-REQUEST_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_getHeaders_args, 0, 0, IS_ARRAY, 0)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_INFO_EX(ServerResponse_addSetHeader_args, 0, 0, 2)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_addSetHeader_args, 0, 2, IS_VOID, 0)
     ZEND_ARG_TYPE_INFO(0, label, IS_STRING, 0)
     ZEND_ARG_TYPE_INFO(0, value, IS_STRING, 0)
 ZEND_END_ARG_INFO()
 
-REQUEST_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_getCookies_args, 0, 0, IS_ARRAY, 0)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_getCookies_args, 0, 0, IS_ARRAY, 0)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_setCookie_args, 0, 1, _IS_BOOL, 0)
@@ -89,26 +86,19 @@ ZEND_END_ARG_INFO()
 ZEND_BEGIN_ARG_INFO_EX(ServerResponse_getContent_args, 0, 0, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(ServerResponse_setContent_args, 0, 0, 1)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_setContent_args, 0, 1, IS_VOID, 1)
     ZEND_ARG_INFO(0, content)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(ServerResponse_addHeaderCallback_args, 0, 0, 1)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_addHeaderCallback_args, 0, 1, IS_VOID, 0)
     ZEND_ARG_TYPE_INFO(0, callback, IS_CALLABLE, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(ServerResponse_setHeaderCallbacks_args, 0, 0, 1)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_setHeaderCallbacks_args, 0, 1, IS_VOID, 0)
     ZEND_ARG_TYPE_INFO(0, callbacks, IS_ARRAY, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(ServerResponse_getHeaderCallbacks_args, 0, 0, 0)
-ZEND_END_ARG_INFO()
-
-REQUEST_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_date_args, 0, 1, IS_STRING, 0)
-    ZEND_ARG_INFO(0, date)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_INFO_EX(ServerResponse_send_args, 0, 0, 0)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_getHeaderCallbacks_args, 0, 0, IS_ARRAY, 0)
 ZEND_END_ARG_INFO()
 /* }}} Argument Info */
 
@@ -650,27 +640,27 @@ zend_class_entry *ServerResponseSender_ce_ptr;
 
 /* {{{ Argument Info */
 
-ZEND_BEGIN_ARG_INFO(ServerResponseSender_send_args, 0)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponseSender_send_args, 0, 1, IS_VOID, 0)
     ZEND_ARG_OBJ_INFO(0, response, ServerResponse, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO(ServerResponseSender_runHeaderCallbacks_args, 0)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponseSender_runHeaderCallbacks_args, 0, 1, IS_VOID, 0)
     ZEND_ARG_OBJ_INFO(0, response, ServerResponse, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO(ServerResponseSender_sendStatus_args, 0)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponseSender_sendStatus_args, 0, 1, IS_VOID, 0)
     ZEND_ARG_OBJ_INFO(0, response, ServerResponse, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO(ServerResponseSender_sendHeaders_args, 0)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponseSender_sendHeaders_args, 0, 1, IS_VOID, 0)
     ZEND_ARG_OBJ_INFO(0, response, ServerResponse, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO(ServerResponseSender_sendCookies_args, 0)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponseSender_sendCookies_args, 0, 1, IS_VOID, 0)
     ZEND_ARG_OBJ_INFO(0, response, ServerResponse, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO(ServerResponseSender_sendContent_args, 0)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponseSender_sendContent_args, 0, 1, IS_VOID, 0)
     ZEND_ARG_OBJ_INFO(0, response, ServerResponse, 0)
 ZEND_END_ARG_INFO()
 
