@@ -55,11 +55,11 @@ ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_setVersion_args, 0, 1, IS
     ZEND_ARG_TYPE_INFO(0, version, IS_STRING, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_getStatus_args, 0, 0, IS_LONG, 0)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_getCode_args, 0, 0, IS_LONG, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_setStatus_args, 0, 1, IS_VOID, 0)
-    ZEND_ARG_TYPE_INFO(0, status, IS_LONG, 0)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_setCode_args, 0, 1, IS_VOID, 0)
+    ZEND_ARG_TYPE_INFO(0, code, IS_LONG, 0)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_getHeaders_args, 0, 0, IS_ARRAY, 0)
@@ -151,39 +151,39 @@ PHP_METHOD(ServerResponse, setVersion)
 }
 /* }}} ServerResponse::setVersion */
 
-/* {{{ proto int ServerResponse::getStatus() */
-zval *server_response_get_status(zval *response)
+/* {{{ proto int ServerResponse::getCode() */
+zval *server_response_get_code(zval *response)
 {
-    zval *status;
-    status = zend_read_property(Z_OBJCE_P(response), response, ZEND_STRL("status"), 0, NULL);
-    convert_to_long(status);
-    return status;
+    zval *code;
+    code = zend_read_property(Z_OBJCE_P(response), response, ZEND_STRL("code"), 0, NULL);
+    convert_to_long(code);
+    return code;
 }
 
-PHP_METHOD(ServerResponse, getStatus)
+PHP_METHOD(ServerResponse, getCode)
 {
     zval *_this_zval = getThis();
 
     ZEND_PARSE_PARAMETERS_START(0, 0)
     ZEND_PARSE_PARAMETERS_END();
 
-    RETVAL_ZVAL(server_response_get_status(_this_zval), 1, 0);
+    RETVAL_ZVAL(server_response_get_code(_this_zval), 1, 0);
 }
-/* }}} ServerResponse::getStatus */
+/* }}} ServerResponse::getCode */
 
-/* {{{ proto void ServerResponse::setStatus(int $version) */
-PHP_METHOD(ServerResponse, setStatus)
+/* {{{ proto void ServerResponse::setCode(int $version) */
+PHP_METHOD(ServerResponse, setCode)
 {
     zval *_this_zval = getThis();
-    zend_long status;
+    zend_long code;
 
     ZEND_PARSE_PARAMETERS_START(1, 1)
-        Z_PARAM_LONG(status)
+        Z_PARAM_LONG(code)
     ZEND_PARSE_PARAMETERS_END();
 
-    zend_update_property_long(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("status"), status);
+    zend_update_property_long(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("code"), code);
 }
-/* }}} ServerResponse::setStatus */
+/* }}} ServerResponse::setCode */
 
 /* {{{ proto array ServerResponse::getHeaders() */
 zval *server_response_get_headers(zval *response)
@@ -599,8 +599,8 @@ static zend_function_entry ServerResponse_methods[] = {
     PHP_ME(ServerResponse, __construct, ServerResponse___construct_args, ZEND_ACC_PUBLIC)
     PHP_ME(ServerResponse, getVersion, ServerResponse_getVersion_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
     PHP_ME(ServerResponse, setVersion, ServerResponse_setVersion_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
-    PHP_ME(ServerResponse, getStatus, ServerResponse_getStatus_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
-    PHP_ME(ServerResponse, setStatus, ServerResponse_setStatus_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+    PHP_ME(ServerResponse, getCode, ServerResponse_getCode_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+    PHP_ME(ServerResponse, setCode, ServerResponse_setCode_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
     PHP_ME(ServerResponse, getHeaders, ServerResponse_getHeaders_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
     PHP_ME(ServerResponse, setHeader, ServerResponse_addSetHeader_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
     PHP_ME(ServerResponse, addHeader, ServerResponse_addSetHeader_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
@@ -625,7 +625,7 @@ PHP_MINIT_FUNCTION(serverresponse)
     ServerResponse_ce_ptr = zend_register_internal_class(&ServerResponse_ce);
 
     zend_declare_property_stringl(ServerResponse_ce_ptr, ZEND_STRL("version"), ZEND_STRL("1.1"), ZEND_ACC_PRIVATE);
-    zend_declare_property_long(ServerResponse_ce_ptr, ZEND_STRL("status"), 200, ZEND_ACC_PRIVATE);
+    zend_declare_property_long(ServerResponse_ce_ptr, ZEND_STRL("code"), 200, ZEND_ACC_PRIVATE);
     zend_declare_property_null(ServerResponse_ce_ptr, ZEND_STRL("headers"), ZEND_ACC_PRIVATE);
     zend_declare_property_null(ServerResponse_ce_ptr, ZEND_STRL("cookies"), ZEND_ACC_PRIVATE);
     zend_declare_property_null(ServerResponse_ce_ptr, ZEND_STRL("content"), ZEND_ACC_PRIVATE);
@@ -727,8 +727,8 @@ static void server_response_sender_send_status(zval *response)
     zval *tmp;
     smart_str buf = {0};
 
-    // Make status
-    tmp = server_response_get_status(response);
+    // Make code
+    tmp = server_response_get_code(response);
     if( tmp ) {
         ctr.response_code = zval_get_long(tmp);
     } else {
@@ -738,7 +738,7 @@ static void server_response_sender_send_status(zval *response)
     // Make header
     smart_str_appendl_ex(&buf, ZEND_STRL("HTTP/"), 0);
 
-    tmp = server_response_get_status(response);
+    tmp = server_response_get_code(response);
     if( tmp ) {
         convert_to_string(tmp);
         smart_str_append_ex(&buf, Z_STR_P(tmp), 0);

@@ -1,5 +1,5 @@
 --TEST--
-ServerResponse::getStatus
+ServerResponse::setCode
 --SKIPIF--
 <?php if (
     ! extension_loaded('request')
@@ -10,6 +10,10 @@ ServerResponse::getStatus
 --FILE--
 <?php
 $response = new ServerResponse();
-var_dump($response->getStatus());
+$response->setCode('500');
+var_dump($response->getCode());
+$response->setCode(401);
+var_dump($response->getCode());
 --EXPECT--
-int(200)
+int(500)
+int(401)

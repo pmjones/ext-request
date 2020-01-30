@@ -13,7 +13,7 @@ expose_php=0
 --FILE--
 <?php
 $response = new ServerResponse();
-$response->setStatus(400);
+$response->setCode(400);
 (new ServerResponseSender())->send($response);
 var_dump(headers_list());
 var_dump(http_response_code());
