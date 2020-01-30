@@ -23,7 +23,6 @@
 
 extern zend_string *server_request_normalize_header_name_ex(zend_string *in);
 
-/* {{{ Array to CSV */
 static inline void smart_str_appendz_ex(smart_str *dest, zval *zv, zend_bool persistent)
 {
     zend_string *tmp;
@@ -40,80 +39,6 @@ static inline void smart_str_appendz(smart_str *dest, zval *zv)
 {
     return smart_str_appendz_ex(dest, zv, 0);
 }
-
-static inline void _array_to_semicsv(smart_str *str, zval *arr)
-{
-    zend_string *key;
-    zend_ulong index;
-    zval *val;
-    zend_bool first = 1;
-    zend_string *tmp;
-
-    ZEND_HASH_FOREACH_KEY_VAL(Z_ARRVAL_P(arr), index, key, val) {
-        if( first ) {
-            first = 0;
-        } else {
-            smart_str_appendc(str, ';');
-        }
-        tmp = zval_get_string(val);
-        if( key ) {
-            smart_str_append(str, key);
-            smart_str_appendc(str, '=');
-        }
-        smart_str_append(str, tmp);
-        zend_string_release(tmp);
-    } ZEND_HASH_FOREACH_END();
-}
-
-static inline void _array_to_csv(smart_str *str, zval *arr)
-{
-    zend_string *key;
-    zend_ulong index;
-    zval *val;
-    zend_bool first = 1;
-    zend_string *tmp;
-
-    ZEND_HASH_FOREACH_KEY_VAL(Z_ARRVAL_P(arr), index, key, val) {
-        if( first ) {
-            first = 0;
-        } else {
-            smart_str_appendl_ex(str, ZEND_STRL(", "), 0);
-        }
-        if( !key ) {
-            tmp = zval_get_string(val);
-            smart_str_append(str, tmp);
-            zend_string_release(tmp);
-        } else if( Z_TYPE_P(val) == IS_ARRAY ) {
-            smart_str_append(str, key);
-            smart_str_appendc(str, ';');
-            _array_to_semicsv(str, val);
-        } else {
-            tmp = zval_get_string(val);
-            smart_str_append(str, key);
-            smart_str_appendc(str, '=');
-            smart_str_append(str, tmp);
-            zend_string_release(tmp);
-        }
-    } ZEND_HASH_FOREACH_END();
-}
-
-static inline zend_string *array_to_semicsv(zval *arr)
-{
-    smart_str str = {0};
-    _array_to_semicsv(&str, arr);
-    smart_str_0(&str);
-    return str.s;
-}
-
-static inline zend_string *array_to_csv(zval *arr)
-{
-    smart_str str = {0};
-    _array_to_csv(&str, arr);
-    smart_str_0(&str);
-    return str.s;
-}
-/* }}} */
-
 
 /* ServerResponse *********************************************************** */
 
@@ -145,7 +70,7 @@ ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO_EX(ServerResponse_addSetHeader_args, 0, 0, 2)
     ZEND_ARG_TYPE_INFO(0, label, IS_STRING, 0)
-    ZEND_ARG_INFO(0, value)
+    ZEND_ARG_TYPE_INFO(0, value, IS_STRING, 0)
 ZEND_END_ARG_INFO()
 
 REQUEST_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_getCookies_args, 0, 0, IS_ARRAY, 0)
@@ -166,19 +91,6 @@ ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO_EX(ServerResponse_setContent_args, 0, 0, 1)
     ZEND_ARG_INFO(0, content)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_INFO_EX(ServerResponse_setContentJson_args, 0, 0, 1)
-    ZEND_ARG_INFO(0, content)
-    ZEND_ARG_TYPE_INFO(0, options, IS_LONG, 0)
-    ZEND_ARG_TYPE_INFO(0, depth, IS_LONG, 0)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_INFO_EX(ServerResponse_setContentDownload_args, 0, 0, 2)
-    ZEND_ARG_INFO(0, fh)
-    ZEND_ARG_TYPE_INFO(0, name, IS_STRING, 0)
-    ZEND_ARG_TYPE_INFO(0, disposition, IS_STRING, 0)
-    ZEND_ARG_TYPE_INFO(0, params, IS_ARRAY, 0)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO_EX(ServerResponse_addHeaderCallback_args, 0, 0, 1)
@@ -283,35 +195,6 @@ PHP_METHOD(ServerResponse, setStatus)
 }
 /* }}} ServerResponse::setStatus */
 
-/* {{{ proto string ServerResponse::getHeader() */
-PHP_METHOD(ServerResponse, getHeader)
-{
-    zval *_this_zval = getThis();
-    zend_string *label;
-    zend_string *normal_label;
-    zval *headers;
-    zval *retval;
-
-    ZEND_PARSE_PARAMETERS_START(1, 1)
-        Z_PARAM_STR(label)
-    ZEND_PARSE_PARAMETERS_END();
-
-    headers = zend_read_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("headers"), 0, NULL);
-    if( !headers || Z_TYPE_P(headers) != IS_ARRAY ) {
-        return;
-    }
-
-    normal_label = server_request_normalize_header_name_ex(label);
-
-    retval = zend_hash_find(Z_ARRVAL_P(headers), normal_label);
-    if( retval ) {
-        RETVAL_ZVAL(retval, 1, 0);
-    }
-
-    zend_string_release(normal_label);
-}
-/* }}} ServerResponse::getHeader */
-
 /* {{{ proto array ServerResponse::getHeaders() */
 zval *server_response_get_headers(zval *response)
 {
@@ -329,8 +212,8 @@ PHP_METHOD(ServerResponse, getHeaders)
 }
 /* }}} ServerResponse::getHeaders */
 
-/* {{{ proto void ServerResponse::setHeader(string $label, mixed $value) */
-static void server_response_set_header(zval *response, zend_string *label, zval *value, zend_bool replace)
+/* {{{ proto void ServerResponse::setHeader(string $label, string $value) */
+static void server_response_set_header(zval *response, zend_string *label, zend_string *value, zend_bool replace)
 {
     zval member;
     zval *prop_ptr;
@@ -363,7 +246,7 @@ static void server_response_set_header(zval *response, zend_string *label, zval 
         return;
     }
 
-    // Get previous value
+    // append to previous value?
     if( !replace ) {
         prev_header = zend_hash_find(Z_ARRVAL_P(prop_ptr), normal_label);
         if( prev_header ) {
@@ -372,14 +255,8 @@ static void server_response_set_header(zval *response, zend_string *label, zval 
         }
     }
 
-    // Convert value to string
-    if( Z_TYPE_P(value) == IS_ARRAY ) {
-        tmp = array_to_csv(value);
-    } else {
-        tmp = zval_get_string(value);
-    }
-    value_str = php_trim(tmp, ZEND_STRL(" \t\r\n\v"), 3);
-    zend_string_release(tmp);
+    // trim whitespace
+    value_str = php_trim(value, ZEND_STRL(" \t\r\n\v"), 3);
 
     if( !ZSTR_LEN(value_str) ) {
         smart_str_free(&buf);
@@ -395,46 +272,29 @@ static void server_response_set_header(zval *response, zend_string *label, zval 
     zend_string_release(normal_label);
 }
 
-static inline void server_response_set_header_stringl(
-    zval *response,
-    const char *label, size_t label_len,
-    const char *value, size_t value_len,
-    zend_bool replace
-) {
-    zend_string *header_key = zend_string_init(label, label_len, 0);
-    zval header_val = {0};
-
-    ZVAL_STRINGL(&header_val, value, value_len);
-
-    server_response_set_header(response, header_key, &header_val, 1);
-
-    zval_ptr_dtor(&header_val);
-    zend_string_release(header_key);
-}
-
 PHP_METHOD(ServerResponse, setHeader)
 {
     zend_string *label;
-    zval *value;
+    zend_string *value;
 
     ZEND_PARSE_PARAMETERS_START(2, 2)
         Z_PARAM_STR(label)
-        Z_PARAM_ZVAL(value)
+        Z_PARAM_STR(value)
     ZEND_PARSE_PARAMETERS_END();
 
     server_response_set_header(getThis(), label, value, 1);
 }
 /* }}} ServerResponse::setHeader */
 
-/* {{{ proto void ServerResponse::addHeader(string $label, mixed $value) */
+/* {{{ proto void ServerResponse::addHeader(string $label, string $value) */
 PHP_METHOD(ServerResponse, addHeader)
 {
     zend_string *label;
-    zval *value;
+    zend_string *value;
 
     ZEND_PARSE_PARAMETERS_START(2, 2)
         Z_PARAM_STR(label)
-        Z_PARAM_ZVAL(value)
+        Z_PARAM_STR(value)
     ZEND_PARSE_PARAMETERS_END();
 
     server_response_set_header(getThis(), label, value, 0);
@@ -664,148 +524,6 @@ PHP_METHOD(ServerResponse, setContent)
 }
 /* }}} ServerResponse::setContent */
 
-/* {{{ proto void ServerResponse::setContentJson(mixed $value [, int $options [, int $depth = 512]]) */
-static inline void throw_json_exception()
-{
-    zval func_name = {0};
-    zval json_errmsg = {0};
-    zval json_errno = {0};
-
-    ZVAL_STRING(&func_name, "json_last_error_msg");
-    call_user_function(EG(function_table), NULL, &func_name, &json_errmsg, 0, NULL);
-
-    ZVAL_STRING(&func_name, "json_last_error");
-    call_user_function(EG(function_table), NULL, &func_name, &json_errno, 0, NULL);
-
-    convert_to_string(&json_errmsg);
-    zend_throw_exception_ex(spl_ce_RuntimeException, zval_get_long(&json_errno),
-                            "JSON encoding failed: %.*s", (int)Z_STRLEN(json_errmsg), Z_STRVAL(json_errmsg));
-
-    zval_ptr_dtor(&func_name);
-    zval_ptr_dtor(&json_errmsg);
-    zval_ptr_dtor(&json_errno);
-}
-
-PHP_METHOD(ServerResponse, setContentJson)
-{
-    zval *value;
-    zend_long options = 0;
-    zend_long depth = 512;
-
-    zval *_this_zval = getThis();
-    zval func_name = {0};
-    zval json_value = {0};
-    zval params[3] = {0};
-    zend_bool failed = 0;
-
-    ZEND_PARSE_PARAMETERS_START(1, 3)
-        Z_PARAM_ZVAL(value)
-        Z_PARAM_OPTIONAL
-        Z_PARAM_LONG(options)
-        Z_PARAM_LONG(depth)
-    ZEND_PARSE_PARAMETERS_END();
-
-    // Check
-    if( !zend_hash_str_exists(EG(function_table), "json_encode", sizeof("json_encode") - 1) ) {
-        zend_throw_exception(spl_ce_RuntimeException, "json_encode() not available", 0);
-        return;
-    }
-
-    // Call json_encode
-    ZVAL_STRING(&func_name, "json_encode");
-    ZVAL_ZVAL(&params[0], value, 1, 0);
-    ZVAL_LONG(&params[1], options);
-    ZVAL_LONG(&params[2], depth);
-
-    call_user_function(EG(function_table), NULL, &func_name, &json_value, 3, params);
-
-    if( Z_TYPE(json_value) != IS_STRING ) {
-        failed = 1;
-    } else {
-        zend_update_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("content"), &json_value);
-    }
-
-    zval_ptr_dtor(&json_value);
-    zval_ptr_dtor(&params[0]);
-    zval_ptr_dtor(&params[1]);
-    zval_ptr_dtor(&params[2]);
-    zval_ptr_dtor(&func_name);
-
-    if( failed ) {
-        throw_json_exception();
-        return;
-    }
-
-    // Set header
-    server_response_set_header_stringl(_this_zval, ZEND_STRL("content-type"), ZEND_STRL("application/json"), 1);
-}
-/* }}} ServerResponse::setContentJson */
-
-/* {{{ proto void ServerResponse::setContentDownload(resource $fh, string $name [, string $disposition = 'attachment' [, array $params = array()]]) */
-PHP_METHOD(ServerResponse, setContentDownload)
-{
-    zval *zstream;
-    zend_string *name = NULL;
-    zend_string *disposition = NULL;
-    zval *params = NULL;
-    zval _params = {0};
-    zval *_this_zval = getThis();
-    zend_string *tmp_filename;
-    smart_str buf = {0};
-    smart_str buf2 = {0};
-
-    ZEND_PARSE_PARAMETERS_START(2, 4)
-        Z_PARAM_ZVAL(zstream)
-        Z_PARAM_STR(name)
-        Z_PARAM_OPTIONAL
-        Z_PARAM_STR(disposition)
-        Z_PARAM_ARRAY(params)
-    ZEND_PARSE_PARAMETERS_END();
-
-    // Check type of resource parameter
-    if( Z_TYPE_P(zstream) != IS_RESOURCE ) {
-        zend_throw_exception_ex(spl_ce_InvalidArgumentException, 0, "Argument 1 passed to ServerResponse::setContentDownload() must be of the type resource, string given");
-        return;
-    }
-
-    // Initialize params
-    if( !params || Z_TYPE_P(params) != IS_ARRAY ) {
-        params = &_params;
-        array_init(params);
-    }
-
-    // Set headers
-    server_response_set_header_stringl(_this_zval, ZEND_STRL("content-type"), ZEND_STRL("application/octet-stream"), 1);
-    server_response_set_header_stringl(_this_zval, ZEND_STRL("content-transfer-encoding"), ZEND_STRL("binary"), 1);
-
-    // Set name
-    tmp_filename = php_raw_url_encode(ZSTR_VAL(name), ZSTR_LEN(name));
-    smart_str_appendc(&buf, '"');
-    smart_str_append(&buf, tmp_filename);
-    smart_str_appendc(&buf, '"');
-    smart_str_0(&buf);
-    zend_string_release(tmp_filename);
-    add_assoc_str_ex(params, ZEND_STRL("filename"), buf.s);
-
-    // Set disposition
-    if( disposition ) {
-        smart_str_append(&buf2, disposition);
-    } else {
-        smart_str_appendl_ex(&buf2, ZEND_STRL("attachment"), 0);
-    }
-    smart_str_appendc(&buf2, ';');
-    _array_to_semicsv(&buf2, params);
-    smart_str_0(&buf2);
-    server_response_set_header_stringl(_this_zval, ZEND_STRL("content-disposition"), ZSTR_VAL(buf2.s), ZSTR_LEN(buf2.s), 1);
-    smart_str_free(&buf2);
-
-    // Update content
-    zend_update_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("content"), zstream);
-
-    zval_dtor(&_params);
-}
-/* }}} ServerResponse::setContentDownload */
-
 /* {{{ proto void ServerResponse::addHeaderCallback(callable $callback) */
 PHP_METHOD(ServerResponse, addHeaderCallback)
 {
@@ -886,46 +604,6 @@ PHP_METHOD(ServerResponse, getHeaderCallbacks)
 }
 /* }}} ServerResponse::getHeaderCallback */
 
-/* {{{ proto string ServerResponse::date(mixed $date) */
-PHP_METHOD(ServerResponse, date)
-{
-    zval *date_arg;
-    zval *date;
-    zval tmp = {0};
-    zval ts = {0};
-    zend_string *date_str;
-
-    ZEND_PARSE_PARAMETERS_START(1, 1)
-        Z_PARAM_ZVAL(date_arg)
-    ZEND_PARSE_PARAMETERS_END();
-
-    // Create date object
-    if( Z_TYPE_P(date_arg) == IS_OBJECT && instanceof_function(Z_OBJCE_P(date_arg), php_date_get_date_ce()) ) {
-        date = date_arg;
-    } else {
-        object_init_ex(&tmp, php_date_get_date_ce());
-        zend_call_method_with_1_params(&tmp, NULL, NULL, "__construct", NULL, date_arg);
-        date = &tmp;
-        if( EG(exception) ) {
-            zend_object_store_ctor_failed(Z_OBJ(tmp));
-            return;
-        }
-    }
-
-    // Get timestamp
-    zend_call_method_with_0_params(date, php_date_get_date_ce(), NULL, "gettimestamp", &ts);
-
-    if( Z_TYPE(ts) == IS_LONG ) {
-        // Format
-        date_str = php_format_date(ZEND_STRL("D, d M Y H:i:s O"), Z_LVAL(ts), 0);
-        RETVAL_STR(date_str);
-    }
-
-    zval_ptr_dtor(&tmp);
-    zval_ptr_dtor(&ts);
-}
-/* }}} ServerResponse::date */
-
 /* {{{ ServerResponse methods */
 static zend_function_entry ServerResponse_methods[] = {
     PHP_ME(ServerResponse, __construct, ServerResponse___construct_args, ZEND_ACC_PUBLIC)
@@ -933,7 +611,6 @@ static zend_function_entry ServerResponse_methods[] = {
     PHP_ME(ServerResponse, setVersion, ServerResponse_setVersion_args, ZEND_ACC_PUBLIC)
     PHP_ME(ServerResponse, getStatus, ServerResponse_getStatus_args, ZEND_ACC_PUBLIC)
     PHP_ME(ServerResponse, setStatus, ServerResponse_setStatus_args, ZEND_ACC_PUBLIC)
-    PHP_ME(ServerResponse, getHeader, ServerResponse_getHeader_args, ZEND_ACC_PUBLIC)
     PHP_ME(ServerResponse, getHeaders, ServerResponse_getHeaders_args, ZEND_ACC_PUBLIC)
     PHP_ME(ServerResponse, setHeader, ServerResponse_addSetHeader_args, ZEND_ACC_PUBLIC)
     PHP_ME(ServerResponse, addHeader, ServerResponse_addSetHeader_args, ZEND_ACC_PUBLIC)
@@ -942,12 +619,9 @@ static zend_function_entry ServerResponse_methods[] = {
     PHP_ME(ServerResponse, setRawCookie, ServerResponse_setCookie_args, ZEND_ACC_PUBLIC)
     PHP_ME(ServerResponse, getContent, ServerResponse_getContent_args, ZEND_ACC_PUBLIC)
     PHP_ME(ServerResponse, setContent, ServerResponse_setContent_args, ZEND_ACC_PUBLIC)
-    PHP_ME(ServerResponse, setContentJson, ServerResponse_setContentJson_args, ZEND_ACC_PUBLIC)
-    PHP_ME(ServerResponse, setContentDownload, ServerResponse_setContentDownload_args, ZEND_ACC_PUBLIC)
     PHP_ME(ServerResponse, addHeaderCallback, ServerResponse_addHeaderCallback_args, ZEND_ACC_PUBLIC)
     PHP_ME(ServerResponse, setHeaderCallbacks, ServerResponse_setHeaderCallbacks_args, ZEND_ACC_PUBLIC)
     PHP_ME(ServerResponse, getHeaderCallbacks, ServerResponse_getHeaderCallbacks_args, ZEND_ACC_PUBLIC)
-    PHP_ME(ServerResponse, date, ServerResponse_date_args, ZEND_ACC_PUBLIC)
     PHP_FE_END
 };
 /* }}} ServerResponse methods */
