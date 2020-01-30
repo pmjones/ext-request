@@ -1,19 +1,21 @@
 # ext/request
 
-This extension provides server-side request and response objects for PHP.
-These are *not* HTTP message objects proper. They are more like wrappers
-for existing global PHP variables and functions, with some limited
-additional convenience functionality.
+This extension provides server-side request and response objects for PHP 7.3
+and later.
 
-This extension defines two classes in the global namespace:
+These are *not* HTTP message objects proper. They are more like wrappers
+for existing global PHP variables and functions.
+
+This extension defines three classes in the global namespace:
 
 - ServerRequest, composed of read-only copies of PHP superglobals and some
   other commonly-used values, with methods for adding application-specific
   request information in immutable fashion.
 
 - ServerResponse, essentially a wrapper around (and buffer for) response-
-  related PHP functions, with some additional convenience methods, and self-
-  sending capability.
+  related PHP functions.
+
+- ServerResponseSender, for sending a ServerResponse.
 
 ## ServerRequest
 
@@ -34,22 +36,18 @@ however, the public read-only properties cannot be modified or overridden.
 Instantiation of _ServerRequest_ is straightforward:
 
 ```php
-<?php
 $request = new ServerRequest($GLOBALS);
-?>
 ```
 
 If you want to provide custom values to the object, pass an array that mimics
 `$GLOBALS` to the constructor:
 
 ```php
-<?php
 $request = new ServerRequest([
     '_SERVER' => [
         'foo' => 'bar',
     ],
 ]);
-?>
 ```
 
 ### Properties
@@ -147,13 +145,9 @@ An object representing the PHP response to be sent from the server; use it in
 place of the `header()`, `setcookie()`, `setrawcookie()`, etc. functions. It
 provides:
 
-- a retention space for headers, cookies, and status, so they can be inspected
-  before sending;
-- a helper method for building HTTP date strings;
-- a helper for building header comma- and semicolon-separated strings for headers;
-- support for specifying content as a download (with appropriate headers);
-- support for specifying content as JSON (with appropriate headers);
-- self-sending capability;
+- a retention space for version, status, headers, and cookies so they can be
+  inspected before sending;
+
 - mutability and extensibility.
 
 ## Instantiation
@@ -161,9 +155,7 @@ provides:
 Instantation is straightforward:
 
 ```php
-<?php
 $response = new ServerResponse();
-?>
 ```
 
 ### Properties
@@ -197,48 +189,9 @@ _ServerResponse_ has these public methods.
   from the existing value; a buffered equivalent of
   `header("$label: $value", false)`.
 
-- `getHeader($label)`: Returns the value for a particular header.
-
 - `getHeaders()`: Returns the array of headers to be sent.
 
-- `date($date)`: Returns a RFC 1123 formatted date. The `$date` argument can be
-  any recognizable date-time string, or a _DateTime_ object.
-
-Notes:
-
-The `$value` in a `setHeader()` or `addHeader()` call may be an array, in which
-case it will be converted to a comma-separated and/or semicolon-separated value
-string. For example:
-
-```php
-<?php
-$response = new ServerResponse();
-
-$response->setHeader('Cache-Control', [
-    'public',
-    'max-age' => '123',
-    's-maxage' => '456',
-    'no-cache',
-]); // Cache-Control: public, max-age=123, s-maxage=456, no-cache
-
-$response->setHeader('content-type', [
-    'text/plain' => [
-        'charset' => 'utf-8'
-    ],
-]); // content-type: text/plain;charset=utf-8
-
-$response->setHeader('X-Whatever', [
-    'foo',
-    'bar' => [
-        'baz' => 'dib',
-        'zim',
-        'gir' => 'irk',
-    ],
-    'qux' => 'quux',
-]); // X-Whatever: foo, bar;baz=dib;zim;gir=irk, qux=quux
-```
-
-Finally, the header field labels are retained internally in lower-case, and are
+The header field labels are retained internally in lower-case, and are
 sent as lower-case. This is to
 [comply with HTTP/2 requirements](https://tools.ietf.org/html/rfc7540#section-8.1.2);
 while HTTP/1.x has no such requirement, lower-case is also recognized as valid.
@@ -270,25 +223,35 @@ while HTTP/1.x has no such requirement, lower-case is also recognized as valid.
 - `setContent($content)`: Sets the content of the response. This may be a
   string, resource, object, or anything else.
 
-- `setContentJson($value, $options = 0, $depth = 512)`: A convenience method to
-  `json_encode($value)` as the response content, and set a
-  `content-type: application/json` header.
-
-- `setContentDownload($fh, $name, $disposition = 'attachment', array $params = [])`:
-  A convenience method to set the content to a resource (typically a file handle)
-  for download to the client. This sets the headers
-  `content-type: application/octet-stream`, `content-transfer-encoding: binary`,
-  and `content-disposition: $disposition;filename="$name"`.  (The `$params`
-  key-value array are included as parameters on the disposition.)
-
 - `getContent()`: Returns the content of the response. This may be a string,
   resource, object, or anything else.
 
-#### Sending
+## ServerResponseSender
 
-- `send()`: This invokes the header callbacks, then sends the response version,
-  status, headers, and cookies using native PHP functions `header()`,
-  `setcookie()`, and `setrawcookie()`. Finally, if the response content is a
-  resource, it is sent with `fpassthru()`; if a callable object or closure, it
-  is invoked; otherwise, the content is `echo`ed (which calls `__toString()` if
-  the content is an object).
+### Instantiation
+
+Instantiation is straightforward:
+
+```php
+$sender = new ServerResponseSender();
+```
+
+### Properties
+
+This class has no public properties.
+
+### Methods
+
+The primary public method is `send(ServerResponse $response)`. It ...
+
+- invokes the header callbacks
+- sends the response version using `header()`
+- sends the status using `header()`
+- sends the non-cookie headers using `header()`
+- sends the cookie headers using `setcookie()` and `setrawcookie()`
+- sends the content
+
+If the response content is a resource, it is sent with `fpassthru()`. If the
+content is a callable object or closure, it is invoked, and its return value (if
+any) is `echo`ed. Otherwise, the content is `echo`ed (which calls `__toString()`
+if the content is an object).
