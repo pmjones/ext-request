@@ -21,9 +21,10 @@ $response->setCookie('cookie4', 'value4', [
     'httponly' => true,
     'samesite' => 'lax',
 ]);
+$response->setCookie('empty', '');
 var_dump($response->getCookies());
 --EXPECT--
-array(4) {
+array(5) {
   ["cookie1"]=>
   array(8) {
     ["value"]=>
@@ -97,6 +98,25 @@ array(4) {
     bool(true)
     ["samesite"]=>
     string(3) "lax"
+    ["url_encode"]=>
+    bool(true)
+  }
+  ["empty"]=>
+  array(8) {
+    ["value"]=>
+    string(0) ""
+    ["expires"]=>
+    int(0)
+    ["path"]=>
+    string(0) ""
+    ["domain"]=>
+    string(0) ""
+    ["secure"]=>
+    bool(false)
+    ["httponly"]=>
+    bool(false)
+    ["samesite"]=>
+    string(0) ""
     ["url_encode"]=>
     bool(true)
   }
