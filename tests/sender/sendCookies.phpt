@@ -24,10 +24,11 @@ $response->setCookie('cookie4', 'value4', [
     'httponly' => true,
     'samesite' => 'lax',
 ]);
+$response->setCookie('empty');
 (new ServerResponseSender())->send($response);
 var_dump(headers_list());
 --EXPECT--
-array(4) {
+array(5) {
   [0]=>
   string(30) "Set-Cookie: cookie1=v1%26%25v2"
   [1]=>
@@ -36,4 +37,6 @@ array(4) {
   string(122) "Set-Cookie: cookie3=value3; expires=Fri, 13-Feb-2009 23:31:30 GMT; Max-Age=0; path=/path; domain=doma.in; secure; HttpOnly"
   [3]=>
   string(136) "Set-Cookie: cookie4=value4; expires=Fri, 13-Feb-2009 23:31:30 GMT; Max-Age=0; path=/path; domain=doma.in; secure; HttpOnly; SameSite=lax"
+  [4]=>
+  string(75) "Set-Cookie: empty=deleted; expires=Thu, 01-Jan-1970 00:00:01 GMT; Max-Age=0"
 }
