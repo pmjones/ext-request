@@ -1,0 +1,73 @@
+--TEST--
+ServerRequest::__construct without calling parent
+--FILE--
+<?php
+class ExtRequest extends ServerRequest
+{
+    public function __construct()
+    {
+    }
+}
+$ext = new ExtRequest();
+var_dump($ext);
+--EXPECT--
+object(ExtRequest)#1 (29) {
+  ["_initialized":"ServerRequest":private]=>
+  bool(false)
+  ["accept"]=>
+  NULL
+  ["acceptCharset"]=>
+  NULL
+  ["acceptEncoding"]=>
+  NULL
+  ["acceptLanguage"]=>
+  NULL
+  ["authDigest"]=>
+  NULL
+  ["authPw"]=>
+  NULL
+  ["authType"]=>
+  NULL
+  ["authUser"]=>
+  NULL
+  ["content"]=>
+  NULL
+  ["contentCharset"]=>
+  NULL
+  ["contentLength"]=>
+  NULL
+  ["contentMd5"]=>
+  NULL
+  ["contentType"]=>
+  NULL
+  ["cookie"]=>
+  NULL
+  ["env"]=>
+  NULL
+  ["files"]=>
+  NULL
+  ["forwarded"]=>
+  NULL
+  ["forwardedFor"]=>
+  NULL
+  ["forwardedHost"]=>
+  NULL
+  ["forwardedProto"]=>
+  NULL
+  ["get"]=>
+  NULL
+  ["headers"]=>
+  NULL
+  ["method"]=>
+  NULL
+  ["post"]=>
+  NULL
+  ["requestedWith"]=>
+  NULL
+  ["server"]=>
+  NULL
+  ["uploads"]=>
+  NULL
+  ["url"]=>
+  NULL
+}
