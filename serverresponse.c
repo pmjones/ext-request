@@ -1161,7 +1161,7 @@ static inline void server_response_sender_send_cookie(zend_string *name, zval *a
     zend_string *domain = NULL;
     zend_bool secure = 0;
     zend_bool httponly = 0;
-    zend_string *samesite = zend_string_init("", strlen(""), 0);
+    zend_string *samesite = NULL;
     zend_bool url_encode = 0;
 
     if( (tmp = zend_hash_str_find(Z_ARRVAL_P(arr), ZEND_STRL("value"))) ) {
@@ -1191,7 +1191,7 @@ static inline void server_response_sender_send_cookie(zend_string *name, zval *a
     }
 
     if( (tmp = zend_hash_str_find(Z_ARRVAL_P(arr), ZEND_STRL("samesite"))) ) {
-        samesite = zval_is_true(tmp);
+        samesite = zval_get_string(tmp);
     }
 
     if( (tmp = zend_hash_str_find(Z_ARRVAL_P(arr), ZEND_STRL("url_encode"))) ) {
