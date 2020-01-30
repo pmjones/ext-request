@@ -359,6 +359,7 @@ static void server_response_set_header(zval *response, zend_string *label, zval 
 
     if( !ZSTR_LEN(normal_label) ) {
         zend_string_release(normal_label);
+        php_error_docref(NULL, E_WARNING, "Header label cannot be empty");
         return;
     }
 
@@ -382,6 +383,7 @@ static void server_response_set_header(zval *response, zend_string *label, zval 
 
     if( !ZSTR_LEN(value_str) ) {
         smart_str_free(&buf);
+        php_error_docref(NULL, E_WARNING, "Header value cannot be empty");
     } else {
         // Set/append value
         smart_str_append_ex(&buf, value_str, 0);
