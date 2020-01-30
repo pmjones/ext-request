@@ -10,8 +10,8 @@ ServerResponse::setCookie
 --FILE--
 <?php
 $response = new ServerResponse();
-$response->setCookie('foo', 'bar');
-$response->setRawCookie('baz', 'dib');
+$response->setCookie('cookie1', 'v1&%v2');
+$response->setRawCookie('cookie2', 'v3&%v4');
 $response->setCookie('cookie3', 'value3', 1234567890, "/path", "doma.in", true, true);
 $response->setCookie('cookie4', 'value4', [
     'expires' => 1234567890,
@@ -24,10 +24,10 @@ $response->setCookie('cookie4', 'value4', [
 var_dump($response->getCookies());
 --EXPECT--
 array(4) {
-  ["foo"]=>
+  ["cookie1"]=>
   array(8) {
     ["value"]=>
-    string(3) "bar"
+    string(6) "v1&%v2"
     ["expires"]=>
     int(0)
     ["path"]=>
@@ -43,10 +43,10 @@ array(4) {
     ["url_encode"]=>
     bool(true)
   }
-  ["baz"]=>
+  ["cookie2"]=>
   array(8) {
     ["value"]=>
-    string(3) "dib"
+    string(6) "v3&%v4"
     ["expires"]=>
     int(0)
     ["path"]=>
