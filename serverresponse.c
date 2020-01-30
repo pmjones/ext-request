@@ -232,7 +232,7 @@ static void server_response_set_header(zval *response, zend_string *label, zend_
 
     if( !ZSTR_LEN(normal_label) ) {
         zend_string_release(normal_label);
-        php_error_docref(NULL, E_WARNING, "Header label cannot be empty");
+        zend_throw_exception_ex(spl_ce_UnexpectedValueException, 0, "Header label cannot be blank");
         return;
     }
 
@@ -250,7 +250,7 @@ static void server_response_set_header(zval *response, zend_string *label, zend_
 
     if( !ZSTR_LEN(value_str) ) {
         smart_str_free(&buf);
-        php_error_docref(NULL, E_WARNING, "Header value cannot be empty");
+        zend_throw_exception_ex(spl_ce_UnexpectedValueException, 0, "Header value cannot be blank");
     } else {
         // Set/append value
         smart_str_append_ex(&buf, value_str, 0);
@@ -349,7 +349,7 @@ static void php_head_parse_cookie_options_array(zval *options, zend_long *expire
     }
 }
 
-static void server_response_setcookie(INTERNAL_FUNCTION_PARAMETERS, zend_bool url_encode)
+static void server_response_set_cookie(INTERNAL_FUNCTION_PARAMETERS, zend_bool url_encode)
 {
     zval *_this_zval = getThis();
     zval *ptr;
@@ -380,8 +380,8 @@ static void server_response_setcookie(INTERNAL_FUNCTION_PARAMETERS, zend_bool ur
     if (expires_or_options) {
         if (Z_TYPE_P(expires_or_options) == IS_ARRAY) {
             if (UNEXPECTED(ZEND_NUM_ARGS() > 3)) {
-                php_error_docref(NULL, E_WARNING, "Cannot pass arguments after the options array");
-                RETURN_FALSE;
+                zend_throw_exception_ex(spl_ce_BadMethodCallException, 0, "Cannot pass arguments after the options array");
+                return;
             }
             php_head_parse_cookie_options_array(expires_or_options, &expires, &path, &domain, &secure, &httponly, &samesite);
         } else {
@@ -390,15 +390,15 @@ static void server_response_setcookie(INTERNAL_FUNCTION_PARAMETERS, zend_bool ur
     }
 
     if (EG(exception)) {
-        RETURN_FALSE;
+        return;
     }
 
     // retain in array
 
-    if( !Z_OBJ_HT_P(_this_zval)->get_property_ptr_ptr ) {
-        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "ServerResponse::setCookie requires get_property_ptr_ptr");
-        return;
-    }
+    // if( !Z_OBJ_HT_P(_this_zval)->get_property_ptr_ptr ) {
+    //     zend_throw_exception_ex(spl_ce_RuntimeException, 0, "ServerResponse::setCookie requires get_property_ptr_ptr");
+    //     return;
+    // }
 
     // Read property pointer
     ZVAL_STRING(&member, "cookies");
@@ -472,14 +472,14 @@ static void server_response_setcookie(INTERNAL_FUNCTION_PARAMETERS, zend_bool ur
 
 PHP_METHOD(ServerResponse, setCookie)
 {
-    return server_response_setcookie(INTERNAL_FUNCTION_PARAM_PASSTHRU, 1);
+    return server_response_set_cookie(INTERNAL_FUNCTION_PARAM_PASSTHRU, 1);
 }
 /* }}} ServerResponse::setCookie */
 
 /* {{{ proto void ServerResponse::setRawCookie(string name [, string value [, int expires [, string path [, string domain [, bool secure[, bool httponly]]]]]]) */
 PHP_METHOD(ServerResponse, setRawCookie)
 {
-    return server_response_setcookie(INTERNAL_FUNCTION_PARAM_PASSTHRU, 0);
+    return server_response_set_cookie(INTERNAL_FUNCTION_PARAM_PASSTHRU, 0);
 }
 /* }}} ServerResponse::setRawCookie */
 
@@ -699,7 +699,7 @@ static void server_response_sender_run_header_callbacks(zval *response)
             zval_ptr_dtor(&params[0]);
         } else {
             callback_failed:
-            php_error_docref(NULL, E_WARNING, "Could not call the header callback");
+            zend_throw_exception_ex(spl_ce_RuntimeException, 0, "Could not call a header callback");
         }
 
         if (callback_error) {
