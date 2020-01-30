@@ -4,6 +4,7 @@ ServerRequest::__unset
 <?php
 $_SERVER['HTTP_HOST'] = 'localhost';
 $request = new ServerRequest($GLOBALS);
+unset($request->no_such_prop);
 try {
     unset($request->method);
 } catch( Exception $e ) {

@@ -453,10 +453,6 @@ static zval *server_request_object_content_read_property(zval *object, zval *mem
 /* {{{ server_request_object_has_property */
 static int server_request_object_has_property(zval *object, zval *member, int has_set_exists, void **cache_slot)
 {
-//    if( !Z_OBJCE_P(object)->__isset && !std_object_handlers.has_property(object, member, has_set_exists, cache_slot) ) {
-//        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "ServerRequest::$%.*s does not exist.", Z_STRLEN_P(member), Z_STRVAL_P(member));
-//        return 0;
-//    }
     struct prop_handlers *hnd = zend_hash_str_find_ptr(&ServerRequest_prop_handlers, Z_STRVAL_P(member), Z_STRLEN_P(member));
     return (hnd ? hnd->has_property : std_object_handlers.has_property)(object, member, has_set_exists, cache_slot);
 }
@@ -480,6 +476,14 @@ static zval *server_request_object_read_property(zval *object, zval *member, int
 /* {{{ server_request_object_write_property */
 static void server_request_object_write_property(zval *object, zval *member, zval *value, void **cache_slot)
 {
+    if( !Z_OBJCE_P(object)->__get && !std_object_handlers.has_property(object, member, 2, cache_slot) ) {
+        zend_string *ce_name = Z_OBJCE_P(object)->name;
+        zend_string *member_str = zval_get_string(member);
+        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "%.*s::$%.*s does not exist.", (int)ZSTR_LEN(ce_name), ZSTR_VAL(ce_name), (int)ZSTR_LEN(member_str), ZSTR_VAL(member_str));
+        zend_string_release(member_str);
+        return;
+    }
+
     if( !Z_OBJCE_P(object)->__set && !std_object_handlers.has_property(object, member, 2, cache_slot) ) {
         server_request_throw_readonly_exception(object, member);
         return;

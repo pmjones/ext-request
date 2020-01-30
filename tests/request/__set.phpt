@@ -18,4 +18,4 @@ try {
 string(16) "RuntimeException"
 string(36) "ServerRequest::$method is read-only."
 string(16) "RuntimeException"
-string(44) "ServerRequest::$noSuchProperty is read-only."
+string(46) "ServerRequest::$noSuchProperty does not exist."
