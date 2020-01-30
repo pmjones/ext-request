@@ -1,12 +1,5 @@
 --TEST--
 ServerRequest::$post
---SKIPIF--
-<?php if (
-    ! extension_loaded('request')
-    && ! getenv('TEST_USERLAND_REQUEST')
-) {
-    die('skip ');
-} ?>
 --POST--
 foo=bar&baz=bat
 --FILE--

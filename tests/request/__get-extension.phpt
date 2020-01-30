@@ -1,11 +1,5 @@
 --TEST--
 ServerRequest::__get extension indirect modification
---SKIPIF--
-<?php if (
-    ! extension_loaded('request')
-) {
-    die('skip ');
-} ?>
 --FILE--
 <?php
 $_SERVER['HTTP_HOST'] = 'localhost';

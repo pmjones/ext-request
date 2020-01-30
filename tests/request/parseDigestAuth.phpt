@@ -1,7 +1,5 @@
 --TEST--
 ServerRequest::parseDigestAuth
---SKIPIF--
-<?php if( !extension_loaded('request') ) die('skip '); ?>
 --FILE--
 <?php
 $request = new ServerRequest(['_SERVER' => ['PHP_AUTH_TYPE' => 'Digest', 'PHP_AUTH_DIGEST' => null]]);

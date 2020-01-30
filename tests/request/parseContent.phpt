@@ -1,7 +1,5 @@
 --TEST--
 ServerRequest::parseContentType
---SKIPIF--
-<?php if( !extension_loaded('request') ) die('skip '); ?>
 --FILE--
 <?php
 $request = new ServerRequest(['_SERVER' => ['HTTP_CONTENT_TYPE' => null]]);

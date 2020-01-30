@@ -1,12 +1,5 @@
 --TEST--
 ServerRequest::$method
---SKIPIF--
-<?php if (
-    ! extension_loaded('request')
-    && ! getenv('TEST_USERLAND_REQUEST')
-) {
-    die('skip ');
-} ?>
 --FILE--
 <?php
 unset($_SERVER['REQUEST_METHOD']); // not sure why this was set here

@@ -1,12 +1,5 @@
 --TEST--
 ServerRequest::$content (cgi)
---SKIPIF--
-<?php if (
-    ! extension_loaded('request')
-    && ! getenv('TEST_USERLAND_REQUEST')
-) {
-    die('skip ');
-} ?>
 --POST_RAW--
 Content-Type: application/x-www-form-urlencoded
 a=1&b=ZYX

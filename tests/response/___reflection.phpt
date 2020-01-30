@@ -1,0 +1,161 @@
+--TEST--
+ServerResponse reflection
+--FILE--
+<?php
+echo (new ReflectionClass(ServerResponse::CLASS));
+--EXPECT--
+Class [ <internal:request> class ServerResponse ] {
+
+  - Constants [0] {
+  }
+
+  - Static properties [0] {
+  }
+
+  - Static methods [0] {
+  }
+
+  - Properties [6] {
+    Property [ <default> private $version ]
+    Property [ <default> private $code ]
+    Property [ <default> private $headers ]
+    Property [ <default> private $cookies ]
+    Property [ <default> private $content ]
+    Property [ <default> private $callbacks ]
+  }
+
+  - Methods [16] {
+    Method [ <internal:request, ctor> public method __construct ] {
+
+      - Parameters [0] {
+      }
+    }
+
+    Method [ <internal:request> final public method getVersion ] {
+
+      - Parameters [0] {
+      }
+      - Return [ string ]
+    }
+
+    Method [ <internal:request> final public method setVersion ] {
+
+      - Parameters [1] {
+        Parameter #0 [ <required> string $version ]
+      }
+      - Return [ void ]
+    }
+
+    Method [ <internal:request> final public method getCode ] {
+
+      - Parameters [0] {
+      }
+      - Return [ int ]
+    }
+
+    Method [ <internal:request> final public method setCode ] {
+
+      - Parameters [1] {
+        Parameter #0 [ <required> int $code ]
+      }
+      - Return [ void ]
+    }
+
+    Method [ <internal:request> final public method getHeaders ] {
+
+      - Parameters [0] {
+      }
+      - Return [ array ]
+    }
+
+    Method [ <internal:request> final public method setHeader ] {
+
+      - Parameters [2] {
+        Parameter #0 [ <required> string $label ]
+        Parameter #1 [ <required> string $value ]
+      }
+      - Return [ void ]
+    }
+
+    Method [ <internal:request> final public method addHeader ] {
+
+      - Parameters [2] {
+        Parameter #0 [ <required> string $label ]
+        Parameter #1 [ <required> string $value ]
+      }
+      - Return [ void ]
+    }
+
+    Method [ <internal:request> final public method getCookies ] {
+
+      - Parameters [0] {
+      }
+      - Return [ array ]
+    }
+
+    Method [ <internal:request> final public method setCookie ] {
+
+      - Parameters [7] {
+        Parameter #0 [ <required> string $name ]
+        Parameter #1 [ <optional> string $value ]
+        Parameter #2 [ <optional> $expires_or_options ]
+        Parameter #3 [ <optional> string $path ]
+        Parameter #4 [ <optional> string $domain ]
+        Parameter #5 [ <optional> bool $secure ]
+        Parameter #6 [ <optional> bool $httponly ]
+      }
+      - Return [ bool ]
+    }
+
+    Method [ <internal:request> final public method setRawCookie ] {
+
+      - Parameters [7] {
+        Parameter #0 [ <required> string $name ]
+        Parameter #1 [ <optional> string $value ]
+        Parameter #2 [ <optional> $expires_or_options ]
+        Parameter #3 [ <optional> string $path ]
+        Parameter #4 [ <optional> string $domain ]
+        Parameter #5 [ <optional> bool $secure ]
+        Parameter #6 [ <optional> bool $httponly ]
+      }
+      - Return [ bool ]
+    }
+
+    Method [ <internal:request> final public method getContent ] {
+
+      - Parameters [0] {
+      }
+    }
+
+    Method [ <internal:request> final public method setContent ] {
+
+      - Parameters [1] {
+        Parameter #0 [ <required> $content ]
+      }
+      - Return [ void or NULL ]
+    }
+
+    Method [ <internal:request> final public method addHeaderCallback ] {
+
+      - Parameters [1] {
+        Parameter #0 [ <required> callable $callback ]
+      }
+      - Return [ void ]
+    }
+
+    Method [ <internal:request> final public method setHeaderCallbacks ] {
+
+      - Parameters [1] {
+        Parameter #0 [ <required> array $callbacks ]
+      }
+      - Return [ void ]
+    }
+
+    Method [ <internal:request> final public method getHeaderCallbacks ] {
+
+      - Parameters [0] {
+      }
+      - Return [ array ]
+    }
+  }
+}

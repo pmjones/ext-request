@@ -1,7 +1,5 @@
 --TEST--
 ServerRequest::parseAccept
---SKIPIF--
-<?php if( !extension_loaded('request') ) die('skip '); ?>
 --FILE--
 <?php
 $request = new ServerRequest([

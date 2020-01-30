@@ -1,11 +1,5 @@
 --TEST--
 ServerRequest - inheritance
---SKIPIF--
-<?php if (
-    ! extension_loaded('request')
-) {
-    die('skip ');
-} ?>
 --FILE--
 <?php
 $_SERVER = [
