@@ -58,28 +58,28 @@ _ServerRequest_ has these public properties.
 
 These properties are public, read-only, and cannot be modified or overridden.
 
-- `array $env`: A copy of `$_ENV`.
-- `array $files`: A copy of `$_FILES`.
-- `array $get`: A copy of `$_GET`.
-- `array $cookie`: A copy of `$_COOKIE`.
-- `array $post`: A copy of `$_POST`.
-- `array $server`: A copy of `$_SERVER`.
-- `array $uploads`: A copy of `$_FILES`, restructured to look more like `$_POST`.
+- `?array $env`: A copy of `$_ENV`.
+- `?array $files`: A copy of `$_FILES`.
+- `?array $get`: A copy of `$_GET`.
+- `?array $cookie`: A copy of `$_COOKIE`.
+- `?array $post`: A copy of `$_POST`.
+- `?array $server`: A copy of `$_SERVER`.
+- `?array $uploads`: A copy of `$_FILES`, restructured to look more like `$_POST`.
 
 #### HTTP-related
 
 These properties are public, read-only, and cannot be modified or overridden.
 
-- `array $accept`: An array of arrays computed from `$_SERVER['HTTP_ACCEPT']`.
-- `array $acceptCharset`: An array of arrays computed from `$_SERVER['HTTP_ACCEPT_CHARSET']`.
-- `array $acceptEncoding`: An array of arrays computed from `$_SERVER['HTTP_ACCEPT_ENCODING']`.
-- `array $acceptLanguage`: An array of arrays computed from `$_SERVER['HTTP_ACCEPT_LANGUAGE']`.
-- `array $forwarded`: An array of arrays computed from `$_SERVER['HTTP_FORWARDED']`.
-- `array $forwardedFor`: An array computed from treating `$_SERVER['HTTP_X_FORWARDED_FOR']`
+- `?array $accept`: An array of arrays computed from `$_SERVER['HTTP_ACCEPT']`.
+- `?array $acceptCharset`: An array of arrays computed from `$_SERVER['HTTP_ACCEPT_CHARSET']`.
+- `?array $acceptEncoding`: An array of arrays computed from `$_SERVER['HTTP_ACCEPT_ENCODING']`.
+- `?array $acceptLanguage`: An array of arrays computed from `$_SERVER['HTTP_ACCEPT_LANGUAGE']`.
+- `?array $forwarded`: An array of arrays computed from `$_SERVER['HTTP_FORWARDED']`.
+- `?array $forwardedFor`: An array computed from treating `$_SERVER['HTTP_X_FORWARDED_FOR']`
   as comma-separated values.
 - `?string $forwardedHost`: The `$_SERVER['HTTP_X_FORWARDED_HOST']` value.
 - `?string $forwardedProto`: The `$_SERVER['HTTP_X_FORWARDED_PROTO']` value.
-- `array $headers`: An array of key/value pairs computed from `$_SERVER` using all
+- `?array $headers`: An array of key/value pairs computed from `$_SERVER` using all
   `HTTP_*` header keys, plus RFC 3875 headers not prefixed with `HTTP_`.
 - `?string $method`: The `$_SERVER['REQUEST_METHOD']` value, or the
   `$_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE']` value when appropriate.
@@ -128,7 +128,7 @@ These properties are public, read-only, and cannot be modified or overridden.
 
 These properties are public, read-only, and cannot be modified or overridden.
 
-- `array $authDigest`: An array of digest values computed from
+- `?array $authDigest`: An array of digest values computed from
   `$_SERVER['PHP_AUTH_DIGEST']`.
 - `?string $authPw`: The value of `$_SERVER['PHP_AUTH_PW']`.
 - `?string $authType`: The value of `$_SERVER['PHP_AUTH_TYPE']`.
@@ -145,7 +145,7 @@ An object representing the PHP response to be sent from the server; use it in
 place of the `header()`, `setcookie()`, `setrawcookie()`, etc. functions. It
 provides:
 
-- a retention space for version, status, headers, and cookies so they can be
+- a retention space for version, code, headers, and cookies so they can be
   inspected before sending;
 
 - mutability and extensibility.
@@ -173,12 +173,12 @@ _ServerResponse_ has these public methods.
 
 - `getVersion() : string`: Returns the HTTP version for the response.
 
-#### Status Code
+#### Response Code
 
-- `setStatus(string $status) : void`: Sets the HTTP response code; a buffered equivalent of
-  `http_response_code($status)`.
+- `setCode(string $code) : void`: Sets the HTTP response code; a buffered equivalent of
+  `http_response_code($code)`.
 
-- `getStatus()`: Gets the HTTP response code.
+- `getCode()`: Gets the HTTP response code.
 
 #### Headers
 
@@ -248,7 +248,7 @@ This class has no public properties.
 The primary public method is `send(ServerResponse $response) : void`. It ...
 
 - invokes the header callbacks
-- sends the version and status using `header()`
+- sends the status line (version and code) using `header()`
 - sends the non-cookie headers using `header()`
 - sends the cookie headers using `setcookie()` and `setrawcookie()`
 - sends the content
