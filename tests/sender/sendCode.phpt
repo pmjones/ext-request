@@ -1,5 +1,5 @@
 --TEST--
-ServerResponse::sendStatus
+ServerResponseSender::sendStatus
 --CGI--
 --INI--
 expose_php=0

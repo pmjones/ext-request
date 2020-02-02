@@ -1,5 +1,5 @@
 --TEST--
-ServerResponse::sendHeaders
+ServerResponseSender::sendHeaders
 --CGI--
 --INI--
 expose_php=0

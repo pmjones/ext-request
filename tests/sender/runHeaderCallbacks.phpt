@@ -1,5 +1,5 @@
 --TEST--
-ServerResponse::runHeaderCallback
+ServerResponseSender::runHeaderCallback
 --CGI--
 --INI--
 expose_php=0

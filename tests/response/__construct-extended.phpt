@@ -1,5 +1,5 @@
 --TEST--
-ServerResponse::__construct without calling parent
+ServerResponse::__construct (extended without calling parent)
 --FILE--
 <?php
 class ExtResponse extends ServerResponse
@@ -10,12 +10,13 @@ class ExtResponse extends ServerResponse
 }
 $ext = new ExtResponse();
 var_dump($ext);
+var_dump($ext->getHeaders());
 --EXPECT--
 object(ExtResponse)#1 (6) {
   ["version":"ServerResponse":private]=>
-  string(3) "1.1"
+  NULL
   ["code":"ServerResponse":private]=>
-  int(200)
+  NULL
   ["headers":"ServerResponse":private]=>
   NULL
   ["cookies":"ServerResponse":private]=>
@@ -25,3 +26,4 @@ object(ExtResponse)#1 (6) {
   ["callbacks":"ServerResponse":private]=>
   NULL
 }
+NULL

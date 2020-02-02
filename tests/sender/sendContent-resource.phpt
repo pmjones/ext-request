@@ -1,5 +1,5 @@
 --TEST--
-ServerResponse::sendContent (resource)
+ServerResponseSender::sendContent (resource)
 --CGI--
 --INI--
 expose_php=0

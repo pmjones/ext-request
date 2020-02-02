@@ -1,5 +1,5 @@
 --TEST--
-ServerResponse::sendContent __toString()
+ServerResponseSender::sendContent __toString()
 --CGI--
 --INI--
 expose_php=0

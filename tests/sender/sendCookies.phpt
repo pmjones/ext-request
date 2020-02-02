@@ -1,5 +1,5 @@
 --TEST--
-ServerResponse::sendCookies
+ServerResponseSender::sendCookies
 --CGI--
 --INI--
 expose_php=0

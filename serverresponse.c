@@ -45,24 +45,21 @@ static inline void smart_str_appendz(smart_str *dest, zval *zv)
 zend_class_entry *ServerResponse_ce_ptr;
 
 /* {{{ Argument Info */
-ZEND_BEGIN_ARG_INFO_EX(ServerResponse___construct_args, 0, 0, 0)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_getVersion_args, 0, 0, IS_STRING, 0)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_getVersion_args, 0, 0, IS_STRING, 1)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_setVersion_args, 0, 1, IS_VOID, 0)
     ZEND_ARG_TYPE_INFO(0, version, IS_STRING, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_getCode_args, 0, 0, IS_LONG, 0)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_getCode_args, 0, 0, IS_LONG, 1)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_setCode_args, 0, 1, IS_VOID, 0)
     ZEND_ARG_TYPE_INFO(0, code, IS_LONG, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_getHeaders_args, 0, 0, IS_ARRAY, 0)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_getHeaders_args, 0, 0, IS_ARRAY, 1)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_addSetHeader_args, 0, 2, IS_VOID, 0)
@@ -70,7 +67,7 @@ ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_addSetHeader_args, 0, 2, 
     ZEND_ARG_TYPE_INFO(0, value, IS_STRING, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_getCookies_args, 0, 0, IS_ARRAY, 0)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_getCookies_args, 0, 0, IS_ARRAY, 1)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_setCookie_args, 0, 1, _IS_BOOL, 0)
@@ -98,32 +95,14 @@ ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_setHeaderCallbacks_args, 
     ZEND_ARG_TYPE_INFO(0, callbacks, IS_ARRAY, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_getHeaderCallbacks_args, 0, 0, IS_ARRAY, 0)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_getHeaderCallbacks_args, 0, 0, IS_ARRAY, 1)
 ZEND_END_ARG_INFO()
 /* }}} Argument Info */
-
-/* {{{ proto ServerResponse::__construct() */
-PHP_METHOD(ServerResponse, __construct)
-{
-    zval *_this_zval = getThis();
-    zval arr;
-
-    ZEND_PARSE_PARAMETERS_START(0, 0)
-    ZEND_PARSE_PARAMETERS_END();
-
-    array_init(&arr);
-    zend_update_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("headers"), &arr);
-    array_init(&arr);
-    zend_update_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("cookies"), &arr);
-    array_init(&arr);
-    zend_update_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("callbacks"), &arr);
-}
-/* }}} ServerResponse::getVersion */
 
 /* {{{ proto string ServerResponse::getVersion() */
 zval *server_response_get_version(zval *response)
 {
-    return zend_read_property(Z_OBJCE_P(response), response, ZEND_STRL("version"), 0, NULL);
+    return zend_read_property(ServerResponse_ce_ptr, response, ZEND_STRL("version"), 0, NULL);
 }
 
 PHP_METHOD(ServerResponse, getVersion)
@@ -147,17 +126,14 @@ PHP_METHOD(ServerResponse, setVersion)
         Z_PARAM_STR(version)
     ZEND_PARSE_PARAMETERS_END();
 
-    zend_update_property_str(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("version"), version);
+    zend_update_property_str(ServerResponse_ce_ptr, _this_zval, ZEND_STRL("version"), version);
 }
 /* }}} ServerResponse::setVersion */
 
 /* {{{ proto int ServerResponse::getCode() */
 zval *server_response_get_code(zval *response)
 {
-    zval *code;
-    code = zend_read_property(Z_OBJCE_P(response), response, ZEND_STRL("code"), 0, NULL);
-    convert_to_long(code);
-    return code;
+    return zend_read_property(ServerResponse_ce_ptr, response, ZEND_STRL("code"), 0, NULL);
 }
 
 PHP_METHOD(ServerResponse, getCode)
@@ -181,14 +157,14 @@ PHP_METHOD(ServerResponse, setCode)
         Z_PARAM_LONG(code)
     ZEND_PARSE_PARAMETERS_END();
 
-    zend_update_property_long(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("code"), code);
+    zend_update_property_long(ServerResponse_ce_ptr, _this_zval, ZEND_STRL("code"), code);
 }
 /* }}} ServerResponse::setCode */
 
 /* {{{ proto array ServerResponse::getHeaders() */
 zval *server_response_get_headers(zval *response)
 {
-    return zend_read_property(Z_OBJCE_P(response), response, ZEND_STRL("headers"), 0, NULL);
+    return zend_read_property(ServerResponse_ce_ptr, response, ZEND_STRL("headers"), 0, NULL);
 }
 
 PHP_METHOD(ServerResponse, getHeaders)
@@ -207,7 +183,6 @@ static void server_response_set_header(zval *response, zend_string *label, zend_
 {
     zval member;
     zval *prop_ptr;
-    zval arr;
     zend_string *normal_label;
     zend_string *value_str;
     zend_string *tmp;
@@ -223,8 +198,7 @@ static void server_response_set_header(zval *response, zend_string *label, zend_
     ZVAL_STRING(&member, "headers");
     prop_ptr = Z_OBJ_HT_P(response)->get_property_ptr_ptr(response, &member, BP_VAR_RW, NULL);
     if( !prop_ptr || Z_TYPE_P(prop_ptr) != IS_ARRAY ) {
-        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "ServerResponse::$headers must be an array");
-        return;
+        convert_to_array(prop_ptr);
     }
 
     // Normalize label
@@ -294,7 +268,7 @@ PHP_METHOD(ServerResponse, addHeader)
 /* {{{ proto array ServerResponse::getCookies() */
 zval *server_response_get_cookies(zval *response)
 {
-    return zend_read_property(Z_OBJCE_P(response), response, ZEND_STRL("cookies"), 0, NULL);
+    return zend_read_property(ServerResponse_ce_ptr, response, ZEND_STRL("cookies"), 0, NULL);
 }
 
 PHP_METHOD(ServerResponse, getCookies)
@@ -351,10 +325,11 @@ static void php_head_parse_cookie_options_array(zval *options, zend_long *expire
 
 static void server_response_set_cookie(INTERNAL_FUNCTION_PARAMETERS, zend_bool url_encode)
 {
-    zval *_this_zval = getThis();
+    zval *response = getThis();
     zval *ptr;
     zval member = {0};
     zval cookie = {0};
+    zval *arr;
 
     zend_string *name;
     zend_string *value = NULL;
@@ -395,14 +370,14 @@ static void server_response_set_cookie(INTERNAL_FUNCTION_PARAMETERS, zend_bool u
 
     // retain in array
 
-    // if( !Z_OBJ_HT_P(_this_zval)->get_property_ptr_ptr ) {
+    // if( !Z_OBJ_HT_P(response)->get_property_ptr_ptr ) {
     //     zend_throw_exception_ex(spl_ce_RuntimeException, 0, "ServerResponse::setCookie requires get_property_ptr_ptr");
     //     return;
     // }
 
     // Read property pointer
     ZVAL_STRING(&member, "cookies");
-    ptr = Z_OBJ_HT_P(_this_zval)->get_property_ptr_ptr(_this_zval, &member, BP_VAR_RW, NULL);
+    ptr = Z_OBJ_HT_P(response)->get_property_ptr_ptr(response, &member, BP_VAR_RW, NULL);
 
     if( !ptr ) {
         // fall-through
@@ -449,7 +424,7 @@ static void server_response_set_cookie(INTERNAL_FUNCTION_PARAMETERS, zend_bool u
     if( ptr ) {
         add_assoc_zval_ex(ptr, ZSTR_VAL(name), ZSTR_LEN(name), &cookie);
     } else {
-        zend_update_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("cookies"), &cookie);
+        zend_update_property(ServerResponse_ce_ptr, response, ZEND_STRL("cookies"), &cookie);
     }
 
     // Cleanup
@@ -486,7 +461,7 @@ PHP_METHOD(ServerResponse, setRawCookie)
 /* {{{ proto mixed ServerResponse::getContent() */
 zval *server_response_get_content(zval *response)
 {
-    return zend_read_property(Z_OBJCE_P(response), response, ZEND_STRL("content"), 0, NULL);
+    return zend_read_property(ServerResponse_ce_ptr, response, ZEND_STRL("content"), 0, NULL);
 }
 
 PHP_METHOD(ServerResponse, getContent)
@@ -510,7 +485,7 @@ PHP_METHOD(ServerResponse, setContent)
         Z_PARAM_ZVAL(content)
     ZEND_PARSE_PARAMETERS_END();
 
-    zend_update_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("content"), content);
+    zend_update_property(ServerResponse_ce_ptr, _this_zval, ZEND_STRL("content"), content);
 }
 /* }}} ServerResponse::setContent */
 
@@ -539,8 +514,7 @@ PHP_METHOD(ServerResponse, addHeaderCallback)
     ZVAL_STRING(&member, "callbacks");
     prop_ptr = Z_OBJ_HT_P(_this_zval)->get_property_ptr_ptr(_this_zval, &member, BP_VAR_RW, NULL);
     if( !prop_ptr || Z_TYPE_P(prop_ptr) != IS_ARRAY ) {
-        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "ServerResponse::$callbacks must be an array");
-        goto done;
+        convert_to_array(prop_ptr);
     }
 
     // Append callback
@@ -549,7 +523,6 @@ PHP_METHOD(ServerResponse, addHeaderCallback)
     add_next_index_zval(prop_ptr, &tmp);
 
     // Cleanup
-done:
     zval_ptr_dtor(&member);
 }
 /* }}} ServerResponse::setHeaderCallbacks */
@@ -568,7 +541,7 @@ PHP_METHOD(ServerResponse, setHeaderCallbacks)
 
     // Reset callbacks property
     array_init(&arr);
-    zend_update_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("callbacks"), &arr);
+    zend_update_property(ServerResponse_ce_ptr, _this_zval, ZEND_STRL("callbacks"), &arr);
 
     // Forward each item to addHeaderCallback
     ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(callbacks), callback) {
@@ -580,7 +553,7 @@ PHP_METHOD(ServerResponse, setHeaderCallbacks)
 /* {{{ proto callback ServerResponse::getHeaderCallbacks() */
 zval *server_response_get_header_callbacks(zval *response)
 {
-    return zend_read_property(Z_OBJCE_P(response), response, ZEND_STRL("callbacks"), 0, NULL);
+    return zend_read_property(ServerResponse_ce_ptr, response, ZEND_STRL("callbacks"), 0, NULL);
 }
 
 PHP_METHOD(ServerResponse, getHeaderCallbacks)
@@ -596,7 +569,6 @@ PHP_METHOD(ServerResponse, getHeaderCallbacks)
 
 /* {{{ ServerResponse methods */
 static zend_function_entry ServerResponse_methods[] = {
-    PHP_ME(ServerResponse, __construct, ServerResponse___construct_args, ZEND_ACC_PUBLIC)
     PHP_ME(ServerResponse, getVersion, ServerResponse_getVersion_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
     PHP_ME(ServerResponse, setVersion, ServerResponse_setVersion_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
     PHP_ME(ServerResponse, getCode, ServerResponse_getCode_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
@@ -624,8 +596,8 @@ PHP_MINIT_FUNCTION(serverresponse)
     INIT_CLASS_ENTRY(ServerResponse_ce, "ServerResponse", ServerResponse_methods);
     ServerResponse_ce_ptr = zend_register_internal_class(&ServerResponse_ce);
 
-    zend_declare_property_stringl(ServerResponse_ce_ptr, ZEND_STRL("version"), ZEND_STRL("1.1"), ZEND_ACC_PRIVATE);
-    zend_declare_property_long(ServerResponse_ce_ptr, ZEND_STRL("code"), 200, ZEND_ACC_PRIVATE);
+    zend_declare_property_null(ServerResponse_ce_ptr, ZEND_STRL("version"), ZEND_ACC_PRIVATE);
+    zend_declare_property_null(ServerResponse_ce_ptr, ZEND_STRL("code"), ZEND_ACC_PRIVATE);
     zend_declare_property_null(ServerResponse_ce_ptr, ZEND_STRL("headers"), ZEND_ACC_PRIVATE);
     zend_declare_property_null(ServerResponse_ce_ptr, ZEND_STRL("cookies"), ZEND_ACC_PRIVATE);
     zend_declare_property_null(ServerResponse_ce_ptr, ZEND_STRL("content"), ZEND_ACC_PRIVATE);
@@ -673,6 +645,10 @@ static void server_response_sender_run_header_callbacks(zval *response)
     zval *callback;
 
     callbacks = server_response_get_header_callbacks(response);
+
+    if( !callbacks || Z_TYPE_P(callbacks) != IS_ARRAY ) {
+        return;
+    }
 
     ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(callbacks), callback) {
 
@@ -797,6 +773,9 @@ static void server_response_sender_send_headers(zval *response)
     zval *value;
 
     headers = server_response_get_headers(response);
+    if( !headers || Z_TYPE_P(headers) != IS_ARRAY ) {
+        return;
+    }
 
     ZEND_HASH_FOREACH_KEY_VAL(Z_ARRVAL_P(headers), index, label, value) {
         if( label ) {

@@ -10,6 +10,7 @@ class ExtRequest extends ServerRequest
 }
 $ext = new ExtRequest();
 var_dump($ext);
+var_dump($ext->accept);
 --EXPECT--
 object(ExtRequest)#1 (29) {
   ["_initialized":"ServerRequest":private]=>
@@ -71,3 +72,4 @@ object(ExtRequest)#1 (29) {
   ["url"]=>
   NULL
 }
+NULL

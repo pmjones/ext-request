@@ -3,6 +3,9 @@ ServerResponse reflection
 --FILE--
 <?php
 echo (new ReflectionClass(ServerResponse::CLASS));
+$response = new ServerResponse();
+var_dump($response);
+var_dump($response->getHeaders());
 --EXPECT--
 Class [ <internal:request> class ServerResponse ] {
 
@@ -24,18 +27,12 @@ Class [ <internal:request> class ServerResponse ] {
     Property [ <default> private $callbacks ]
   }
 
-  - Methods [16] {
-    Method [ <internal:request, ctor> public method __construct ] {
-
-      - Parameters [0] {
-      }
-    }
-
+  - Methods [15] {
     Method [ <internal:request> final public method getVersion ] {
 
       - Parameters [0] {
       }
-      - Return [ string ]
+      - Return [ string or NULL ]
     }
 
     Method [ <internal:request> final public method setVersion ] {
@@ -50,7 +47,7 @@ Class [ <internal:request> class ServerResponse ] {
 
       - Parameters [0] {
       }
-      - Return [ int ]
+      - Return [ int or NULL ]
     }
 
     Method [ <internal:request> final public method setCode ] {
@@ -65,7 +62,7 @@ Class [ <internal:request> class ServerResponse ] {
 
       - Parameters [0] {
       }
-      - Return [ array ]
+      - Return [ array or NULL ]
     }
 
     Method [ <internal:request> final public method setHeader ] {
@@ -90,7 +87,7 @@ Class [ <internal:request> class ServerResponse ] {
 
       - Parameters [0] {
       }
-      - Return [ array ]
+      - Return [ array or NULL ]
     }
 
     Method [ <internal:request> final public method setCookie ] {
@@ -155,7 +152,22 @@ Class [ <internal:request> class ServerResponse ] {
 
       - Parameters [0] {
       }
-      - Return [ array ]
+      - Return [ array or NULL ]
     }
   }
 }
+object(ServerResponse)#1 (6) {
+  ["version":"ServerResponse":private]=>
+  NULL
+  ["code":"ServerResponse":private]=>
+  NULL
+  ["headers":"ServerResponse":private]=>
+  NULL
+  ["cookies":"ServerResponse":private]=>
+  NULL
+  ["content":"ServerResponse":private]=>
+  NULL
+  ["callbacks":"ServerResponse":private]=>
+  NULL
+}
+NULL

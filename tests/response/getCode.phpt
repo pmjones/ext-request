@@ -5,4 +5,4 @@ ServerResponse::getCode
 $response = new ServerResponse();
 var_dump($response->getCode());
 --EXPECT--
-int(200)
+NULL

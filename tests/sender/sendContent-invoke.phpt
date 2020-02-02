@@ -1,5 +1,5 @@
 --TEST--
-ServerResponse::sendContent __invoke()
+ServerResponseSender::sendContent __invoke()
 --CGI--
 --INI--
 expose_php=0
@@ -10,7 +10,7 @@ class Invokable
 {
     public function __invoke(ServerResponse $response)
     {
-        echo count($response->getHeaders());
+        echo count($response->getHeaders() ?? []);
         echo 'foo';
         return 'bar';
     }

@@ -138,6 +138,9 @@ These properties are public, read-only, and cannot be modified or overridden.
 
 The _ServerRequest_ object has no public methods.
 
+### Extending and Overriding
+
+tl;dr: Be sure to call the parent constructor or the properties will not be set.
 
 ## ServerResponse
 
@@ -164,21 +167,22 @@ _ServerResponse_ has no public properties.
 
 ### Methods
 
-_ServerResponse_ has these public methods.
+_ServerResponse_ has these public methods, all of which are declared `final`;
+they may not be overridden.
 
 #### HTTP Version
 
 - `setVersion(string $version) : void`: Sets the HTTP version for the response (typically
   '1.0' or '1.1').
 
-- `getVersion() : string`: Returns the HTTP version for the response.
+- `getVersion() : ?string`: Returns the HTTP version for the response.
 
 #### Response Code
 
 - `setCode(string $code) : void`: Sets the HTTP response code; a buffered equivalent of
   `http_response_code($code)`.
 
-- `getCode()`: Gets the HTTP response code.
+- `getCode() : ?long`: Gets the HTTP response code.
 
 #### Headers
 
@@ -189,7 +193,7 @@ _ServerResponse_ has these public methods.
   from the existing value; a buffered equivalent of
   `header("$label: $value", false)`.
 
-- `getHeaders() : array`: Returns the array of headers to be sent.
+- `getHeaders() : ?array`: Returns the array of headers to be sent.
 
 The header field labels are retained internally in lower-case, and are
 sent as lower-case. This is to
@@ -204,7 +208,7 @@ while HTTP/1.x has no such requirement, lower-case is also recognized as valid.
 - `setRawCookie(...) : bool`: A buffered equivalent of [`setrawcookie()`](http://php.net/setrawcookie)
   with identical arguments.
 
-- `getCookies() : array`: Returns the array of cookies to be sent.
+- `getCookies() : ?array`: Returns the array of cookies to be sent.
 
 #### Header Callbacks
 
@@ -216,18 +220,22 @@ while HTTP/1.x has no such requirement, lower-case is also recognized as valid.
 - `addHeaderCallback(callable $callback) : void`: Appends one callback to the current array of
   header callbacks.
 
-- `getHeaderCallbacks() : array`: Returns the array of header callbacks.
+- `getHeaderCallbacks() : ?array`: Returns the array of header callbacks.
 
 The header callback signature should be `function (ServerResponse $response)`;
 any return value is ignored.
 
 #### Content
 
-- `setContent(mixed $content) : void`: Sets the content of the response. This may be a
-  string, resource, object, or anything else.
+- `setContent(mixed $content) : void`: Sets the content of the response. This
+  may be null, a string, resource, object, or anything else.
 
-- `getContent() : mixed`: Returns the content of the response. This may be a string,
-  resource, object, or anything else.
+- `getContent() : mixed`: Returns the content of the response. This may be null,
+  a string, resource, object, or anything else.
+
+### Extending and Overriding
+
+TBD
 
 ## ServerResponseSender
 
