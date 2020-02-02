@@ -11,12 +11,14 @@ $_SERVER = [
 $request = new ServerRequest($GLOBALS);
 var_dump($request->contentLength);
 
+// wrong -- should be null
 $_SERVER = [
-    'HTTP_CONTENT_LENGTH' => ' 123',
+    'HTTP_CONTENT_LENGTH' => '123.456',
 ];
 $request = new ServerRequest($GLOBALS);
 var_dump($request->contentLength);
 
+// wrong -- should be null
 $_SERVER = [
     'HTTP_CONTENT_LENGTH' => 'non-integer',
 ];

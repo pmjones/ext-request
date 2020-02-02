@@ -753,21 +753,24 @@ static inline void server_request_set_auth(zval *object, zval *server)
 
 }
 
+static inline void server_request_set_content_length(zval *object, zval *length)
+{
+    convert_to_long(length);
+    zend_update_property(ServerRequest_ce_ptr, object, ZEND_STRL("contentLength"), length);
+}
+
 static inline void server_request_set_content(zval *object, zval *server)
 {
     zval *tmp;
     zval zv = {0};
     zval contentType = {0};
 
-    // content body read moved to prop handler
-
     if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_CONTENT_MD5"))) ) {
         zend_update_property(ServerRequest_ce_ptr, object, ZEND_STRL("contentMd5"), tmp);
     }
 
     if( tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_CONTENT_LENGTH")) ) {
-        convert_to_long(tmp);
-        zend_update_property(ServerRequest_ce_ptr, object, ZEND_STRL("contentLength"), tmp);
+        server_request_set_content_length(object, tmp);
     }
 
     if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_CONTENT_TYPE"))) && Z_TYPE_P(tmp) == IS_STRING ) {
