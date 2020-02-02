@@ -755,8 +755,12 @@ static inline void server_request_set_auth(zval *object, zval *server)
 
 static inline void server_request_set_content_length(zval *object, zval *length)
 {
-    convert_to_long(length);
-    zend_update_property(ServerRequest_ce_ptr, object, ZEND_STRL("contentLength"), length);
+    zend_string *tmp = php_trim(Z_STR_P(length), ZEND_STRL("0123456789"), 3);
+    if( zend_string_equals_literal(tmp, "") ) {
+        zend_string_release(tmp);
+        convert_to_long(length);
+        zend_update_property(ServerRequest_ce_ptr, object, ZEND_STRL("contentLength"), length);
+    }
 }
 
 static inline void server_request_set_content(zval *object, zval *server)
