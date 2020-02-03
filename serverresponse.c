@@ -9,10 +9,8 @@
 #include "main/SAPI.h"
 #include "main/snprintf.h"
 #include "ext/spl/spl_exceptions.h"
-#include "ext/date/php_date.h"
 #include "ext/standard/head.h"
 #include "ext/standard/php_string.h"
-#include "ext/standard/url.h"
 #include "Zend/zend_API.h"
 #include "Zend/zend_exceptions.h"
 #include "Zend/zend_interfaces.h"
@@ -283,7 +281,10 @@ PHP_METHOD(ServerResponse, getCookies)
 /* }}} ServerResponse::getCookies */
 
 /* {{{ proto void ServerResponse::setCookie(string name [, string value [, int expires [, string path [, string domain [, bool secure[, bool httponly]]]]]]) */
-static void php_head_parse_cookie_options_array(zval *options, zend_long *expires, zend_string **path, zend_string **domain, zend_bool *secure, zend_bool *httponly, zend_string **samesite) {
+static void php_head_parse_cookie_options_array(zval *options, zend_long *expires, zend_string **path, zend_string **domain, zend_bool *secure, zend_bool *httponly, zend_string **samesite)
+{
+    /* copied from ext/standard/head.c, as it it not published in head.h */
+
     int found = 0;
     zend_string *key;
     zval *value;
