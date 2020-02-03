@@ -16,6 +16,8 @@ $response->setCookie('cookie4', 'value4', [
 ]);
 $response->setCookie('empty', '');
 var_dump($response->getCookies());
+$response->unsetCookies();
+var_dump($response->getCookies());
 --EXPECT--
 array(5) {
   ["cookie1"]=>
@@ -114,3 +116,4 @@ array(5) {
     bool(true)
   }
 }
+NULL

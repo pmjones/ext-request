@@ -60,9 +60,17 @@ ZEND_END_ARG_INFO()
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_getHeaders_args, 0, 0, IS_ARRAY, 1)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_addSetHeader_args, 0, 2, IS_VOID, 0)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_setHeader_args, 0, 2, IS_VOID, 0)
     ZEND_ARG_TYPE_INFO(0, label, IS_STRING, 0)
     ZEND_ARG_TYPE_INFO(0, value, IS_STRING, 0)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_addHeader_args, 0, 2, IS_VOID, 0)
+    ZEND_ARG_TYPE_INFO(0, label, IS_STRING, 0)
+    ZEND_ARG_TYPE_INFO(0, value, IS_STRING, 0)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_unsetHeaders_args, 0, 0, IS_VOID, 0)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_getCookies_args, 0, 0, IS_ARRAY, 1)
@@ -76,6 +84,9 @@ ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_setCookie_args, 0, 1, _IS
     ZEND_ARG_TYPE_INFO(0, domain, IS_STRING, 0)
     ZEND_ARG_TYPE_INFO(0, secure, _IS_BOOL, 0)
     ZEND_ARG_TYPE_INFO(0, httponly, _IS_BOOL, 0)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_unsetCookies_args, 0, 0, IS_VOID, 0)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO_EX(ServerResponse_getContent_args, 0, 0, 0)
@@ -262,6 +273,18 @@ PHP_METHOD(ServerResponse, addHeader)
     server_response_set_header(getThis(), label, value, 0);
 }
 /* }}} ServerResponse::addHeader */
+
+/* {{{ proto void ServerResponse::unsetHeaders() */
+PHP_METHOD(ServerResponse, unsetHeaders)
+{
+    zval *_this_zval = getThis();
+
+    ZEND_PARSE_PARAMETERS_START(0, 0)
+    ZEND_PARSE_PARAMETERS_END();
+
+    zend_update_property_null(ServerResponse_ce_ptr, _this_zval, ZEND_STRL("headers"));
+}
+/* }}} ServerResponse::unsetHeaders */
 
 /* {{{ proto array ServerResponse::getCookies() */
 static zval *server_response_get_cookies(zval *response)
@@ -451,6 +474,18 @@ PHP_METHOD(ServerResponse, setRawCookie)
 }
 /* }}} ServerResponse::setRawCookie */
 
+/* {{{ proto void ServerResponse::unsetCookies() */
+PHP_METHOD(ServerResponse, unsetCookies)
+{
+    zval *_this_zval = getThis();
+
+    ZEND_PARSE_PARAMETERS_START(0, 0)
+    ZEND_PARSE_PARAMETERS_END();
+
+    zend_update_property_null(ServerResponse_ce_ptr, _this_zval, ZEND_STRL("cookies"));
+}
+/* }}} ServerResponse::unsetHeaders */
+
 /* {{{ proto mixed ServerResponse::getContent() */
 static zval *server_response_get_content(zval *response)
 {
@@ -567,11 +602,13 @@ static zend_function_entry ServerResponse_methods[] = {
     PHP_ME(ServerResponse, getCode, ServerResponse_getCode_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
     PHP_ME(ServerResponse, setCode, ServerResponse_setCode_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
     PHP_ME(ServerResponse, getHeaders, ServerResponse_getHeaders_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
-    PHP_ME(ServerResponse, setHeader, ServerResponse_addSetHeader_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
-    PHP_ME(ServerResponse, addHeader, ServerResponse_addSetHeader_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+    PHP_ME(ServerResponse, setHeader, ServerResponse_addHeader_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+    PHP_ME(ServerResponse, addHeader, ServerResponse_setHeader_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+    PHP_ME(ServerResponse, unsetHeaders, ServerResponse_unsetHeaders_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
     PHP_ME(ServerResponse, getCookies, ServerResponse_getCookies_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
     PHP_ME(ServerResponse, setCookie, ServerResponse_setCookie_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
     PHP_ME(ServerResponse, setRawCookie, ServerResponse_setCookie_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+    PHP_ME(ServerResponse, unsetCookies, ServerResponse_unsetCookies_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
     PHP_ME(ServerResponse, getContent, ServerResponse_getContent_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
     PHP_ME(ServerResponse, setContent, ServerResponse_setContent_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
     PHP_ME(ServerResponse, addHeaderCallback, ServerResponse_addHeaderCallback_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)

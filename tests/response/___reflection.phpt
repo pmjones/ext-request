@@ -27,7 +27,7 @@ Class [ <internal:request> class ServerResponse ] {
     Property [ <default> private $callbacks ]
   }
 
-  - Methods [15] {
+  - Methods [17] {
     Method [ <internal:request> final public method getVersion ] {
 
       - Parameters [0] {
@@ -83,6 +83,13 @@ Class [ <internal:request> class ServerResponse ] {
       - Return [ void ]
     }
 
+    Method [ <internal:request> final public method unsetHeaders ] {
+
+      - Parameters [0] {
+      }
+      - Return [ void ]
+    }
+
     Method [ <internal:request> final public method getCookies ] {
 
       - Parameters [0] {
@@ -116,6 +123,13 @@ Class [ <internal:request> class ServerResponse ] {
         Parameter #6 [ <optional> bool $httponly ]
       }
       - Return [ bool ]
+    }
+
+    Method [ <internal:request> final public method unsetCookies ] {
+
+      - Parameters [0] {
+      }
+      - Return [ void ]
     }
 
     Method [ <internal:request> final public method getContent ] {
