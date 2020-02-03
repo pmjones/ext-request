@@ -100,7 +100,7 @@ ZEND_END_ARG_INFO()
 /* }}} Argument Info */
 
 /* {{{ proto string ServerResponse::getVersion() */
-zval *server_response_get_version(zval *response)
+static zval *server_response_get_version(zval *response)
 {
     return zend_read_property(ServerResponse_ce_ptr, response, ZEND_STRL("version"), 0, NULL);
 }
@@ -131,7 +131,7 @@ PHP_METHOD(ServerResponse, setVersion)
 /* }}} ServerResponse::setVersion */
 
 /* {{{ proto int ServerResponse::getCode() */
-zval *server_response_get_code(zval *response)
+static zval *server_response_get_code(zval *response)
 {
     return zend_read_property(ServerResponse_ce_ptr, response, ZEND_STRL("code"), 0, NULL);
 }
@@ -162,7 +162,7 @@ PHP_METHOD(ServerResponse, setCode)
 /* }}} ServerResponse::setCode */
 
 /* {{{ proto array ServerResponse::getHeaders() */
-zval *server_response_get_headers(zval *response)
+static zval *server_response_get_headers(zval *response)
 {
     return zend_read_property(ServerResponse_ce_ptr, response, ZEND_STRL("headers"), 0, NULL);
 }
@@ -266,7 +266,7 @@ PHP_METHOD(ServerResponse, addHeader)
 /* }}} ServerResponse::addHeader */
 
 /* {{{ proto array ServerResponse::getCookies() */
-zval *server_response_get_cookies(zval *response)
+static zval *server_response_get_cookies(zval *response)
 {
     return zend_read_property(ServerResponse_ce_ptr, response, ZEND_STRL("cookies"), 0, NULL);
 }
@@ -283,7 +283,6 @@ PHP_METHOD(ServerResponse, getCookies)
 /* }}} ServerResponse::getCookies */
 
 /* {{{ proto void ServerResponse::setCookie(string name [, string value [, int expires [, string path [, string domain [, bool secure[, bool httponly]]]]]]) */
-
 static void php_head_parse_cookie_options_array(zval *options, zend_long *expires, zend_string **path, zend_string **domain, zend_bool *secure, zend_bool *httponly, zend_string **samesite) {
     int found = 0;
     zend_string *key;
@@ -367,13 +366,6 @@ static void server_response_set_cookie(INTERNAL_FUNCTION_PARAMETERS, zend_bool u
     if (EG(exception)) {
         return;
     }
-
-    // retain in array
-
-    // if( !Z_OBJ_HT_P(response)->get_property_ptr_ptr ) {
-    //     zend_throw_exception_ex(spl_ce_RuntimeException, 0, "ServerResponse::setCookie requires get_property_ptr_ptr");
-    //     return;
-    // }
 
     // Read property pointer
     ZVAL_STRING(&member, "cookies");
@@ -459,7 +451,7 @@ PHP_METHOD(ServerResponse, setRawCookie)
 /* }}} ServerResponse::setRawCookie */
 
 /* {{{ proto mixed ServerResponse::getContent() */
-zval *server_response_get_content(zval *response)
+static zval *server_response_get_content(zval *response)
 {
     return zend_read_property(ServerResponse_ce_ptr, response, ZEND_STRL("content"), 0, NULL);
 }
@@ -551,7 +543,7 @@ PHP_METHOD(ServerResponse, setHeaderCallbacks)
 /* }}} ServerResponse::setHeaderCallbacks */
 
 /* {{{ proto callback ServerResponse::getHeaderCallbacks() */
-zval *server_response_get_header_callbacks(zval *response)
+static zval *server_response_get_header_callbacks(zval *response)
 {
     return zend_read_property(ServerResponse_ce_ptr, response, ZEND_STRL("callbacks"), 0, NULL);
 }
@@ -987,6 +979,3 @@ PHP_MINIT_FUNCTION(serverresponsesender)
     return SUCCESS;
 }
 /* }}} PHP_MINIT_FUNCTION */
-
-/* ************************************************************************** */
-
