@@ -27,7 +27,7 @@ Class [ <internal:request> class ServerResponse ] {
     Property [ <default> private $callbacks ]
   }
 
-  - Methods [17] {
+  - Methods [19] {
     Method [ <internal:request> final public method getVersion ] {
 
       - Parameters [0] {
@@ -65,6 +65,15 @@ Class [ <internal:request> class ServerResponse ] {
       - Return [ array or NULL ]
     }
 
+    Method [ <internal:request> final public method addHeader ] {
+
+      - Parameters [2] {
+        Parameter #0 [ <required> string $label ]
+        Parameter #1 [ <required> string $value ]
+      }
+      - Return [ void ]
+    }
+
     Method [ <internal:request> final public method setHeader ] {
 
       - Parameters [2] {
@@ -74,11 +83,10 @@ Class [ <internal:request> class ServerResponse ] {
       - Return [ void ]
     }
 
-    Method [ <internal:request> final public method addHeader ] {
+    Method [ <internal:request> final public method unsetHeader ] {
 
-      - Parameters [2] {
+      - Parameters [1] {
         Parameter #0 [ <required> string $label ]
-        Parameter #1 [ <required> string $value ]
       }
       - Return [ void ]
     }
@@ -123,6 +131,14 @@ Class [ <internal:request> class ServerResponse ] {
         Parameter #6 [ <optional> bool $httponly ]
       }
       - Return [ bool ]
+    }
+
+    Method [ <internal:request> final public method unsetCookie ] {
+
+      - Parameters [1] {
+        Parameter #0 [ <required> string $name ]
+      }
+      - Return [ void ]
     }
 
     Method [ <internal:request> final public method unsetCookies ] {

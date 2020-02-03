@@ -18,6 +18,10 @@ $response->setCookie('empty', '');
 var_dump($response->getCookies());
 $response->unsetCookies();
 var_dump($response->getCookies());
+$response->setCookie('foo', 'bar');
+$response->setCookie('baz', 'dib');
+$response->unsetCookie('foo');
+var_dump($response->getCookies());
 --EXPECT--
 array(5) {
   ["cookie1"]=>
@@ -117,3 +121,24 @@ array(5) {
   }
 }
 NULL
+array(1) {
+  ["baz"]=>
+  array(8) {
+    ["value"]=>
+    string(3) "dib"
+    ["expires"]=>
+    int(0)
+    ["path"]=>
+    string(0) ""
+    ["domain"]=>
+    string(0) ""
+    ["secure"]=>
+    bool(false)
+    ["httponly"]=>
+    bool(false)
+    ["samesite"]=>
+    string(0) ""
+    ["url_encode"]=>
+    bool(true)
+  }
+}
