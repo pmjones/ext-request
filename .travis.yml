@@ -1,19 +1,15 @@
 language: php
 
 php:
-  - 5.6
-  - 7.0
-  - 7.1
-  - 7.2
+  - 7.3
+  - 7.4
+  - nightly
 
 branches:
   only:
-    - master
-    - travisci
+    - 2.x
 
 sudo: required
-
-dist: trusty
 
 before_install:
   - travis_retry sudo apt-get update -y
@@ -21,11 +17,10 @@ before_install:
   - travis_retry gem install coveralls-lcov
 
 script:
-  - ./run-tests.sh userland
-  - sh -c "if [ '$TRAVIS_PHP_VERSION' != '5.6' ]; then ./run-tests.sh valgrind; fi"
-  - sh -c "if [ '$TRAVIS_PHP_VERSION' != '5.6' ]; then ./run-tests.sh coverage; fi"
+  - ./run-tests.sh valgrind
+  - ./run-tests.sh coverage
 
-after_success: sh -c "if [ '$TRAVIS_PHP_VERSION' != '5.6' ]; then ./run-tests.sh after_success; fi"
+after_success: ./run-tests.sh after_success
 
 after_failure: ./run-tests.sh after_failure
 
