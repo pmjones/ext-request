@@ -15,25 +15,23 @@
     <channel>pecl.php.net</channel>
     <summary>Provides server-side request and response objects.</summary>
     <description><![CDATA[
-This extension provides server-side request and response objects for PHP 7.
-These are *not* HTTP message objects proper. They are more like wrappers
-for existing global PHP variables and functions, with some limited
-additional convenience functionality.
+This extension provides server-side request and response objects for PHP 7.3
+and later.
 
-This extension defines two classes in the global namespace:
+These are *not* HTTP message objects proper. They are more like wrappers
+for existing global PHP variables and functions.
+
+This extension defines three classes in the global namespace:
 
 - ServerRequest, composed of read-only copies of PHP superglobals and some
   other commonly-used values, with methods for adding application-specific
   request information in immutable fashion.
 
 - ServerResponse, essentially a wrapper around (and buffer for) response-
-  related PHP functions, with some additional convenience methods, and self-
-  sending capability.
+  related PHP functions.
 
-Documentation: https://github.com/pmjones/ext-request
+- ServerResponseSender, for sending a ServerResponse.
 
-A PHP 5 userland implementation that tracks this extension is available at
-https://packagist.org/packages/pmjones/request .
 ]]></description>
     <lead>
         <name>John Boehr</name>
@@ -47,23 +45,18 @@ https://packagist.org/packages/pmjones/request .
         <email>pmjones@php.net</email>
         <active>yes</active>
     </lead>
-    <date>2017-07-25</date>
+    <date>2020-02-??</date>
     <version>
-        <release>1.0.0b2</release>
-        <api>1.0.0b2</api>
+        <release>2.0.0</release>
+        <api>2.0.0</api>
     </version>
     <stability>
-        <release>beta</release>
-        <api>beta</api>
+        <release>stable</release>
+        <api>stable</api>
     </stability>
     <license uri="https://opensource.org/licenses/MIT">MIT</license>
     <notes><![CDATA[
-Added:
-
-- Support for multiple header callbacks, a la header_register_callback, with
-  new methods ServerResponse::setHeaderCallbacks(), addHeaderCallback(), and
-  getHeaderCallbacks().
-
+First 2.0 release, updated for PHP 7.3 and later.
 ]]></notes>
     <contents>
         <dir name="/">
@@ -82,11 +75,12 @@ Added:
             <dir name="tests">
                 <file role="test" name="phpinfo.phpt" />
                 <dir name="request">
+                    <file role="test" name="___reflection.phpt" />
                     <file role="test" name="__clone.phpt" />
+                    <file role="test" name="__construct-extension.phpt" />
                     <file role="test" name="__construct.phpt" />
-                    <file role="test" name="__get.phpt" />
                     <file role="test" name="__get-extension.phpt" />
-                    <file role="test" name="__get-userland.phpt" />
+                    <file role="test" name="__get.phpt" />
                     <file role="test" name="__isset.phpt" />
                     <file role="test" name="__set.phpt" />
                     <file role="test" name="__unset.phpt" />
@@ -94,11 +88,10 @@ Added:
                     <file role="test" name="acceptCharset.phpt" />
                     <file role="test" name="acceptEncoding.phpt" />
                     <file role="test" name="acceptLanguage.phpt" />
-                    <file role="test" name="auth_basic.phpt" />
-                    <file role="test" name="auth_digest.phpt" />
-                    <file role="test" name="auto_globals_jit.phpt" />
-                    <file role="test" name="content1.phpt" />
-                    <file role="test" name="content2.phpt" />
+                    <file role="test" name="auth-basic.phpt" />
+                    <file role="test" name="auth-digest.phpt" />
+                    <file role="test" name="content-cgi.phpt" />
+                    <file role="test" name="content-cli.phpt" />
                     <file role="test" name="contentLength.phpt" />
                     <file role="test" name="contentMd5.phpt" />
                     <file role="test" name="contentType.phpt" />
@@ -111,51 +104,45 @@ Added:
                     <file role="test" name="inheritance.phpt" />
                     <file role="test" name="method.phpt" />
                     <file role="test" name="parseAccept.phpt" />
-                    <file role="test" name="parseContentType.phpt" />
+                    <file role="test" name="parseContent.phpt" />
                     <file role="test" name="parseDigestAuth.phpt" />
                     <file role="test" name="post.phpt" />
-                    <file role="test" name="reflection.phpt" />
+                    <file role="test" name="requestedWith.phpt" />
                     <file role="test" name="superglobals-are-copied.phpt" />
                     <file role="test" name="uploads-complex.phpt" />
                     <file role="test" name="uploads-real.phpt" />
                     <file role="test" name="uploads-trivial.phpt" />
                     <file role="test" name="url.phpt" />
                     <file role="test" name="variables_order.phpt" />
-                    <file role="test" name="withInput.phpt" />
-                    <file role="test" name="withoutParam.phpt" />
-                    <file role="test" name="withoutParams.phpt" />
-                    <file role="test" name="withParam.phpt" />
-                    <file role="test" name="withParams.phpt" />
-                    <file role="test" name="withUrl.phpt" />
-                    <file role="test" name="xhr.phpt" />
                 </dir>
                 <dir name="response">
+                    <file role="test" name="___reflection.phpt" />
+                    <file role="test" name="__construct-extended.phpt" />
+                    <file role="test" name="addHeader-bad.phpt" />
                     <file role="test" name="addHeader.phpt" />
-                    <file role="test" name="addHeader_array.phpt" />
-                    <file role="test" name="date.phpt" />
-                    <file role="test" name="date_invalid.phpt" />
-                    <file role="test" name="getStatus.phpt" />
+                    <file role="test" name="addHeaderCallback.phpt" />
+                    <file role="test" name="getCode.phpt" />
+                    <file role="test" name="getHeaderCallbacks.phpt" />
                     <file role="test" name="getVersion.phpt" />
-                    <file role="test" name="sendContent_callable.phpt" />
-                    <file role="test" name="sendContent_callableRV.phpt" />
-                    <file role="test" name="sendContent_resource.phpt" />
-                    <file role="test" name="sendContent_string.phpt" />
+                    <file role="test" name="setCode.phpt" />
+                    <file role="test" name="setContent.phpt" />
+                    <file role="test" name="setCookie-bad.phpt" />
+                    <file role="test" name="setCookie.phpt" />
+                    <file role="test" name="setHeader-bad.phpt" />
+                    <file role="test" name="setHeader.phpt" />
+                    <file role="test" name="setVersion.phpt" />
+                </dir>
+                <dir name="sender">
+                    <file role="test" name="___reflection.phpt" />
+                    <file role="test" name="runHeaderCallbacks.phpt" />
+                    <file role="test" name="send-extended.phpt" />
+                    <file role="test" name="send.phpt" />
+                    <file role="test" name="sendCode.phpt" />
+                    <file role="test" name="sendContent-invoke.phpt" />
+                    <file role="test" name="sendContent-resource.phpt" />
+                    <file role="test" name="sendContent-toString.phpt" />
                     <file role="test" name="sendCookies.phpt" />
                     <file role="test" name="sendHeaders.phpt" />
-                    <file role="test" name="sendStatus.phpt" />
-                    <file role="test" name="setContent.phpt" />
-                    <file role="test" name="setContentDownload.phpt" />
-                    <file role="test" name="setContentDownload_notResource.phpt" />
-                    <file role="test" name="setContentJson.phpt" />
-                    <file role="test" name="setContentJson_failed.phpt" />
-                    <file role="test" name="setCookie.phpt" />
-                    <file role="test" name="setHeader.phpt" />
-                    <file role="test" name="setHeader_array.phpt" />
-                    <file role="test" name="setStatus.phpt" />
-                    <file role="test" name="setVersion.phpt" />
-                    <file role="test" name="addHeaderCallback.phpt" />
-                    <file role="test" name="getHeaderCallbacks.phpt" />
-                    <file role="test" name="runHeaderCallbacks.phpt" />
                 </dir>
             </dir>
         </dir>

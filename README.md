@@ -272,3 +272,7 @@ If the response content is a resource, it is sent with `fpassthru()`. If the
 content is a callable object or closure, it is invoked, and its return value (if
 any) is `echo`ed. Otherwise, the content is `echo`ed (which calls `__toString()`
 if the content is an object).
+
+### Extending and Overriding
+
+TBD

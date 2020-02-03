@@ -77,9 +77,8 @@ function is_git_ignored($file) {
 function is_otherwise_ignored($file) {
     $ignored = [
         "./package.xml", "./package2.xml", "./.travis.yml", "./.editorconfig",
-        "./userland/src/ServerRequest.php", "./userland/src/ServerResponse.php",
-        "./userland/tests/prepend.php", "./run-tests.sh", "./reflect.php",
-        "./clean.sh", "./export-userland.sh", "./prepackage.php", "./appveyor.yml"
+        "./run-tests.sh", "./reflect.php", "./clean.sh", "./prepackage.php",
+        "./appveyor.yml"
     ];
     return fnmatch("./.git*", $file)
         || in_array($file, $ignored, true);
