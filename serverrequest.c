@@ -755,7 +755,7 @@ static inline void server_request_set_auth(zval *object, zval *server)
 
 static inline void server_request_set_content_length(zval *object, zval *length)
 {
-    zend_string *tmp = php_trim(Z_STR_P(length), ZEND_STRL("0123456789"), 3);
+    zend_string *tmp = php_trim(Z_STR_P(length), ZEND_STRL("0123456789 \t\r\n\v"), 3);
     if( zend_string_equals_literal(tmp, "") ) {
         zend_string_release(tmp);
         convert_to_long(length);
