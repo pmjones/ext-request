@@ -2,8 +2,7 @@ version: '{branch}.{build}'
 
 branches:
   only:
-  - master
-  - appveyor
+  - 2.x
   - w32
 
 platform:
@@ -16,33 +15,13 @@ environment:
   REPORT_EXIT_STATUS: 1
 
   matrix:
-    - PHP_VER: 7.0
-      PHP_FULL_VER: 7.0.29
-      VC_VER: vc14
-      PHP_BUILD_TYPE: Win32
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
-    - PHP_VER: 7.0
-      PHP_FULL_VER: 7.0.29
-      VC_VER: vc14
-      PHP_BUILD_TYPE: nts-Win32
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
-    - PHP_VER: 7.1
-      PHP_FULL_VER: 7.1.18
-      VC_VER: vc14
-      PHP_BUILD_TYPE: Win32
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
-    - PHP_VER: 7.1
-      PHP_FULL_VER: 7.1.18
-      VC_VER: vc14
-      PHP_BUILD_TYPE: nts-Win32
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
-    - PHP_VER: 7.2
-      PHP_FULL_VER: 7.2.6
+    - PHP_VER: 7.3
+      PHP_FULL_VER: 7.3.14
       VC_VER: vc15
       PHP_BUILD_TYPE: Win32
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
-    - PHP_VER: 7.2
-      PHP_FULL_VER: 7.2.6
+    - PHP_VER: 7.4
+      PHP_FULL_VER: 7.4.2
       VC_VER: vc15
       PHP_BUILD_TYPE: nts-Win32
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
