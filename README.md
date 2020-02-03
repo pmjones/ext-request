@@ -186,39 +186,46 @@ they may not be overridden.
 
 #### Headers
 
-- `setHeader(string $label, string $value) : void`: Overwrites an HTTP header; a buffered equivalent
-  of `header("$label: $value", true)`.
+- `setHeader(string $label, string $value) : void`: Overwrites an HTTP header; a
+  buffered equivalent of `header("$label: $value", true)`.
 
-- `addHeader(string $label, string $value) : void`: Appends to an HTTP header, comma-separating it
-  from the existing value; a buffered equivalent of
+- `addHeader(string $label, string $value) : void`: Appends to an HTTP header,
+  comma-separating it from the existing value; a buffered equivalent of
   `header("$label: $value", false)`.
+
+- `unsetHeader(string $label) : void`: Removes a header from the buffer.
+
+- `unsetHeaders() : void`: Removes all headers from the buffer.
 
 - `getHeaders() : ?array`: Returns the array of headers to be sent.
 
-The header field labels are retained internally in lower-case, and are
-sent as lower-case. This is to
-[comply with HTTP/2 requirements](https://tools.ietf.org/html/rfc7540#section-8.1.2);
+The header field labels are retained internally in lower-case, and are sent as
+lower-case. This is to [comply with HTTP/2 requirements](https://tools.ietf.org/html/rfc7540#section-8.1.2);
 while HTTP/1.x has no such requirement, lower-case is also recognized as valid.
 
 #### Cookies
 
-- `setCookie(...) : bool`: A buffered equivalent of [`setcookie()`](http://php.net/setcookie)
-  with identical arguments.
+- `setCookie(...) : bool`: A buffered equivalent of
+  [`setcookie()`](http://php.net/setcookie) with identical arguments.
 
-- `setRawCookie(...) : bool`: A buffered equivalent of [`setrawcookie()`](http://php.net/setrawcookie)
-  with identical arguments.
+- `setRawCookie(...) : bool`: A buffered equivalent of
+  [`setrawcookie()`](http://php.net/setrawcookie) with identical arguments.
+
+- `unsetCookie(string $name) : void`: Removes a cooke from the buffer.
+
+- `unsetCookies() : void`: Removes all cookies from the buffer.
 
 - `getCookies() : ?array`: Returns the array of cookies to be sent.
 
 #### Header Callbacks
 
-- `setHeaderCallbacks(array $callbacks) : void`: Sets an array of callbacks to be invoked
-  just before headers are sent. It replaces any existing callbacks. This is similar to
-  [`header_register_callback()`](https://secure.php.net/header_register_callback),
+- `setHeaderCallbacks(array $callbacks) : void`: Sets an array of callbacks to
+  be invoked just before headers are sent. It replaces any existing callbacks.
+  This is similar to [`header_register_callback()`](https://secure.php.net/header_register_callback),
   except that *multiple* callbacks may be registered with the Response.
 
-- `addHeaderCallback(callable $callback) : void`: Appends one callback to the current array of
-  header callbacks.
+- `addHeaderCallback(callable $callback) : void`: Appends one callback to the
+  current array of header callbacks.
 
 - `getHeaderCallbacks() : ?array`: Returns the array of header callbacks.
 

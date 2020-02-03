@@ -28,6 +28,14 @@ Class [ <internal:request> class ServerResponse ] {
   }
 
   - Methods [19] {
+    Method [ <internal:request> final public method setVersion ] {
+
+      - Parameters [1] {
+        Parameter #0 [ <required> string $version ]
+      }
+      - Return [ void ]
+    }
+
     Method [ <internal:request> final public method getVersion ] {
 
       - Parameters [0] {
@@ -35,10 +43,10 @@ Class [ <internal:request> class ServerResponse ] {
       - Return [ string or NULL ]
     }
 
-    Method [ <internal:request> final public method setVersion ] {
+    Method [ <internal:request> final public method setCode ] {
 
       - Parameters [1] {
-        Parameter #0 [ <required> string $version ]
+        Parameter #0 [ <required> int $code ]
       }
       - Return [ void ]
     }
@@ -50,22 +58,7 @@ Class [ <internal:request> class ServerResponse ] {
       - Return [ int or NULL ]
     }
 
-    Method [ <internal:request> final public method setCode ] {
-
-      - Parameters [1] {
-        Parameter #0 [ <required> int $code ]
-      }
-      - Return [ void ]
-    }
-
-    Method [ <internal:request> final public method getHeaders ] {
-
-      - Parameters [0] {
-      }
-      - Return [ array or NULL ]
-    }
-
-    Method [ <internal:request> final public method addHeader ] {
+    Method [ <internal:request> final public method setHeader ] {
 
       - Parameters [2] {
         Parameter #0 [ <required> string $label ]
@@ -74,7 +67,7 @@ Class [ <internal:request> class ServerResponse ] {
       - Return [ void ]
     }
 
-    Method [ <internal:request> final public method setHeader ] {
+    Method [ <internal:request> final public method addHeader ] {
 
       - Parameters [2] {
         Parameter #0 [ <required> string $label ]
@@ -98,7 +91,7 @@ Class [ <internal:request> class ServerResponse ] {
       - Return [ void ]
     }
 
-    Method [ <internal:request> final public method getCookies ] {
+    Method [ <internal:request> final public method getHeaders ] {
 
       - Parameters [0] {
       }
@@ -148,10 +141,11 @@ Class [ <internal:request> class ServerResponse ] {
       - Return [ void ]
     }
 
-    Method [ <internal:request> final public method getContent ] {
+    Method [ <internal:request> final public method getCookies ] {
 
       - Parameters [0] {
       }
+      - Return [ array or NULL ]
     }
 
     Method [ <internal:request> final public method setContent ] {
@@ -162,18 +156,24 @@ Class [ <internal:request> class ServerResponse ] {
       - Return [ void or NULL ]
     }
 
-    Method [ <internal:request> final public method addHeaderCallback ] {
+    Method [ <internal:request> final public method getContent ] {
 
-      - Parameters [1] {
-        Parameter #0 [ <required> callable $callback ]
+      - Parameters [0] {
       }
-      - Return [ void ]
     }
 
     Method [ <internal:request> final public method setHeaderCallbacks ] {
 
       - Parameters [1] {
         Parameter #0 [ <required> array $callbacks ]
+      }
+      - Return [ void ]
+    }
+
+    Method [ <internal:request> final public method addHeaderCallback ] {
+
+      - Parameters [1] {
+        Parameter #0 [ <required> callable $callback ]
       }
       - Return [ void ]
     }
