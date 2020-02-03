@@ -70,8 +70,6 @@ First 2.0 release, updated for PHP 7.3 and later.
             <file role="src" name="parsers.re" />
             <file role="src" name="php_request.c" />
             <file role="src" name="php_request.h" />
-            <file role="src" name="serverrequest.c" />
-            <file role="src" name="serverresponse.c" />
             <dir name="tests">
                 <file role="test" name="phpinfo.phpt" />
                 <dir name="request">
