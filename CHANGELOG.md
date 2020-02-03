@@ -19,10 +19,10 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - ServerRequest::$forwarded property, computed from
-  $_SERVER['HTTP_FORWARDED']
+  `$_SERVER['HTTP_FORWARDED']`
 
 - ServerRequest::$forwarded(For|Host|Proto), computed from
-  $_SERVER['HTTP_X_FORWARDED(FOR|HOST|PROTO)']
+  `$_SERVER['HTTP_X_FORWARDED(FOR|HOST|PROTO)']`
 
 ### Changed
 
