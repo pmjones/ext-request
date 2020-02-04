@@ -879,7 +879,7 @@ PHP_METHOD(ServerRequest, __construct)
 {
     zval *_this_zval;
     zval *init;
-    zval *zv_globals = NULL;
+    zval *globals = NULL;
     zval *server;
     zval *files;
     zval rv = {0};
@@ -888,9 +888,8 @@ PHP_METHOD(ServerRequest, __construct)
     zval uploads = {0};
     zval *xreqwith_val;
 
-    ZEND_PARSE_PARAMETERS_START(0, 1)
-        Z_PARAM_OPTIONAL
-        Z_PARAM_ZVAL(zv_globals)
+    ZEND_PARSE_PARAMETERS_START(1, 1)
+        Z_PARAM_ZVAL(globals)
     ZEND_PARSE_PARAMETERS_END();
 
     _this_zval = getThis();
@@ -923,12 +922,12 @@ PHP_METHOD(ServerRequest, __construct)
     server_request_init_array_prop(_this_zval, ZEND_STRL("url"));
 
     // Copy superglobals
-    server_request_copy_global_prop(_this_zval, ZEND_STRL("env"),    zv_globals, ZEND_STRL("_ENV"));
-    server_request_copy_global_prop(_this_zval, ZEND_STRL("server"), zv_globals, ZEND_STRL("_SERVER"));
-    server_request_copy_global_prop(_this_zval, ZEND_STRL("cookie"), zv_globals, ZEND_STRL("_COOKIE"));
-    server_request_copy_global_prop(_this_zval, ZEND_STRL("files"),  zv_globals, ZEND_STRL("_FILES"));
-    server_request_copy_global_prop(_this_zval, ZEND_STRL("get"),    zv_globals, ZEND_STRL("_GET"));
-    server_request_copy_global_prop(_this_zval, ZEND_STRL("post"),   zv_globals, ZEND_STRL("_POST"));
+    server_request_copy_global_prop(_this_zval, ZEND_STRL("env"),    globals, ZEND_STRL("_ENV"));
+    server_request_copy_global_prop(_this_zval, ZEND_STRL("server"), globals, ZEND_STRL("_SERVER"));
+    server_request_copy_global_prop(_this_zval, ZEND_STRL("cookie"), globals, ZEND_STRL("_COOKIE"));
+    server_request_copy_global_prop(_this_zval, ZEND_STRL("files"),  globals, ZEND_STRL("_FILES"));
+    server_request_copy_global_prop(_this_zval, ZEND_STRL("get"),    globals, ZEND_STRL("_GET"));
+    server_request_copy_global_prop(_this_zval, ZEND_STRL("post"),   globals, ZEND_STRL("_POST"));
 
     // Check if previous step threw
     if( EG(exception) ) {

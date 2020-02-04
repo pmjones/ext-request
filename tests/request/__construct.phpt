@@ -74,7 +74,7 @@ try {
 
 // Check __construct can't be called twice
 try {
-    $request->__construct();
+    $request->__construct($GLOBALS);
     echo 'fail reconstruct' . PHP_EOL;
 } catch( RuntimeException $e ) {
     echo 'ok reconstruct' . PHP_EOL;
