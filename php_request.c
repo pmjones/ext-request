@@ -27,33 +27,6 @@
 
 #include "php_request.h"
 
-/* {{{ server_request_normalize_header_name */
-void server_request_normalize_header_name(char *key, size_t key_length)
-{
-    register char *r = key;
-    register char *r_end = r + key_length - 1;
-
-    *r = tolower((unsigned char) *r);
-    r++;
-    for( ; r <= r_end; r++ ) {
-        if( *r == '_' ) {
-            *r = '-';
-        } else {
-            *r = tolower((unsigned char) *r);
-        }
-    }
-}
-
-zend_string *server_request_normalize_header_name_ex(zend_string *in)
-{
-    zend_string * out = php_trim(in, ZEND_STRL(" \t\r\n\v"), 3);
-    server_request_normalize_header_name(ZSTR_VAL(out), ZSTR_LEN(out));
-    zend_string_forget_hash_val(out);
-    zend_string_hash_val(out);
-    return out;
-}
-/* }}} server_request_normalize_header_name */
-
 /* {{{ PHP_MINIT_FUNCTION */
 static PHP_MINIT_FUNCTION(request)
 {
@@ -64,7 +37,7 @@ static PHP_MINIT_FUNCTION(request)
 }
 /* }}} */
 
-/* {{{ PHP_MINIT_FUNCTION */
+/* {{{ PHP_MINFO_FUNCTION */
 static PHP_MINFO_FUNCTION(request)
 {
     php_info_print_table_start();
@@ -84,8 +57,6 @@ static PHP_MSHUTDOWN_FUNCTION(request)
 /* {{{ request_deps */
 static const zend_module_dep request_deps[] = {
     ZEND_MOD_REQUIRED("spl")
-    ZEND_MOD_REQUIRED("date")
-    ZEND_MOD_OPTIONAL("json")
     ZEND_MOD_END
 };
 /* }}} */
@@ -108,6 +79,39 @@ zend_module_entry request_module_entry = {
 ZEND_GET_MODULE(request)      // Common for all PHP extensions which are build as shared modules
 #endif
 
+zend_class_entry *ServerRequest_ce_ptr;
+zend_class_entry *ServerResponse_ce_ptr;
+zend_class_entry *ServerResponseSender_ce_ptr;
+
+/* {{{ server_request_normalize_header_name */
+void server_request_normalize_header_name(char *key, size_t key_length)
+{
+    register char *r = key;
+    register char *r_end = r + key_length - 1;
+
+    *r = tolower((unsigned char) *r);
+    r++;
+    for( ; r <= r_end; r++ ) {
+        if( *r == '_' ) {
+            *r = '-';
+        } else {
+            *r = tolower((unsigned char) *r);
+        }
+    }
+}
+
+static zend_string *server_request_normalize_header_name_ex(zend_string *in)
+{
+    zend_string *out = php_trim(in, ZEND_STRL(" \t\r\n\v"), 3);
+    server_request_normalize_header_name(ZSTR_VAL(out), ZSTR_LEN(out));
+    zend_string_forget_hash_val(out);
+    zend_string_hash_val(out);
+    return out;
+}
+/* }}} server_request_normalize_header_name */
+
+/* ServerRequest ************************************************************ */
+
 extern void server_request_parse_accept(zval *return_value, const unsigned char *str, size_t len);
 extern void server_request_parse_content_type(zval *return_value, const unsigned char *str, size_t len);
 extern void server_request_parse_digest_auth(zval *return_value, const unsigned char *str, size_t len);
@@ -115,7 +119,7 @@ extern void server_request_parse_x_forwarded_for(zval *return_value, const unsig
 extern void server_request_parse_x_forwarded(zval *return_value, const unsigned char *str, size_t len);
 extern void server_request_normalize_header_name(char *key, size_t key_length);
 
-zend_class_entry *ServerRequest_ce_ptr;
+
 static zend_object_handlers ServerRequest_obj_handlers;
 static HashTable ServerRequest_prop_handlers;
 
@@ -125,19 +129,6 @@ struct prop_handlers {
     zend_object_write_property_t write_property;
     zend_object_unset_property_t unset_property;
 };
-
-static inline zend_class_entry *get_scope()
-{
-#if PHP_MINOR_VERSION >= 1
-    if( EG(fake_scope) ) {
-        return EG(fake_scope);
-    } else {
-        return zend_get_executed_scope();
-    }
-#else
-    return EG(scope);
-#endif
-}
 
 /* {{{ Argument Info */
 ZEND_BEGIN_ARG_INFO_EX(ServerRequest_construct_args, 0, 0, 1)
@@ -192,7 +183,7 @@ static zend_bool server_request_is_secure(zval *server)
 /* }}} */
 
 /* {{{ server_request_detect_url */
-static inline const unsigned char *extract_port_from_host(const unsigned char *host, size_t len)
+static inline const unsigned char *server_request_extract_port_from_host(const unsigned char *host, size_t len)
 {
     const unsigned char *right = host + len - 1;
     const unsigned char *left = len > 6 ? right - 6 : host;
@@ -208,7 +199,7 @@ static inline const unsigned char *extract_port_from_host(const unsigned char *h
     return NULL;
 }
 
-static inline zend_string *extract_host_from_server(zval *server)
+static inline zend_string *server_request_extract_host_from_server(zval *server)
 {
     zval *tmp;
     zend_string *host;
@@ -228,12 +219,12 @@ static inline zend_string *extract_host_from_server(zval *server)
     return host;
 }
 
-static inline zend_long extract_port_from_server(zval *server, zend_string * host)
+static inline zend_long server_request_extract_port_from_server(zval *server, zend_string *host)
 {
     zval *tmp;
 
     // Get port
-    if( NULL != extract_port_from_host(ZSTR_VAL(host), ZSTR_LEN(host)) ) {
+    if( NULL != server_request_extract_port_from_host(ZSTR_VAL(host), ZSTR_LEN(host)) ) {
         // no need to extract
     } else if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("SERVER_PORT"))) ) {
         return zval_get_long(tmp);
@@ -242,7 +233,7 @@ static inline zend_long extract_port_from_server(zval *server, zend_string * hos
     return 0;
 }
 
-static inline zend_string *extract_uri_from_server(zval *server)
+static inline zend_string *server_request_extract_uri_from_server(zval *server)
 {
     zval *tmp;
 
@@ -264,9 +255,9 @@ static zend_string *server_request_detect_url(zval *server)
     zend_bool is_secure = server_request_is_secure(server);
     const char *fake_host = "___";
 
-    host = extract_host_from_server(server);
-    port = extract_port_from_server(server, host);
-    uri = extract_uri_from_server(server);
+    host = server_request_extract_host_from_server(server);
+    port = server_request_extract_port_from_server(server, host);
+    uri = server_request_extract_uri_from_server(server);
 
     if( ! strcmp(ZSTR_VAL(host), fake_host) && ! port && ! uri ) {
         return NULL;
@@ -294,15 +285,15 @@ static zend_string *server_request_detect_url(zval *server)
 /* }}} */
 
 /* {{{ server_request_normalize_headers */
-static const char http_str[] = "HTTP_";
-static const size_t http_len = sizeof(http_str) - 1;
-
 static void server_request_normalize_headers(zval *return_value, zval *server)
 {
     zend_string *key;
     zend_ulong index;
     zval *val;
     zend_string *tmp;
+
+    char http_str[] = "HTTP_";
+    size_t http_len = sizeof(http_str) - 1;
 
     array_init(return_value);
 
@@ -388,7 +379,7 @@ static void server_request_upload_from_spec(zval *return_value, zval *file)
     }
 }
 
-void server_request_normalize_files(zval *return_value, zval *files)
+static void server_request_normalize_files(zval *return_value, zval *files)
 {
     zend_string *key;
     zend_ulong index;
@@ -432,7 +423,7 @@ static zend_object *server_request_clone_obj(zval *zobject)
 /* }}} */
 
 /* {{{ server_request_assert_immutable */
-static int server_request_is_immutable(zval *value)
+static int server_request_value_is_immutable(zval *value)
 {
     zval *val;
     switch( Z_TYPE_P(value) ) {
@@ -445,7 +436,7 @@ static int server_request_is_immutable(zval *value)
             return 1;
         case IS_ARRAY:
             ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(value), val) {
-                if( !server_request_is_immutable(val) ) {
+                if( !server_request_value_is_immutable(val) ) {
                     return 0;
                 }
             } ZEND_HASH_FOREACH_END();
@@ -454,9 +445,10 @@ static int server_request_is_immutable(zval *value)
             return 0;
     }
 }
+
 static void server_request_assert_immutable(zval *value, const char *desc, size_t desc_len)
 {
-    if( !server_request_is_immutable(value) ) {
+    if( !server_request_value_is_immutable(value) ) {
         zend_throw_exception_ex(spl_ce_UnexpectedValueException, 0, "All $%.*s values must be null, scalar, or array.", (int)desc_len, desc);
     }
 }
@@ -497,7 +489,7 @@ static zval *server_request_object_default_read_property(zval *object, zval *mem
 /* {{{ server_request_object_default_write_property */
 static void server_request_object_default_write_property(zval *object, zval *member, zval *value, void **cache_slot)
 {
-    if( get_scope() != ServerRequest_ce_ptr ) {
+    if( zend_get_executed_scope() != ServerRequest_ce_ptr ) {
         server_request_throw_readonly_exception(object, member);
     } else {
         std_object_handlers.write_property(object, member, value, cache_slot);
@@ -508,7 +500,7 @@ static void server_request_object_default_write_property(zval *object, zval *mem
 /* {{{ server_request_object_default_unset_property */
 static void server_request_object_default_unset_property(zval *object, zval *member, void **cache_slot)
 {
-    if( get_scope() != ServerRequest_ce_ptr ) {
+    if( zend_get_executed_scope() != ServerRequest_ce_ptr ) {
         server_request_throw_readonly_exception(object, member);
     } else {
         std_object_handlers.unset_property(object, member, cache_slot);
@@ -621,7 +613,7 @@ static inline void register_default_prop_handlers(const char *name, size_t name_
 /* }}} */
 
 /* {{{ proto ServerRequest::__construct([ array $globals ]) */
-static inline void server_request_copy_global(
+static inline void server_request_copy_global_prop(
     zval *obj,
     const char *obj_key,
     size_t obj_key_length,
@@ -645,7 +637,6 @@ static inline void server_request_copy_global(
         Z_TRY_ADDREF_P(tmp);
     }
 }
-#define server_request_copy_global_lit(obj, obj_key, glob, glob_key) server_request_copy_global(obj, ZEND_STRL(obj_key), glob, ZEND_STRL(glob_key))
 
 static inline void server_request_init_array_prop(
     zval *obj,
@@ -656,7 +647,6 @@ static inline void server_request_init_array_prop(
     array_init(&tmp);
     zend_update_property(ServerRequest_ce_ptr, obj, obj_key, obj_key_length, &tmp);
 }
-#define server_request_init_array_prop_lit(obj, obj_key) server_request_init_array_prop(obj, ZEND_STRL(obj_key))
 
 static inline void server_request_set_forwarded(zval *object, zval *server)
 {
@@ -884,6 +874,7 @@ static inline void server_request_set_content(zval *object, zval *server)
     }
 }
 
+/* {{{ ServerRequest::__construct */
 PHP_METHOD(ServerRequest, __construct)
 {
     zval *_this_zval;
@@ -914,30 +905,30 @@ PHP_METHOD(ServerRequest, __construct)
     zend_update_property_bool(ServerRequest_ce_ptr, _this_zval, ZEND_STRL("_initialized"), 1);
 
     // initialize array properties
-    server_request_init_array_prop_lit(_this_zval, "accept");
-    server_request_init_array_prop_lit(_this_zval, "acceptCharset");
-    server_request_init_array_prop_lit(_this_zval, "acceptEncoding");
-    server_request_init_array_prop_lit(_this_zval, "acceptLanguage");
-    server_request_init_array_prop_lit(_this_zval, "authDigest");
-    server_request_init_array_prop_lit(_this_zval, "cookie");
-    server_request_init_array_prop_lit(_this_zval, "env");
-    server_request_init_array_prop_lit(_this_zval, "files");
-    server_request_init_array_prop_lit(_this_zval, "forwarded");
-    server_request_init_array_prop_lit(_this_zval, "forwardedFor");
-    server_request_init_array_prop_lit(_this_zval, "get");
-    server_request_init_array_prop_lit(_this_zval, "headers");
-    server_request_init_array_prop_lit(_this_zval, "post");
-    server_request_init_array_prop_lit(_this_zval, "server");
-    server_request_init_array_prop_lit(_this_zval, "uploads");
-    server_request_init_array_prop_lit(_this_zval, "url");
+    server_request_init_array_prop(_this_zval, ZEND_STRL("accept"));
+    server_request_init_array_prop(_this_zval, ZEND_STRL("acceptCharset"));
+    server_request_init_array_prop(_this_zval, ZEND_STRL("acceptEncoding"));
+    server_request_init_array_prop(_this_zval, ZEND_STRL("acceptLanguage"));
+    server_request_init_array_prop(_this_zval, ZEND_STRL("authDigest"));
+    server_request_init_array_prop(_this_zval, ZEND_STRL("cookie"));
+    server_request_init_array_prop(_this_zval, ZEND_STRL("env"));
+    server_request_init_array_prop(_this_zval, ZEND_STRL("files"));
+    server_request_init_array_prop(_this_zval, ZEND_STRL("forwarded"));
+    server_request_init_array_prop(_this_zval, ZEND_STRL("forwardedFor"));
+    server_request_init_array_prop(_this_zval, ZEND_STRL("get"));
+    server_request_init_array_prop(_this_zval, ZEND_STRL("headers"));
+    server_request_init_array_prop(_this_zval, ZEND_STRL("post"));
+    server_request_init_array_prop(_this_zval, ZEND_STRL("server"));
+    server_request_init_array_prop(_this_zval, ZEND_STRL("uploads"));
+    server_request_init_array_prop(_this_zval, ZEND_STRL("url"));
 
     // Copy superglobals
-    server_request_copy_global_lit(_this_zval, "env", zv_globals, "_ENV");
-    server_request_copy_global_lit(_this_zval, "server", zv_globals, "_SERVER");
-    server_request_copy_global_lit(_this_zval, "cookie", zv_globals, "_COOKIE");
-    server_request_copy_global_lit(_this_zval, "files", zv_globals, "_FILES");
-    server_request_copy_global_lit(_this_zval, "get", zv_globals, "_GET");
-    server_request_copy_global_lit(_this_zval, "post", zv_globals, "_POST");
+    server_request_copy_global_prop(_this_zval, ZEND_STRL("env"),    zv_globals, ZEND_STRL("_ENV"));
+    server_request_copy_global_prop(_this_zval, ZEND_STRL("server"), zv_globals, ZEND_STRL("_SERVER"));
+    server_request_copy_global_prop(_this_zval, ZEND_STRL("cookie"), zv_globals, ZEND_STRL("_COOKIE"));
+    server_request_copy_global_prop(_this_zval, ZEND_STRL("files"),  zv_globals, ZEND_STRL("_FILES"));
+    server_request_copy_global_prop(_this_zval, ZEND_STRL("get"),    zv_globals, ZEND_STRL("_GET"));
+    server_request_copy_global_prop(_this_zval, ZEND_STRL("post"),   zv_globals, ZEND_STRL("_POST"));
 
     // Check if previous step threw
     if( EG(exception) ) {
@@ -1089,12 +1080,9 @@ PHP_MINIT_FUNCTION(serverrequest)
 PHP_MSHUTDOWN_FUNCTION(serverrequest)
 {
     zend_hash_destroy(&ServerRequest_prop_handlers);
-
     return SUCCESS;
 }
 /* }}} */
-
-extern zend_string *server_request_normalize_header_name_ex(zend_string *in);
 
 static inline void smart_str_appendz_ex(smart_str *dest, zval *zv, zend_bool persistent)
 {
@@ -1115,9 +1103,7 @@ static inline void smart_str_appendz(smart_str *dest, zval *zv)
 
 /* ServerResponse *********************************************************** */
 
-zend_class_entry *ServerResponse_ce_ptr;
-
-/* {{{ Argument Info */
+/* {{{ ServerResponse Argument Info */
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_getVersion_args, 0, 0, IS_STRING, 1)
 ZEND_END_ARG_INFO()
 
@@ -1795,8 +1781,6 @@ PHP_MINIT_FUNCTION(serverresponse)
 }
 
 /* ServerResponseSender *********************************************************** */
-
-zend_class_entry *ServerResponseSender_ce_ptr;
 
 /* {{{ Argument Info */
 
