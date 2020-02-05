@@ -999,6 +999,7 @@ static inline void send_cookie(zend_string *name, zval *arr)
     zend_string *domain = NULL;
     zend_bool secure = 0;
     zend_bool httponly = 0;
+    zend_string *samesite = zend_string_init("", strlen(""), 0);
     zend_bool raw = 0;
 
     if( (tmp = zend_hash_str_find(Z_ARRVAL_P(arr), ZEND_STRL("value"))) ) {
@@ -1031,7 +1032,7 @@ static inline void send_cookie(zend_string *name, zval *arr)
         raw = zval_is_true(tmp);
     }
 
-    php_setcookie(name, value, expires, path, domain, secure, !raw, httponly);
+    php_setcookie(name, value, expires, path, domain, secure, httponly, samesite, !raw);
 }
 
 PHP_METHOD(ServerResponse, sendCookies)
