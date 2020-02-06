@@ -1,7 +1,6 @@
 # ext/request
 
-This extension provides server-side request and response objects for PHP 7.3
-and later.
+This extension provides server-side request and response objects for PHP.
 
 These are *not* HTTP message objects proper. They are more like wrappers
 for existing global PHP variables and functions.
