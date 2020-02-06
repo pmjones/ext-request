@@ -7,11 +7,9 @@ for existing global PHP variables and functions.
 
 This extension defines three classes in the global namespace:
 
-- ServerRequest, composed of read-only copies of PHP superglobals and some
-  other commonly-used values.
+- ServerRequest, composed of read-only copies of PHP superglobals and some other commonly-used values.
 
-- ServerResponse, essentially a wrapper around (and buffer for) response-
-  related PHP functions.
+- ServerResponse, essentially a wrapper around (and buffer for) response-related PHP functions.
 
 - ServerResponseSender, for sending a ServerResponse.
 
