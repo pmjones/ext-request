@@ -19,13 +19,13 @@ An object of public read-only properties representing the PHP request received
 by the server. Use it in place of the `$_GET`, `$_POST`, etc. superglobals. It
 provides:
 
-- non-session superglobals as public read-only properties;
+- non-session superglobals as public, immutable, read-only properties;
 
-- other public read-only properties calculated from the superglobals (`$method`,
-  `$headers`, `$content`, `$accept`, `$uploads`, etc.);
+- other public, immutable, read-only properties calculated from the superglobals (`$method`,
+  `$headers`, `$accept`, `$uploads`, etc.);
 
 Note that ServerRequest can be extended to provide other userland functionality;
-however, the public read-only properties cannot be modified or overridden.
+however, the public properties cannot be modified or overridden.
 
 ### Instantiation
 
