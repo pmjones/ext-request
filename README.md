@@ -52,7 +52,7 @@ _ServerRequest_ has these public properties.
 
 #### Superglobal-related
 
-These properties are public, read-only, and cannot be modified or overridden.
+These properties are public, immutable, read-only, and cannot be modified or overridden.
 
 - `?array $env`: A copy of `$_ENV`.
 - `?array $files`: A copy of `$_FILES`.
@@ -64,7 +64,7 @@ These properties are public, read-only, and cannot be modified or overridden.
 
 #### HTTP-related
 
-These properties are public, read-only, and cannot be modified or overridden.
+These properties are public, immutable, read-only, and cannot be modified or overridden.
 
 - `?array $accept`: An array of arrays computed from `$_SERVER['HTTP_ACCEPT']`.
 - `?array $acceptCharset`: An array of arrays computed from `$_SERVER['HTTP_ACCEPT_CHARSET']`.
@@ -112,7 +112,7 @@ the following keys:
 
 #### Content-related
 
-These properties are public, read-only, and cannot be modified or overridden.
+These properties are public, immutable, read-only, and cannot be modified or overridden.
 
 - `string $content`: The value of `file_get_contents('php://input')`.
 - `?string $contentCharset`: The `charset` parameter value of `$_SERVER['CONTENT_TYPE']`.
@@ -122,7 +122,7 @@ These properties are public, read-only, and cannot be modified or overridden.
 
 #### Authentication-related
 
-These properties are public, read-only, and cannot be modified or overridden.
+These properties are public, immutable, read-only, and cannot be modified or overridden.
 
 - `?array $authDigest`: An array of digest values computed from
   `$_SERVER['PHP_AUTH_DIGEST']`.
