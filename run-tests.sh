@@ -56,5 +56,10 @@ after_failure)
         printf "\n";
         echo "-- END";
     done
+    # get backtrace for coredumps
+    COREFILE=$(find . -maxdepth 1 -name "core*" | head -n 1)
+    if [[ -f "$COREFILE" ]]; then
+      gdb -c "$COREFILE" $(phpenv which php) -ex "thread apply all bt" -ex "set pagination 0" -batch
+    fi
     ;;
 esac

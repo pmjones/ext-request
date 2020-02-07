@@ -11,9 +11,12 @@ branches:
 
 sudo: required
 
+before_script:
+  - ulimit -c unlimited -S
+
 before_install:
   - travis_retry sudo apt-get update -y
-  - travis_retry sudo apt-get install -y lcov valgrind
+  - travis_retry sudo apt-get install -y lcov valgrind gdb
   - travis_retry gem install coveralls-lcov
 
 script:
