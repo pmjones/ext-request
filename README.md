@@ -1,19 +1,15 @@
 # ext/request
 
-This extension provides server-side request and response objects for PHP 7.3
-and later.
+This extension provides server-side request and response objects for PHP.
 
 These are *not* HTTP message objects proper. They are more like wrappers
 for existing global PHP variables and functions.
 
 This extension defines three classes in the global namespace:
 
-- ServerRequest, composed of read-only copies of PHP superglobals and some
-  other commonly-used values, with methods for adding application-specific
-  request information in immutable fashion.
+- ServerRequest, composed of read-only copies of PHP superglobals and some other commonly-used values.
 
-- ServerResponse, essentially a wrapper around (and buffer for) response-
-  related PHP functions.
+- ServerResponse, essentially a wrapper around (and buffer for) response-related PHP functions.
 
 - ServerResponseSender, for sending a ServerResponse.
 
@@ -23,13 +19,13 @@ An object of public read-only properties representing the PHP request received
 by the server. Use it in place of the `$_GET`, `$_POST`, etc. superglobals. It
 provides:
 
-- non-session superglobals as public read-only properties;
+- non-session superglobals as public, immutable, read-only properties;
 
-- other public read-only properties calculated from the superglobals (`$method`,
-  `$headers`, `$content`, `$accept`, `$uploads`, etc.);
+- other public, immutable, read-only properties calculated from the superglobals (`$method`,
+  `$headers`, `$accept`, `$uploads`, etc.);
 
 Note that ServerRequest can be extended to provide other userland functionality;
-however, the public read-only properties cannot be modified or overridden.
+however, the public properties cannot be modified or overridden.
 
 ### Instantiation
 
@@ -56,7 +52,7 @@ _ServerRequest_ has these public properties.
 
 #### Superglobal-related
 
-These properties are public, read-only, and cannot be modified or overridden.
+These properties are public, immutable, read-only, and cannot be modified or overridden.
 
 - `?array $env`: A copy of `$_ENV`.
 - `?array $files`: A copy of `$_FILES`.
@@ -68,7 +64,7 @@ These properties are public, read-only, and cannot be modified or overridden.
 
 #### HTTP-related
 
-These properties are public, read-only, and cannot be modified or overridden.
+These properties are public, immutable, read-only, and cannot be modified or overridden.
 
 - `?array $accept`: An array of arrays computed from `$_SERVER['HTTP_ACCEPT']`.
 - `?array $acceptCharset`: An array of arrays computed from `$_SERVER['HTTP_ACCEPT_CHARSET']`.
@@ -116,7 +112,7 @@ the following keys:
 
 #### Content-related
 
-These properties are public, read-only, and cannot be modified or overridden.
+These properties are public, immutable, read-only, and cannot be modified or overridden.
 
 - `string $content`: The value of `file_get_contents('php://input')`.
 - `?string $contentCharset`: The `charset` parameter value of `$_SERVER['CONTENT_TYPE']`.
@@ -126,7 +122,7 @@ These properties are public, read-only, and cannot be modified or overridden.
 
 #### Authentication-related
 
-These properties are public, read-only, and cannot be modified or overridden.
+These properties are public, immutable, read-only, and cannot be modified or overridden.
 
 - `?array $authDigest`: An array of digest values computed from
   `$_SERVER['PHP_AUTH_DIGEST']`.

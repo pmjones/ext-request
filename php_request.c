@@ -548,6 +548,7 @@ static zval *server_request_object_read_property(zval *object, zval *member, int
         zend_string *member_str = zval_get_string(member);
         zend_throw_exception_ex(spl_ce_RuntimeException, 0, "%.*s::$%.*s does not exist.", (int)ZSTR_LEN(ce_name), ZSTR_VAL(ce_name), (int)ZSTR_LEN(member_str), ZSTR_VAL(member_str));
         zend_string_release(member_str);
+        ZVAL_NULL(rv);
         return rv;
     }
     struct prop_handlers *hnd = zend_hash_str_find_ptr(&ServerRequest_prop_handlers, Z_STRVAL_P(member), Z_STRLEN_P(member));
@@ -580,6 +581,13 @@ static void server_request_object_unset_property(zval *object, zval *member, voi
 {
     struct prop_handlers *hnd = zend_hash_str_find_ptr(&ServerRequest_prop_handlers, Z_STRVAL_P(member), Z_STRLEN_P(member));
     return (hnd ? hnd->unset_property : std_object_handlers.unset_property)(object, member, cache_slot);
+}
+/* }}} */
+
+/* {{{ server_request_object_get_property_ptr_ptr */
+static zval *server_request_object_get_property_ptr_ptr(zend_object *object, zend_string *name, int type, void **cache_slot)
+{
+    return NULL;
 }
 /* }}} */
 
@@ -1000,7 +1008,7 @@ PHP_MINIT_FUNCTION(serverrequest)
     ServerRequest_obj_handlers.read_property = server_request_object_read_property;
     ServerRequest_obj_handlers.write_property = server_request_object_write_property;
     ServerRequest_obj_handlers.unset_property = server_request_object_unset_property;
-    ServerRequest_obj_handlers.get_property_ptr_ptr = NULL;
+    ServerRequest_obj_handlers.get_property_ptr_ptr = server_request_object_get_property_ptr_ptr;
     ServerRequest_obj_handlers.clone_obj = server_request_clone_obj;
 
     INIT_CLASS_ENTRY(ce, "ServerRequest", ServerRequest_methods);
