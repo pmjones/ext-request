@@ -1565,18 +1565,6 @@ static void server_response_set_cookie(INTERNAL_FUNCTION_PARAMETERS, zend_bool u
     // Cleanup
     zval_ptr_dtor(&member);
 
-    if (expires_or_options && Z_TYPE_P(expires_or_options) == IS_ARRAY) {
-        if (path) {
-            zend_string_release(path);
-        }
-        if (domain) {
-            zend_string_release(domain);
-        }
-        if (samesite) {
-            zend_string_release(samesite);
-        }
-    }
-
     RETURN_TRUE;
 }
 
