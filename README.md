@@ -21,8 +21,8 @@ provides:
 
 - non-session superglobals as public, immutable, read-only properties;
 
-- other public, immutable, read-only properties calculated from the superglobals (`$method`,
-  `$headers`, `$accept`, `$uploads`, etc.);
+- other public, immutable, read-only properties calculated from the superglobals
+  (`$method`, `$headers`, `$accept`, `$uploads`, etc.);
 
 Note that ServerRequest can be extended to provide other userland functionality;
 however, the public properties cannot be modified or overridden.
@@ -136,18 +136,28 @@ The _ServerRequest_ object has no public methods.
 
 ### Extending and Overriding
 
-tl;dr: Be sure to call the parent constructor or the properties will not be set.
+**Although it is easy and convenient to extend this class, the authors recommend
+decoration and composition over extension in all but the most trivial of cases.**
+
+ServerResponse has a constructor. Child classes overriding `__construct()`
+should be sure to call `parent::__contruct()`, or else the public read-only
+properties will not be set (defaulting to `null` in all cases).
+
+The public read-only properties cannot be overridden; however, child classes
+may add new properties as desired.
+
+ServerRequest has no methods; child classes may add methods as desired.
 
 ## ServerResponse
 
 An object representing the PHP response to be sent from the server; use it in
 place of the `header()`, `setcookie()`, `setrawcookie()`, etc. functions. It
-provides:
+provides a retention space for the HTTP response version, code, headers,
+cookies, and content, so they can be inspected before sending.
 
-- a retention space for version, code, headers, and cookies so they can be
-  inspected before sending;
-
-- mutability and extensibility.
+Note that ServerResponse can be extended to provide other userland
+functionality; however, its public methods are final, and cannot be modified or
+overridden.
 
 ## Instantiation
 
@@ -238,9 +248,29 @@ any return value is ignored.
 
 ### Extending and Overriding
 
-TBD
+**Although it is easy and convenient to extend this class, the authors recommend
+decoration and composition over extension in all but the most trivial of cases.**
+
+ServerResponse is constructorless, which means you can add any constructor you
+like and not have to call a parent constructor.
+
+The properties on ServerResponse are private, which means you may not access
+them, except through the existing ServerResponse methods.
+
+The methods on ServerResponse are public **and final**, which means you cannot
+extend or override them in child classes. This keeps their behavior consistent.
+
+However, the class itself is **not** final, which means you can add any other
+properties and methods you like.
+
+The combination of a non-final class with private properties and public final
+methods keeps ServerResponse open for extension, but closed for modification.
 
 ## ServerResponseSender
+
+An object to send a ServerResponse.
+
+Note that ServerResponseSender methods can be extended and overridden.
 
 ### Instantiation
 
@@ -252,23 +282,55 @@ $sender = new ServerResponseSender();
 
 ### Properties
 
-This class has no public properties.
+This class has no properties of any kind.
 
 ### Methods
 
-The primary public method is `send(ServerResponse $response) : void`. It ...
+_ServerResponseSender_ has these public methods:
 
-- invokes the header callbacks
-- sends the status line (version and code) using `header()`
-- sends the non-cookie headers using `header()`
-- sends the cookie headers using `setcookie()` and `setrawcookie()`
-- sends the content
+- `send(ServerResponse $response) : void`: Calls the following methods in order;
+  that is: runHeaderCallbacks(), sendStatus(), sendHeaders(), sendCookies(), and
+  sendContent().
 
-If the response content is a resource, it is sent with `fpassthru()`. If the
-content is a callable object or closure, it is invoked, and its return value (if
-any) is `echo`ed. Otherwise, the content is `echo`ed (which calls `__toString()`
-if the content is an object).
+- `runHeaderCallbacks(ServerResponse $response) : void`: Invokes each callback
+  returned by ServerResponse::getHeaderCallbacks().
+
+- `sendStatus(ServerResponse $response) : void`: Sends the HTTP status line
+  using header(). The line is composed of ServerResponse::getVersion() and
+  ServerResponse::getCode(). If the version is `null` it defaults to `1.1`;
+  if the code is null is defaults to `200`.
+
+- `sendHeaders(ServerResponse $response) : void`: Sends each header returned
+  by ServerResponse::getHeaders() using header().
+
+- `sendCookies(ServerResponse $response) : void`: Sends each cookie returned
+  by ServerResponse::getCookies() using setcookie() or setrawcookie().
+
+- `sendContent(ServerResponse $response) : void`: Sends the content returned
+  by ServerResponse::getContent().
+
+    - If the content is a resource, it is sent using rewind() and then
+      fpassthru().
+
+    - If the content is a callable object or closure, it is invoked, and
+      then its return value (if any) is echoed as a string; ; note that object
+      returns will be cast to string at this point, invoking the `__toString()`
+      method if present.
+
+    - Otherwise, the content is echoed as a string; note that objects will be
+      cast to string at this point, invoking the `__toString()` method if
+      present.
 
 ### Extending and Overriding
 
-TBD
+**Although it is easy and convenient to extend this class, the authors recommend
+decoration and composition over extension in all but the most trivial of cases.**
+
+ServerResponseSender is constructorless, which means you can add any constructor
+you like and not have to call a parent constructor.
+
+The ServerResponseSender methods are public but not final, which means you can
+extend and override them as you see fit. Doing so for any method other than
+sendContent() might not make sense. There is pretty much only one way to send
+headers, cookies, etc., but different kinds of content might well deserve
+sending logic that differs from the default sendContent() logic.
