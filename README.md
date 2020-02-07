@@ -147,14 +147,16 @@ These properties are public, immutable, read-only, and cannot be modified or ove
 
 ### Methods
 
-The _ServerRequest_ object has no public methods.
+The _ServerRequest_ object has no public methods other than its constructor:
+
+- `__construct(array $globals, [string $content])`
 
 ### Extending and Overriding
 
 **Although it is easy and convenient to extend this class, the authors recommend
 decoration and composition over extension in all but the most trivial of cases.**
 
-ServerResponse has a constructor. Child classes overriding `__construct()`
+ServerRequest has a constructor. Child classes overriding `__construct()`
 should be sure to call `parent::__contruct()`, or else the public read-only
 properties will not be set (defaulting to `null` in all cases).
 
@@ -165,13 +167,13 @@ ServerRequest has no methods; child classes may add methods as desired.
 
 ## ServerResponse
 
-An object representing the PHP response to be sent from the server; use it in
-place of the `header()`, `setcookie()`, `setrawcookie()`, etc. functions. It
-provides a retention space for the HTTP response version, code, headers,
+A mutable object representing the PHP response to be sent from the server; use
+it in place of the `header()`, `setcookie()`, `setrawcookie()`, etc. functions.
+It provides a retention space for the HTTP response version, code, headers,
 cookies, and content, so they can be inspected before sending.
 
 Note that ServerResponse can be extended to provide other userland
-functionality; however, its public methods are final, and cannot be modified or
+functionality. However, its public methods are final; they cannot be modified or
 overridden.
 
 ## Instantiation
