@@ -133,6 +133,7 @@ struct prop_handlers {
 /* {{{ Argument Info */
 ZEND_BEGIN_ARG_INFO_EX(ServerRequest_construct_args, 0, 0, 1)
     ZEND_ARG_ARRAY_INFO(0, globals, 0)
+    ZEND_ARG_TYPE_INFO(0, content, IS_STRING, 0)
 ZEND_END_ARG_INFO()
 /* }}} Argument Info */
 
@@ -475,14 +476,39 @@ static inline void server_request_throw_readonly_exception(zval *object, zval *m
 static zval *server_request_object_default_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv)
 {
     zval *retval;
+    php_stream *stream;
+    zend_string *str;
+
     ZVAL_UNDEF(rv);
     retval = std_object_handlers.read_property(object, member, type, cache_slot, rv);
+
     // Make sure the property can't be modified
     if( !Z_ISREF_P(rv) && (type == BP_VAR_W || type == BP_VAR_RW  || type == BP_VAR_UNSET) ) {
         SEPARATE_ZVAL(rv);
         server_request_throw_readonly_exception(object, member);
     }
-    return retval;
+
+    if (strcmp(Z_STRVAL_P(member), "content")) {
+        // non-content member
+        return retval;
+    }
+
+    if (Z_TYPE_P(retval) == IS_STRING) {
+        // content is already a string
+        return retval;
+    }
+
+    // read from php://input on the fly
+    ZVAL_NULL(rv);
+    stream = php_stream_open_wrapper_ex("php://input", "rb", REPORT_ERRORS, NULL, NULL);
+    if( stream ) {
+        if ((str = php_stream_copy_to_mem(stream, PHP_STREAM_COPY_ALL, 0))) {
+            ZVAL_STR(rv, str);
+        }
+        php_stream_close(stream);
+    }
+
+    return rv;
 }
 /* }}} */
 
@@ -505,30 +531,6 @@ static void server_request_object_default_unset_property(zval *object, zval *mem
     } else {
         std_object_handlers.unset_property(object, member, cache_slot);
     }
-}
-/* }}} */
-
-/* {{{ server_request_object_content_read_property */
-static zval *server_request_object_content_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv)
-{
-    php_stream *stream;
-    zend_string *str;
-
-    if( (type == BP_VAR_W || type == BP_VAR_RW  || type == BP_VAR_UNSET) ) {
-        server_request_throw_readonly_exception(object, member);
-        return rv;
-    }
-
-    ZVAL_NULL(rv);
-    stream = php_stream_open_wrapper_ex("php://input", "rb", REPORT_ERRORS, NULL, NULL);
-    if( stream ) {
-        if ((str = php_stream_copy_to_mem(stream, PHP_STREAM_COPY_ALL, 0))) {
-            ZVAL_STR(rv, str);
-        }
-        php_stream_close(stream);
-    }
-
-    return rv;
 }
 /* }}} */
 
@@ -888,6 +890,7 @@ PHP_METHOD(ServerRequest, __construct)
     zval *_this_zval;
     zval *init;
     zval *globals = NULL;
+    zval *content;
     zval *server;
     zval *files;
     zval rv = {0};
@@ -896,8 +899,10 @@ PHP_METHOD(ServerRequest, __construct)
     zval uploads = {0};
     zval *xreqwith_val;
 
-    ZEND_PARSE_PARAMETERS_START(1, 1)
-        Z_PARAM_ZVAL(globals)
+    ZEND_PARSE_PARAMETERS_START(1, 2)
+        Z_PARAM_ARRAY(globals)
+        Z_PARAM_OPTIONAL
+        Z_PARAM_ZVAL(content)
     ZEND_PARSE_PARAMETERS_END();
 
     _this_zval = getThis();
@@ -986,6 +991,10 @@ PHP_METHOD(ServerRequest, __construct)
         server_request_normalize_files(&uploads, files);
         zend_update_property(ServerRequest_ce_ptr, _this_zval, ZEND_STRL("uploads"), &uploads);
     }
+
+    if (content && Z_TYPE_P(content) == IS_STRING) {
+        zend_update_property(ServerRequest_ce_ptr, _this_zval, ZEND_STRL("content"), content);
+    }
 }
 /* }}} ServerRequest::__construct */
 
@@ -1034,13 +1043,7 @@ PHP_MINIT_FUNCTION(serverrequest)
     zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("authUser"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("authUser"));
     zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("content"), ZEND_ACC_PUBLIC);
-    register_prop_handlers(
-        ZEND_STRL("content"),
-        server_request_object_default_has_property,
-        server_request_object_content_read_property,
-        server_request_object_default_write_property,
-        server_request_object_default_unset_property
-    );
+    register_default_prop_handlers(ZEND_STRL("content"));
     zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("contentCharset"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("contentCharset"));
     zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("contentLength"), ZEND_ACC_PUBLIC);

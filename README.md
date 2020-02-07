@@ -35,8 +35,8 @@ Instantiation of _ServerRequest_ is straightforward:
 $request = new ServerRequest($GLOBALS);
 ```
 
-If you want to provide custom values to the object, pass an array that mimics
-`$GLOBALS` to the constructor:
+If you want to provide custom superglobal values to the object, pass an array
+that mimics `$GLOBALS` to the constructor:
 
 ```php
 $request = new ServerRequest([
@@ -45,6 +45,20 @@ $request = new ServerRequest([
     ],
 ]);
 ```
+
+By default, the `$content` property will read from `php://input` on-the-fly. If
+you want to provide a custom `$content` string instead, pass it as the second
+constructor argument:
+
+```php
+$request = new ServerRequest(
+  $GLOBALS,
+  'custom-php-input-string'
+);
+```
+
+> N.b.: It is up to you to make sure the various content-related header values in
+`$GLOBALS` match the custom `$content` string.
 
 ### Properties
 
@@ -114,7 +128,8 @@ the following keys:
 
 These properties are public, immutable, read-only, and cannot be modified or overridden.
 
-- `string $content`: The value of `file_get_contents('php://input')`.
+- `string $content`: The value of `file_get_contents('php://input')`, or the
+  custom content string provided at construction time.
 - `?string $contentCharset`: The `charset` parameter value of `$_SERVER['CONTENT_TYPE']`.
 - `?string $contentLength`: The value of `$_SERVER['CONTENT_LENGTH']`.
 - `?string $contentMd5`: The value of `$_SERVER['HTTP_CONTENT_MD5']`.

@@ -3,6 +3,7 @@ ServerRequest reflection
 --FILE--
 <?php
 echo (new ReflectionClass(ServerRequest::CLASS));
+var_dump(new ServerRequest([]));
 --EXPECT--
 Class [ <internal:request> class ServerRequest ] {
 
@@ -50,9 +51,86 @@ Class [ <internal:request> class ServerRequest ] {
   - Methods [1] {
     Method [ <internal:request, ctor> public method __construct ] {
 
-      - Parameters [1] {
+      - Parameters [2] {
         Parameter #0 [ <required> array $globals ]
+        Parameter #1 [ <optional> string $content ]
       }
     }
+  }
+}
+object(ServerRequest)#1 (29) {
+  ["_initialized":"ServerRequest":private]=>
+  bool(true)
+  ["accept"]=>
+  array(0) {
+  }
+  ["acceptCharset"]=>
+  array(0) {
+  }
+  ["acceptEncoding"]=>
+  array(0) {
+  }
+  ["acceptLanguage"]=>
+  array(0) {
+  }
+  ["authDigest"]=>
+  array(0) {
+  }
+  ["authPw"]=>
+  NULL
+  ["authType"]=>
+  NULL
+  ["authUser"]=>
+  NULL
+  ["content"]=>
+  NULL
+  ["contentCharset"]=>
+  NULL
+  ["contentLength"]=>
+  NULL
+  ["contentMd5"]=>
+  NULL
+  ["contentType"]=>
+  NULL
+  ["cookie"]=>
+  array(0) {
+  }
+  ["env"]=>
+  array(0) {
+  }
+  ["files"]=>
+  array(0) {
+  }
+  ["forwarded"]=>
+  array(0) {
+  }
+  ["forwardedFor"]=>
+  array(0) {
+  }
+  ["forwardedHost"]=>
+  NULL
+  ["forwardedProto"]=>
+  NULL
+  ["get"]=>
+  array(0) {
+  }
+  ["headers"]=>
+  array(0) {
+  }
+  ["method"]=>
+  NULL
+  ["post"]=>
+  array(0) {
+  }
+  ["requestedWith"]=>
+  NULL
+  ["server"]=>
+  array(0) {
+  }
+  ["uploads"]=>
+  array(0) {
+  }
+  ["url"]=>
+  array(0) {
   }
 }
