@@ -5,58 +5,89 @@ branches:
   - 2.x
 
 platform:
-  - x86
-  - x64
-
-cache:
-  - 'C:\Downloads -> appveyor.yml'
+- x86
+- x64
 
 environment:
-  PHP_SDK_BINARY_TOOLS_VER: 2.0.7
+  PHP_SDK_BINARY_TOOLS_VER: php-sdk-2.0.7
   NO_INTERACTION: 1
   REPORT_EXIT_STATUS: 1
-  TEST_PHP_EXECUTABLE: C:\projects\php\php.exe
 
   matrix:
     - PHP_VER: 7.3
+      PHP_FULL_VER: 7.3.14
       VC_VER: vc15
       PHP_BUILD_TYPE: Win32
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
-    - PHP_VER: 7.3
+    - PHP_VER: 7.4
+      PHP_FULL_VER: 7.4.2
       VC_VER: vc15
       PHP_BUILD_TYPE: nts-Win32
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
 
 install:
-  - ps: Import-Module .\.ci\appveyor.psm1
-  - ps: SetupPhpVersionString
-  - ps: AppendSessionPath
-  - ps: EnsureRequiredDirectoriesPresent
-  - ps: Ensure7ZipIsInstalled
-  - ps: InstallSdk
-  - ps: InstallPhp
-  - ps: InstallPhpDevPack
+- cmd: cinst wget
 
 build_script:
-  - ps: InitializeBuildVars
-  - '"%VSCOMNTOOLS%\VsDevCmd" %PLATFORM%'
-  - '"%VSCOMNTOOLS%\..\..\VC\vcvarsall.bat" %ARCH%'
-  - phpsdk_setvars
-  - phpize
-  - ps: InitializeReleaseVars
-  - cmd: configure.bat --disable-all --enable-psr --with-prefix=C:\projects\php
-  - cmd: nmake 2> compile-errors.log 1> compile.log
+- set VS140COMNTOOLS=C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\Tools\
+- if "%VC_VER%" == "vc14" set VSCOMNTOOLS=%VS120COMNTOOLS%
+- if "%VC_VER%" == "vc15" set VSCOMNTOOLS=%VS140COMNTOOLS%
+- set PATH=%PATH%;C:\projects\php-sdk\bin;C:\projects\php\bin;C:\projects\php
+- set TEST_PHP_EXECUTABLE=C:\projects\php\bin\php.exe
+- if /I "%platform%" == "x86" call "%VSCOMNTOOLS%\..\..\VC\vcvarsall.bat"
+- if /I "%platform%" == "x64" "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64
+- if /I "%platform%" == "x64" call "%VSCOMNTOOLS%\..\..\VC\vcvarsall.bat" amd64
+- if /I "%platform%" == "x86" if "%PHP_BUILD_TYPE%" == "nts-Win32" set RELEASE_FOLDER=%APPVEYOR_BUILD_FOLDER%\Release
+- if /I "%platform%" == "x86" if "%PHP_BUILD_TYPE%" == "Win32" set RELEASE_FOLDER=%APPVEYOR_BUILD_FOLDER%\Release_TS
+- if /I "%platform%" == "x64" if "%PHP_BUILD_TYPE%" == "nts-Win32" set RELEASE_FOLDER=%APPVEYOR_BUILD_FOLDER%\%platform%\Release
+- if /I "%platform%" == "x64" if "%PHP_BUILD_TYPE%" == "Win32" set RELEASE_FOLDER=%APPVEYOR_BUILD_FOLDER%\%platform%\Release_TS
+- set RELEASE_ZIPBALL=request_%platform%_%VC_VER%_%PHP_VER%_%APPVEYOR_BUILD_VERSION%
+- cmd: >-
+    wget https://github.com/OSTC/php-sdk-binary-tools/archive/%PHP_SDK_BINARY_TOOLS_VER%.zip --no-check-certificate -q -O php-sdk-binary-tools-%PHP_SDK_BINARY_TOOLS_VER%.zip
+
+    7z x -y php-sdk-binary-tools-%PHP_SDK_BINARY_TOOLS_VER%.zip -oC:\projects
+
+    move C:\projects\php-sdk-binary-tools-%PHP_SDK_BINARY_TOOLS_VER% C:\projects\php-sdk
+
+    C:\projects\php-sdk\bin\phpsdk_setvars.bat
+
+    wget http://windows.php.net/downloads/releases/archives/php-%PHP_FULL_VER%-%PHP_BUILD_TYPE%-%VC_VER%-%platform%.zip
+
+    7z x -y php-%PHP_FULL_VER%-%PHP_BUILD_TYPE%-%VC_VER%-%platform%.zip -oC:\projects\php
+
+    wget http://windows.php.net/downloads/releases/archives/php-devel-pack-%PHP_FULL_VER%-%PHP_BUILD_TYPE%-%VC_VER%-%platform%.zip
+
+    7z x -y php-devel-pack-%PHP_FULL_VER%-%PHP_BUILD_TYPE%-%VC_VER%-%platform%.zip -oC:\projects
+
+    rm *.zip
+
+    C:\projects\php-%PHP_FULL_VER%-devel-%VC_VER%-%platform%\phpize.bat
+
+    move configure.js configure.js-tmp
+
+    echo var PHP_SANITIZER="no"; var PHP_CONFIG_PROFILE="no"; >configure.js
+
+    type configure.js-tmp >>configure.js
+
+    configure.bat --disable-all --enable-request --with-prefix=C:\projects\php
+
+    nmake
 
 test_script:
-  - cmd: nmake test
+- cmd: nmake test
 
 after_build:
-  - ps: PrepareReleasePackage
-
-on_failure :
-  - ps: PrintLogs
+- echo Collect artifacts and zip
+- mkdir package
+- copy *.md package
+- dir %RELEASE_FOLDER%
+- copy %RELEASE_FOLDER%\php_request.dll package
+- cd package
+- 7z a %RELEASE_ZIPBALL%.zip *
+- mv %RELEASE_ZIPBALL%.zip %APPVEYOR_BUILD_FOLDER%\
+- cd %APPVEYOR_BUILD_FOLDER%
 
 artifacts:
-  - path: '.\$(RELEASE_ZIPBALL).zip'
+  - path: '.\*.zip'
     name: request
     type: zip
