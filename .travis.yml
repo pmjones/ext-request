@@ -17,10 +17,9 @@ before_install:
   - travis_retry gem install coveralls-lcov
 
 script:
-  - ./run-tests.sh valgrind
+  - ./run-tests.sh normal
   - ./run-tests.sh coverage
 
 after_success: ./run-tests.sh after_success
 
 after_failure: ./run-tests.sh after_failure
-

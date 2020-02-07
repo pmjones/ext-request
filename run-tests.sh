@@ -12,6 +12,12 @@ fi
 #fi
 
 case $1 in
+normal)
+    phpize
+    ./configure
+    make clean all
+    make test
+    ;;
 coverage)
     phpize
     ./configure CFLAGS="--coverage -fprofile-arcs -ftest-coverage" LDFLAGS="--coverage"
@@ -52,4 +58,3 @@ after_failure)
     done
     ;;
 esac
-
