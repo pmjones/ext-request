@@ -27,6 +27,12 @@
 
 #include "php_request.h"
 
+static PHP_MINIT_FUNCTION(serverrequest);
+static PHP_MINIT_FUNCTION(serverresponse);
+static PHP_MINIT_FUNCTION(serverresponsesender);
+static PHP_MSHUTDOWN_FUNCTION(serverrequest);
+void server_request_parse_forwarded(zval *return_value, const unsigned char *str, size_t len);
+
 /* {{{ PHP_MINIT_FUNCTION */
 static PHP_MINIT_FUNCTION(request)
 {
@@ -415,12 +421,21 @@ static zend_object *server_request_obj_create(zend_class_entry *ce)
 /* }}} */
 
 /* {{{ server_request_clone_obj */
+#if PHP_MAJOR_VERSION >= 8
+static zend_object *server_request_clone_obj(zend_object *zobject)
+{
+    zend_object * new_obj = std_object_handlers.clone_obj(zobject);
+    new_obj->handlers = &ServerRequest_obj_handlers;
+    return new_obj;
+}
+#else
 static zend_object *server_request_clone_obj(zval *zobject)
 {
     zend_object * new_obj = std_object_handlers.clone_obj(zobject);
     new_obj->handlers = &ServerRequest_obj_handlers;
     return new_obj;
 }
+#endif
 /* }}} */
 
 /* {{{ server_request_assert_immutable */
@@ -456,24 +471,30 @@ static void server_request_assert_immutable(zval *value, const char *desc, size_
 /* }}} */
 
 /* {{{ server_request_object_default_has_property */
-static int server_request_object_default_has_property(zval *object, zval *member, int has_set_exists, void **cache_slot)
+#if PHP_MAJOR_VERSION >= 8
+static int server_request_object_default_has_property(zend_object *object, zend_object *member, int check_empty, void **cache_slot)
 {
     return 1;
 }
+#else
+static int server_request_object_default_has_property(zval *object, zval *member, int check_empty, void **cache_slot)
+{
+    return 1;
+}
+#endif
 /* }}} */
 
 /* {{{ server_request_throw_readonly_exception */
-static inline void server_request_throw_readonly_exception(zval *object, zval *member)
+static inline void server_request_throw_readonly_exception(zend_object *object, zend_string *member)
 {
-    zend_string *ce_name = Z_OBJCE_P(object)->name;
-    zend_string *member_str = zval_get_string(member);
-    zend_throw_exception_ex(spl_ce_RuntimeException, 0, "%.*s::$%.*s is read-only.", (int)ZSTR_LEN(ce_name), ZSTR_VAL(ce_name), (int)ZSTR_LEN(member_str), ZSTR_VAL(member_str));
-    zend_string_release(member_str);
+    zend_string *ce_name = object->ce->name;
+    zend_throw_exception_ex(spl_ce_RuntimeException, 0, "%.*s::$%.*s is read-only.", (int)ZSTR_LEN(ce_name), ZSTR_VAL(ce_name), (int)ZSTR_LEN(member), ZSTR_VAL(member));
 }
 /* }}} */
 
 /* {{{ server_request_object_default_read_property */
-static zval *server_request_object_default_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv)
+#if PHP_MAJOR_VERSION >= 8
+static zval *server_request_object_default_read_property(zend_object *object, zend_string *member, int type, void **cache_slot, zval *rv)
 {
     zval *retval;
     php_stream *stream;
@@ -486,6 +507,44 @@ static zval *server_request_object_default_read_property(zval *object, zval *mem
     if( !Z_ISREF_P(rv) && (type == BP_VAR_W || type == BP_VAR_RW  || type == BP_VAR_UNSET) ) {
         SEPARATE_ZVAL(rv);
         server_request_throw_readonly_exception(object, member);
+    }
+
+    if (strcmp(ZSTR_VAL(member), "content")) {
+        // non-content member
+        return retval;
+    }
+
+    if (Z_TYPE_P(retval) == IS_STRING) {
+        // content is already a string
+        return retval;
+    }
+
+    // read from php://input on the fly
+    ZVAL_NULL(rv);
+    stream = php_stream_open_wrapper_ex("php://input", "rb", REPORT_ERRORS, NULL, NULL);
+    if( stream ) {
+        if ((str = php_stream_copy_to_mem(stream, PHP_STREAM_COPY_ALL, 0))) {
+            ZVAL_STR(rv, str);
+        }
+        php_stream_close(stream);
+    }
+
+    return rv;
+}
+#else
+static zval *server_request_object_default_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv)
+{
+    zval *retval;
+    php_stream *stream;
+    zend_string *str;
+
+    ZVAL_UNDEF(rv);
+    retval = std_object_handlers.read_property(object, member, type, cache_slot, rv);
+
+    // Make sure the property can't be modified
+    if( !Z_ISREF_P(rv) && (type == BP_VAR_W || type == BP_VAR_RW  || type == BP_VAR_UNSET) ) {
+        SEPARATE_ZVAL(rv);
+        server_request_throw_readonly_exception(Z_OBJ_P(object), Z_STR_P(member));
     }
 
     if (strcmp(Z_STRVAL_P(member), "content")) {
@@ -510,21 +569,45 @@ static zval *server_request_object_default_read_property(zval *object, zval *mem
 
     return rv;
 }
+#endif
 /* }}} */
 
 /* {{{ server_request_object_default_write_property */
-static void server_request_object_default_write_property(zval *object, zval *member, zval *value, void **cache_slot)
+#if PHP_MAJOR_VERSION >= 8
+static zval *server_request_object_default_write_property(zend_object *object, zend_string *member, zval *value, void **cache_slot)
 {
     if( zend_get_executed_scope() != ServerRequest_ce_ptr ) {
         server_request_throw_readonly_exception(object, member);
+        return NULL;
+    } else {
+        return std_object_handlers.write_property(object, member, value, cache_slot);
+    }
+}
+#elif PHP_MAJOR_VERSION >= 7 && PHP_MINOR_VERSION >= 4
+static zval *server_request_object_default_write_property(zval *object, zval *member, zval *value, void **cache_slot)
+{
+    if( zend_get_executed_scope() != ServerRequest_ce_ptr ) {
+        server_request_throw_readonly_exception(Z_OBJ_P(object), Z_STR_P(member));
+        return NULL;
+    } else {
+        return std_object_handlers.write_property(object, member, value, cache_slot);
+    }
+}
+#else
+static void server_request_object_default_write_property(zval *object, zval *member, zval *value, void **cache_slot)
+{
+    if( zend_get_executed_scope() != ServerRequest_ce_ptr ) {
+        server_request_throw_readonly_exception(Z_OBJ_P(object), Z_STR_P(member));
     } else {
         std_object_handlers.write_property(object, member, value, cache_slot);
     }
 }
+#endif
 /* }}} */
 
 /* {{{ server_request_object_default_unset_property */
-static void server_request_object_default_unset_property(zval *object, zval *member, void **cache_slot)
+#if PHP_MAJOR_VERSION >= 8
+static void server_request_object_default_unset_property(zend_object *object, zend_string *member, void **cache_slot)
 {
     if( zend_get_executed_scope() != ServerRequest_ce_ptr ) {
         server_request_throw_readonly_exception(object, member);
@@ -532,17 +615,48 @@ static void server_request_object_default_unset_property(zval *object, zval *mem
         std_object_handlers.unset_property(object, member, cache_slot);
     }
 }
+#else
+static void server_request_object_default_unset_property(zval *object, zval *member, void **cache_slot)
+{
+    if( zend_get_executed_scope() != ServerRequest_ce_ptr ) {
+        server_request_throw_readonly_exception(Z_OBJ_P(object), Z_STR_P(member));
+    } else {
+        std_object_handlers.unset_property(object, member, cache_slot);
+    }
+}
+#endif
 /* }}} */
 
 /* {{{ server_request_object_has_property */
+#if PHP_MAJOR_VERSION >= 8
+static int server_request_object_has_property(zend_object *object, zend_string *member, int has_set_exists, void **cache_slot)
+{
+    struct prop_handlers *hnd = zend_hash_str_find_ptr(&ServerRequest_prop_handlers, ZSTR_VAL(member), ZSTR_LEN(member));
+    return (hnd ? hnd->has_property : std_object_handlers.has_property)(object, member, has_set_exists, cache_slot);
+}
+#else
 static int server_request_object_has_property(zval *object, zval *member, int has_set_exists, void **cache_slot)
 {
     struct prop_handlers *hnd = zend_hash_str_find_ptr(&ServerRequest_prop_handlers, Z_STRVAL_P(member), Z_STRLEN_P(member));
     return (hnd ? hnd->has_property : std_object_handlers.has_property)(object, member, has_set_exists, cache_slot);
 }
+#endif
 /* }}} */
 
 /* {{{ server_request_object_read_property */
+#if PHP_MAJOR_VERSION >= 8
+static zval *server_request_object_read_property(zend_object *object, zend_string *member, int type, void **cache_slot, zval *rv)
+{
+    if( !object->ce->__get && !std_object_handlers.has_property(object, member, 2, cache_slot) ) {
+        zend_string *ce_name = object->ce->name;
+        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "%.*s::$%.*s does not exist.", (int)ZSTR_LEN(ce_name), ZSTR_VAL(ce_name), (int)ZSTR_LEN(member), ZSTR_VAL(member));
+        ZVAL_NULL(rv);
+        return rv;
+    }
+    struct prop_handlers *hnd = zend_hash_str_find_ptr(&ServerRequest_prop_handlers, ZSTR_VAL(member), ZSTR_LEN(member));
+    return (hnd ? hnd->read_property : std_object_handlers.read_property)(object, member, type, cache_slot, rv);
+}
+#else
 static zval *server_request_object_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv)
 {
     if( !Z_OBJCE_P(object)->__get && !std_object_handlers.has_property(object, member, 2, cache_slot) ) {
@@ -556,9 +670,47 @@ static zval *server_request_object_read_property(zval *object, zval *member, int
     struct prop_handlers *hnd = zend_hash_str_find_ptr(&ServerRequest_prop_handlers, Z_STRVAL_P(member), Z_STRLEN_P(member));
     return (hnd ? hnd->read_property : std_object_handlers.read_property)(object, member, type, cache_slot, rv);
 }
+#endif
 /* }}} */
 
 /* {{{ server_request_object_write_property */
+#if PHP_MAJOR_VERSION >= 8
+static zval *server_request_object_write_property(zend_object *object, zend_string *member, zval *value, void **cache_slot)
+{
+    if( !object->ce->__get && !std_object_handlers.has_property(object, member, 2, cache_slot) ) {
+        zend_string *ce_name = object->ce->name;
+        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "%.*s::$%.*s does not exist.", (int)ZSTR_LEN(ce_name), ZSTR_VAL(ce_name), (int)ZSTR_LEN(member), ZSTR_VAL(member));
+        return NULL;
+    }
+
+    if( !object->ce->__set && !std_object_handlers.has_property(object, member, 2, cache_slot) ) {
+        server_request_throw_readonly_exception(object, member);
+        return NULL;
+    }
+
+    struct prop_handlers *hnd = zend_hash_str_find_ptr(&ServerRequest_prop_handlers, ZSTR_VAL(member), ZSTR_LEN(member));
+    return (hnd ? hnd->write_property : std_object_handlers.write_property)(object, member, value, cache_slot);
+}
+#elif PHP_MAJOR_VERSION >= 7 && PHP_MINOR_VERSION >= 4
+static zval *server_request_object_write_property(zval *object, zval *member, zval *value, void **cache_slot)
+{
+    if( !Z_OBJCE_P(object)->__get && !std_object_handlers.has_property(object, member, 2, cache_slot) ) {
+        zend_string *ce_name = Z_OBJCE_P(object)->name;
+        zend_string *member_str = zval_get_string(member);
+        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "%.*s::$%.*s does not exist.", (int)ZSTR_LEN(ce_name), ZSTR_VAL(ce_name), (int)ZSTR_LEN(member_str), ZSTR_VAL(member_str));
+        zend_string_release(member_str);
+        return NULL;
+    }
+
+    if( !Z_OBJCE_P(object)->__set && !std_object_handlers.has_property(object, member, 2, cache_slot) ) {
+        server_request_throw_readonly_exception(Z_OBJ_P(object), Z_STR_P(member));
+        return NULL;
+    }
+
+    struct prop_handlers *hnd = zend_hash_str_find_ptr(&ServerRequest_prop_handlers, Z_STRVAL_P(member), Z_STRLEN_P(member));
+    return (hnd ? hnd->write_property : std_object_handlers.write_property)(object, member, value, cache_slot);
+}
+#else
 static void server_request_object_write_property(zval *object, zval *member, zval *value, void **cache_slot)
 {
     if( !Z_OBJCE_P(object)->__get && !std_object_handlers.has_property(object, member, 2, cache_slot) ) {
@@ -570,27 +722,44 @@ static void server_request_object_write_property(zval *object, zval *member, zva
     }
 
     if( !Z_OBJCE_P(object)->__set && !std_object_handlers.has_property(object, member, 2, cache_slot) ) {
-        server_request_throw_readonly_exception(object, member);
+        server_request_throw_readonly_exception(Z_OBJ_P(object), Z_STR_P(member));
         return;
     }
+
     struct prop_handlers *hnd = zend_hash_str_find_ptr(&ServerRequest_prop_handlers, Z_STRVAL_P(member), Z_STRLEN_P(member));
-    return (hnd ? hnd->write_property : std_object_handlers.write_property)(object, member, value, cache_slot);
+    (hnd ? hnd->write_property : std_object_handlers.write_property)(object, member, value, cache_slot);
 }
+#endif
 /* }}} */
 
 /* {{{ server_request_object_unset_property */
+#if PHP_MAJOR_VERSION >= 8
+static void server_request_object_unset_property(zend_object *object, zend_string *member, void **cache_slot)
+{
+    struct prop_handlers *hnd = zend_hash_str_find_ptr(&ServerRequest_prop_handlers, ZSTR_VAL(member), ZSTR_LEN(member));
+    return (hnd ? hnd->unset_property : std_object_handlers.unset_property)(object, member, cache_slot);
+}
+#else
 static void server_request_object_unset_property(zval *object, zval *member, void **cache_slot)
 {
     struct prop_handlers *hnd = zend_hash_str_find_ptr(&ServerRequest_prop_handlers, Z_STRVAL_P(member), Z_STRLEN_P(member));
     return (hnd ? hnd->unset_property : std_object_handlers.unset_property)(object, member, cache_slot);
 }
+#endif
 /* }}} */
 
 /* {{{ server_request_object_get_property_ptr_ptr */
+#if PHP_MAJOR_VERSION >= 8
 static zval *server_request_object_get_property_ptr_ptr(zend_object *object, zend_string *name, int type, void **cache_slot)
 {
     return NULL;
 }
+#else
+static zval *server_request_object_get_property_ptr_ptr(zval *object, zval *name, int type, void **cache_slot)
+{
+    return NULL;
+}
+#endif
 /* }}} */
 
 /* {{{ register_prop_handlers */
@@ -762,7 +931,7 @@ static inline void server_request_set_url(zval *object, zval *server)
 
 static inline void server_request_set_accept_by_name(zval *object, zval *server, const char *src, size_t src_length, const char *dest, size_t dest_length)
 {
-    zval val;
+    zval val = {0};
     zval *tmp;
 
     array_init(&val);
@@ -807,7 +976,7 @@ static inline void server_request_parse_accept_language(zval *lang)
 
 static inline void server_request_set_accept_language(zval *object, zval *server)
 {
-    zval val;
+    zval val = {0};
     zval *tmp;
 
     array_init(&val);
@@ -1269,7 +1438,6 @@ PHP_METHOD(ServerResponse, getHeaders)
 /* {{{ proto void ServerResponse::setHeader(string $label, string $value) */
 static void server_response_set_header(zval *response, zend_string *label, zend_string *value, zend_bool replace)
 {
-    zval member;
     zval *prop_ptr;
     zend_string *normal_label;
     zend_string *value_str;
@@ -1283,8 +1451,19 @@ static void server_response_set_header(zval *response, zend_string *label, zend_
         return;
     }
 
-    ZVAL_STRING(&member, "headers");
-    prop_ptr = Z_OBJ_HT_P(response)->get_property_ptr_ptr(response, &member, BP_VAR_RW, NULL);
+    do {
+#if PHP_MAJOR_VERSION >= 8
+        zend_string *member = zend_string_init(ZEND_STRL("headers"), 0);
+        prop_ptr = Z_OBJ_HT_P(response)->get_property_ptr_ptr(Z_OBJ_P(response), member, BP_VAR_RW, NULL);
+        zend_string_release(member);
+#else
+        zval member = {0};
+        ZVAL_STRING(&member, "headers");
+        prop_ptr = Z_OBJ_HT_P(response)->get_property_ptr_ptr(response, &member, BP_VAR_RW, NULL);
+        zval_ptr_dtor(&member);
+#endif
+    } while (0);
+
     if( !prop_ptr || Z_TYPE_P(prop_ptr) != IS_ARRAY ) {
         convert_to_array(prop_ptr);
     }
@@ -1356,7 +1535,6 @@ PHP_METHOD(ServerResponse, addHeader)
 /* {{{ proto void ServerResponse::unsetHeader(string $label) */
 static void server_response_unset_header(zval *response, zend_string *label)
 {
-    zval member;
     zval *prop_ptr;
     zend_string *normal_label;
 
@@ -1366,8 +1544,19 @@ static void server_response_unset_header(zval *response, zend_string *label)
         return;
     }
 
-    ZVAL_STRING(&member, "headers");
-    prop_ptr = Z_OBJ_HT_P(response)->get_property_ptr_ptr(response, &member, BP_VAR_RW, NULL);
+    do {
+#if PHP_MAJOR_VERSION >= 8
+        zend_string *member = zend_string_init(ZEND_STRL("headers"), 0);
+        prop_ptr = Z_OBJ_HT_P(response)->get_property_ptr_ptr(Z_OBJ_P(response), member, BP_VAR_RW, NULL);
+        zend_string_release(member);
+#else
+        zval member = {0};
+        ZVAL_STRING(&member, "headers");
+        prop_ptr = Z_OBJ_HT_P(response)->get_property_ptr_ptr(response, &member, BP_VAR_RW, NULL);
+        zval_ptr_dtor(&member);
+#endif
+    } while (0);
+
     if( !prop_ptr || Z_TYPE_P(prop_ptr) != IS_ARRAY ) {
         return;
     }
@@ -1469,7 +1658,6 @@ static void server_response_set_cookie(INTERNAL_FUNCTION_PARAMETERS, zend_bool u
 {
     zval *response = getThis();
     zval *ptr;
-    zval member = {0};
     zval cookie = {0};
     zval *arr;
 
@@ -1511,8 +1699,18 @@ static void server_response_set_cookie(INTERNAL_FUNCTION_PARAMETERS, zend_bool u
     }
 
     // Read property pointer
-    ZVAL_STRING(&member, "cookies");
-    ptr = Z_OBJ_HT_P(response)->get_property_ptr_ptr(response, &member, BP_VAR_RW, NULL);
+    do {
+#if PHP_MAJOR_VERSION >= 8
+        zend_string *member = zend_string_init(ZEND_STRL("cookies"), 0);
+        ptr = Z_OBJ_HT_P(response)->get_property_ptr_ptr(Z_OBJ_P(response), member, BP_VAR_RW, NULL);
+        zend_string_release(member);
+#else
+        zval member = {0};
+        ZVAL_STRING(&member, "cookies");
+        ptr = Z_OBJ_HT_P(response)->get_property_ptr_ptr(response, &member, BP_VAR_RW, NULL);
+        zval_ptr_dtor(&member);
+#endif
+    } while (0);
 
     if( !ptr ) {
         // fall-through
@@ -1562,9 +1760,6 @@ static void server_response_set_cookie(INTERNAL_FUNCTION_PARAMETERS, zend_bool u
         zend_update_property(ServerResponse_ce_ptr, response, ZEND_STRL("cookies"), &cookie);
     }
 
-    // Cleanup
-    zval_ptr_dtor(&member);
-
     RETURN_TRUE;
 }
 
@@ -1584,7 +1779,6 @@ PHP_METHOD(ServerResponse, setRawCookie)
 /* {{{ proto void ServerResponse::unsetCookie(string $name) */
 static void server_response_unset_cookie(zval *response, zend_string *name)
 {
-    zval member;
     zval *prop_ptr;
 
     // Read property pointer
@@ -1593,8 +1787,19 @@ static void server_response_unset_cookie(zval *response, zend_string *name)
         return;
     }
 
-    ZVAL_STRING(&member, "cookies");
-    prop_ptr = Z_OBJ_HT_P(response)->get_property_ptr_ptr(response, &member, BP_VAR_RW, NULL);
+    do {
+#if PHP_MAJOR_VERSION >= 8
+        zend_string *member = zend_string_init(ZEND_STRL("cookies"), 0);
+        prop_ptr = Z_OBJ_HT_P(response)->get_property_ptr_ptr(Z_OBJ_P(response), member, BP_VAR_RW, NULL);
+        zend_string_release(member);
+#else
+        zval member = {0};
+        ZVAL_STRING(&member, "cookies");
+        prop_ptr = Z_OBJ_HT_P(response)->get_property_ptr_ptr(response, &member, BP_VAR_RW, NULL);
+        zval_ptr_dtor(&member);
+#endif
+    } while (0);
+
     if( !prop_ptr || Z_TYPE_P(prop_ptr) != IS_ARRAY ) {
         return;
     }
@@ -1662,7 +1867,6 @@ PHP_METHOD(ServerResponse, addHeaderCallback)
 {
     zval *callback_func;
     zval *_this_zval = getThis();
-    zval member;
     zval *prop_ptr;
 
     ZEND_PARSE_PARAMETERS_START(1, 1)
@@ -1679,8 +1883,19 @@ PHP_METHOD(ServerResponse, addHeaderCallback)
         return;
     }
 
-    ZVAL_STRING(&member, "callbacks");
-    prop_ptr = Z_OBJ_HT_P(_this_zval)->get_property_ptr_ptr(_this_zval, &member, BP_VAR_RW, NULL);
+    do {
+#if PHP_MAJOR_VERSION >= 8
+        zend_string *member = zend_string_init(ZEND_STRL("callbacks"), 0);
+        prop_ptr = Z_OBJ_HT_P(_this_zval)->get_property_ptr_ptr(Z_OBJ_P(_this_zval), member, BP_VAR_RW, NULL);
+        zend_string_release(member);
+#else
+        zval member = {0};
+        ZVAL_STRING(&member, "callbacks");
+        prop_ptr = Z_OBJ_HT_P(_this_zval)->get_property_ptr_ptr(_this_zval, &member, BP_VAR_RW, NULL);
+        zval_ptr_dtor(&member);
+#endif
+    } while (0);
+
     if( !prop_ptr || Z_TYPE_P(prop_ptr) != IS_ARRAY ) {
         convert_to_array(prop_ptr);
     }
@@ -1689,9 +1904,6 @@ PHP_METHOD(ServerResponse, addHeaderCallback)
     zval tmp = {0};
     ZVAL_ZVAL(&tmp, callback_func, 1, 0);
     add_next_index_zval(prop_ptr, &tmp);
-
-    // Cleanup
-    zval_ptr_dtor(&member);
 }
 /* }}} ServerResponse::setHeaderCallbacks */
 
@@ -1713,7 +1925,11 @@ PHP_METHOD(ServerResponse, setHeaderCallbacks)
 
     // Forward each item to addHeaderCallback
     ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(callbacks), callback) {
+#if PHP_MAJOR_VERSION >= 8
+        zend_call_method_with_1_params(Z_OBJ_P(_this_zval), NULL, NULL, "addHeaderCallback", NULL, callback);
+#else
         zend_call_method_with_1_params(_this_zval, NULL, NULL, "addHeaderCallback", NULL, callback);
+#endif
     } ZEND_HASH_FOREACH_END();
 }
 /* }}} ServerResponse::setHeaderCallbacks */
