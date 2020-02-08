@@ -9,11 +9,6 @@ branches:
   only:
     - 2.x
 
-matrix:
-  fast_finish: true
-  allow_failures:
-    - php: 'master'
-
 sudo: required
 
 before_script:

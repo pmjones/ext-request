@@ -2,7 +2,7 @@
 ServerResponse reflection
 --FILE--
 <?php
-echo (new ReflectionClass(ServerResponse::CLASS));
+echo preg_replace('/\?(\w+)/', '$1 or NULL', (new ReflectionClass(ServerResponse::CLASS)));
 $response = new ServerResponse();
 var_dump($response);
 var_dump($response->getHeaders());
