@@ -653,7 +653,7 @@ static inline void server_request_init_array_prop(
     const char *obj_key,
     size_t obj_key_length
 ) {
-    zval *tmp;
+    zval tmp = {0};
     array_init(&tmp);
     zend_update_property(ServerRequest_ce_ptr, obj, obj_key, obj_key_length, &tmp);
 }
