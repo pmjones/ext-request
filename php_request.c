@@ -890,7 +890,7 @@ PHP_METHOD(ServerRequest, __construct)
     zval *_this_zval;
     zval *init;
     zval *globals = NULL;
-    zval *content;
+    zval *content = NULL;
     zval *server;
     zval *files;
     zval rv = {0};
