@@ -13,7 +13,7 @@ $ext->setHeader('foo', 'bar');
 $ext->setCookie('baz', 'dib');
 $ext->setContent('content');
 (new ServerResponseSender())->send($ext);
-echo PHP_EOL;
+echo "\n";
 var_dump(headers_list());
 --EXPECT--
 content

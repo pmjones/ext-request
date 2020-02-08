@@ -3,17 +3,25 @@ language: php
 php:
   - 7.3
   - 7.4
-  - nightly
+  - master
 
 branches:
   only:
     - 2.x
 
+matrix:
+  fast_finish: true
+  allow_failures:
+    - php: 'master'
+
 sudo: required
+
+before_script:
+  - ulimit -c unlimited -S
 
 before_install:
   - travis_retry sudo apt-get update -y
-  - travis_retry sudo apt-get install -y lcov valgrind
+  - travis_retry sudo apt-get install -y lcov valgrind gdb
   - travis_retry gem install coveralls-lcov
 
 script:

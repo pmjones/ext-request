@@ -3,6 +3,7 @@ version: '{branch}.{build}'
 branches:
   only:
   - 2.x
+  - appveyor
 
 platform:
 - x86
@@ -15,12 +16,12 @@ environment:
 
   matrix:
     - PHP_VER: 7.3
-      PHP_FULL_VER: 7.3.14
+      PHP_FULL_VER: 7.3.13
       VC_VER: vc15
       PHP_BUILD_TYPE: Win32
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
     - PHP_VER: 7.4
-      PHP_FULL_VER: 7.4.2
+      PHP_FULL_VER: 7.4.1
       VC_VER: vc15
       PHP_BUILD_TYPE: nts-Win32
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015

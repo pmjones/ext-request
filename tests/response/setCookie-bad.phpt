@@ -11,7 +11,7 @@ try {
 }
 --EXPECTF--
 
-Warning: ServerResponse::setCookie(): Unrecognized key 'nosuchoption' found in the options array in %s/setCookie-bad.php on line %d
+Warning: ServerResponse::setCookie(): Unrecognized key 'nosuchoption' found in the options array in %ssetCookie-bad.php on line %d
 
-Warning: ServerResponse::setCookie(): No valid options were found in the given array in %s/setCookie-bad.php on line %d
+Warning: ServerResponse::setCookie(): No valid options were found in the given array in %ssetCookie-bad.php on line %d
 Cannot pass arguments after the options array

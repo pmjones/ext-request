@@ -653,7 +653,7 @@ static inline void server_request_init_array_prop(
     const char *obj_key,
     size_t obj_key_length
 ) {
-    zval *tmp;
+    zval tmp = {0};
     array_init(&tmp);
     zend_update_property(ServerRequest_ce_ptr, obj, obj_key, obj_key_length, &tmp);
 }
@@ -890,7 +890,7 @@ PHP_METHOD(ServerRequest, __construct)
     zval *_this_zval;
     zval *init;
     zval *globals = NULL;
-    zval *content;
+    zval *content = NULL;
     zval *server;
     zval *files;
     zval rv = {0};
@@ -1564,18 +1564,6 @@ static void server_response_set_cookie(INTERNAL_FUNCTION_PARAMETERS, zend_bool u
 
     // Cleanup
     zval_ptr_dtor(&member);
-
-    if (expires_or_options && Z_TYPE_P(expires_or_options) == IS_ARRAY) {
-        if (path) {
-            zend_string_release(path);
-        }
-        if (domain) {
-            zend_string_release(domain);
-        }
-        if (samesite) {
-            zend_string_release(samesite);
-        }
-    }
 
     RETURN_TRUE;
 }
