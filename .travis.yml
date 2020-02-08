@@ -3,11 +3,16 @@ language: php
 php:
   - 7.3
   - 7.4
-  - nightly
+  - master
 
 branches:
   only:
     - 2.x
+
+matrix:
+  fast_finish: true
+  allow_failures:
+    - php: 'master'
 
 sudo: required
 
