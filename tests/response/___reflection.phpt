@@ -153,7 +153,7 @@ Class [ <internal:request> class ServerResponse ] {
       - Parameters [1] {
         Parameter #0 [ <required> $content ]
       }
-      - Return [ void or NULL ]
+      - Return [ void ]
     }
 
     Method [ <internal:request> final public method getContent ] {
