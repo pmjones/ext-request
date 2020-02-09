@@ -1340,7 +1340,7 @@ ZEND_END_ARG_INFO()
 ZEND_BEGIN_ARG_INFO_EX(ServerResponse_getContent_args, 0, 0, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_setContent_args, 0, 1, IS_VOID, 1)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_setContent_args, 0, 1, IS_VOID, 0)
     ZEND_ARG_INFO(0, content)
 ZEND_END_ARG_INFO()
 
