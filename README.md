@@ -202,10 +202,10 @@ they may not be overridden.
 
 #### Response Code
 
-- `setCode(string $code) : void`: Sets the HTTP response code; a buffered equivalent of
+- `setCode(int $code) : void`: Sets the HTTP response code; a buffered equivalent of
   `http_response_code($code)`.
 
-- `getCode() : ?long`: Gets the HTTP response code.
+- `getCode() : ?int`: Gets the HTTP response code.
 
 #### Headers
 
