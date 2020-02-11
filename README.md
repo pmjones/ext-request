@@ -131,7 +131,7 @@ These properties are public, immutable, read-only, and cannot be modified or ove
 - `string $content`: The value of `file_get_contents('php://input')`, or the
   custom content string provided at construction time.
 - `?string $contentCharset`: The `charset` parameter value of `$_SERVER['CONTENT_TYPE']`.
-- `?string $contentLength`: The value of `$_SERVER['CONTENT_LENGTH']`.
+- `?int $contentLength`: The value of `$_SERVER['CONTENT_LENGTH']`.
 - `?string $contentMd5`: The value of `$_SERVER['HTTP_CONTENT_MD5']`.
 - `?string $contentType`: The value of `$_SERVER['CONTENT_TYPE']`, minus any parameters.
 
