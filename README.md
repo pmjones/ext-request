@@ -131,7 +131,7 @@ These properties are public, immutable, read-only, and cannot be modified or ove
 - `string $content`: The value of `file_get_contents('php://input')`, or the
   custom content string provided at construction time.
 - `?string $contentCharset`: The `charset` parameter value of `$_SERVER['CONTENT_TYPE']`.
-- `?string $contentLength`: The value of `$_SERVER['CONTENT_LENGTH']`.
+- `?int $contentLength`: The value of `$_SERVER['CONTENT_LENGTH']`.
 - `?string $contentMd5`: The value of `$_SERVER['HTTP_CONTENT_MD5']`.
 - `?string $contentType`: The value of `$_SERVER['CONTENT_TYPE']`, minus any parameters.
 
@@ -202,10 +202,10 @@ they may not be overridden.
 
 #### Response Code
 
-- `setCode(string $code) : void`: Sets the HTTP response code; a buffered equivalent of
+- `setCode(int $code) : void`: Sets the HTTP response code; a buffered equivalent of
   `http_response_code($code)`.
 
-- `getCode() : ?long`: Gets the HTTP response code.
+- `getCode() : ?int`: Gets the HTTP response code.
 
 #### Headers
 
@@ -330,7 +330,7 @@ _ServerResponseSender_ has these public methods:
       fpassthru().
 
     - If the content is a callable object or closure, it is invoked, and
-      then its return value (if any) is echoed as a string; ; note that object
+      then its return value (if any) is echoed as a string; note that object
       returns will be cast to string at this point, invoking the `__toString()`
       method if present.
 
