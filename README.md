@@ -330,7 +330,7 @@ _ServerResponseSender_ has these public methods:
       fpassthru().
 
     - If the content is a callable object or closure, it is invoked, and
-      then its return value (if any) is echoed as a string; ; note that object
+      then its return value (if any) is echoed as a string; note that object
       returns will be cast to string at this point, invoking the `__toString()`
       method if present.
 
