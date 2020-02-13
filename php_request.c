@@ -139,7 +139,7 @@ struct prop_handlers {
 /* {{{ Argument Info */
 ZEND_BEGIN_ARG_INFO_EX(ServerRequest_construct_args, 0, 0, 1)
     ZEND_ARG_ARRAY_INFO(0, globals, 0)
-    ZEND_ARG_TYPE_INFO(0, content, IS_STRING, 0)
+    ZEND_ARG_TYPE_INFO(0, content, IS_STRING, 1)
 ZEND_END_ARG_INFO()
 /* }}} Argument Info */
 

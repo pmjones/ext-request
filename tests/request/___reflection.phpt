@@ -53,7 +53,7 @@ Class [ <internal:request> class ServerRequest ] {
 
       - Parameters [2] {
         Parameter #0 [ <required> array $globals ]
-        Parameter #1 [ <optional> string $content ]
+        Parameter #1 [ <optional> string or NULL $content ]
       }
     }
   }
