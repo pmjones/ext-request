@@ -161,10 +161,7 @@ should be sure to call `parent::__contruct()`, or else the public read-only
 properties will not be set (defaulting to `null` in all cases).
 
 The public read-only properties cannot be overridden; however, child classes may
-add new private properties as desired. **ServerRequest reserves the right to add
-new public properties in future versions. Properties in child classes should be
-private, not protected or public, to prevent BC breaks between ServerRequest
-releases.**
+add new properties as desired.
 
 ServerRequest has no methods; child classes may add methods as desired, and
 ServerRequest does not anticipate adding new methods of its own.
