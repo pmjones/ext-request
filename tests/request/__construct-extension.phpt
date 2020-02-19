@@ -55,13 +55,13 @@ object(ExtRequest)#1 (29) {
   NULL
   ["forwardedProto"]=>
   NULL
-  ["get"]=>
-  NULL
   ["headers"]=>
   NULL
   ["method"]=>
   NULL
   ["post"]=>
+  NULL
+  ["query"]=>
   NULL
   ["requestedWith"]=>
   NULL
