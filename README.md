@@ -69,9 +69,9 @@ _ServerRequest_ has these public properties.
 These properties are public, immutable, read-only, and cannot be modified or overridden.
 
 - `?array $files`: A copy of `$_FILES`.
-- `?array $query`: A copy of `$_GET`.
 - `?array $cookie`: A copy of `$_COOKIE`.
 - `?array $input`: A copy of `$_POST`.
+- `?array $query`: A copy of `$_GET`.
 - `?array $server`: A copy of `$_SERVER`.
 - `?array $uploads`: A copy of `$_FILES`, restructured to look more like `$_POST`.
 
