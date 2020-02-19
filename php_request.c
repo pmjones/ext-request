@@ -1097,7 +1097,7 @@ PHP_METHOD(ServerRequest, __construct)
     server_request_init_array_prop(_this_zval, ZEND_STRL("forwarded"));
     server_request_init_array_prop(_this_zval, ZEND_STRL("forwardedFor"));
     server_request_init_array_prop(_this_zval, ZEND_STRL("headers"));
-    server_request_init_array_prop(_this_zval, ZEND_STRL("post"));
+    server_request_init_array_prop(_this_zval, ZEND_STRL("input"));
     server_request_init_array_prop(_this_zval, ZEND_STRL("query"));
     server_request_init_array_prop(_this_zval, ZEND_STRL("server"));
     server_request_init_array_prop(_this_zval, ZEND_STRL("uploads"));
@@ -1108,8 +1108,8 @@ PHP_METHOD(ServerRequest, __construct)
     server_request_copy_global_prop(_this_zval, ZEND_STRL("server"), globals, ZEND_STRL("_SERVER"));
     server_request_copy_global_prop(_this_zval, ZEND_STRL("cookie"), globals, ZEND_STRL("_COOKIE"));
     server_request_copy_global_prop(_this_zval, ZEND_STRL("files"),  globals, ZEND_STRL("_FILES"));
+    server_request_copy_global_prop(_this_zval, ZEND_STRL("input"),  globals, ZEND_STRL("_POST"));
     server_request_copy_global_prop(_this_zval, ZEND_STRL("query"),  globals, ZEND_STRL("_GET"));
-    server_request_copy_global_prop(_this_zval, ZEND_STRL("post"),   globals, ZEND_STRL("_POST"));
 
     // Check if previous step threw
     if( EG(exception) ) {
@@ -1237,10 +1237,10 @@ PHP_MINIT_FUNCTION(serverrequest)
     register_default_prop_handlers(ZEND_STRL("forwardedProto"));
     zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("headers"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("headers"));
+    zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("input"), ZEND_ACC_PUBLIC);
+    register_default_prop_handlers(ZEND_STRL("input"));
     zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("method"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("method"));
-    zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("post"), ZEND_ACC_PUBLIC);
-    register_default_prop_handlers(ZEND_STRL("post"));
     zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("query"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("query"));
     zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("requestedWith"), ZEND_ACC_PUBLIC);

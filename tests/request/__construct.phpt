@@ -35,8 +35,8 @@ $request = new ServerRequest($fakeGlobals);
 var_dump(
     $request->env === $fakeGlobals['_ENV'] &&
     $request->server === $fakeGlobals['_SERVER'] &&
+    $request->input === $fakeGlobals['_POST'] &&
     $request->query === $fakeGlobals['_GET'] &&
-    $request->post === $fakeGlobals['_POST'] &&
     $request->files === $fakeGlobals['_FILES'] &&
     $request->cookie === $fakeGlobals['_COOKIE']
 );

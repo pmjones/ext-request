@@ -10,7 +10,7 @@ foo=bar&baz=bat
 $_SERVER['HTTP_HOST'] = 'example.com';
 var_dump($_POST);
 $request = new ServerRequest($GLOBALS);
-var_dump($request->post);
+var_dump($request->input);
 --EXPECT--
 array(0) {
 }
