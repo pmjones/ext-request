@@ -16,7 +16,7 @@ Class [ <internal:request> class ServerRequest ] {
   - Static methods [0] {
   }
 
-  - Properties [29] {
+  - Properties [28] {
     Property [ <default> private $_initialized ]
     Property [ <default> public $accept ]
     Property [ <default> public $acceptCharset ]
@@ -32,7 +32,6 @@ Class [ <internal:request> class ServerRequest ] {
     Property [ <default> public $contentMd5 ]
     Property [ <default> public $contentType ]
     Property [ <default> public $cookie ]
-    Property [ <default> public $env ]
     Property [ <default> public $files ]
     Property [ <default> public $forwarded ]
     Property [ <default> public $forwardedFor ]
@@ -58,7 +57,7 @@ Class [ <internal:request> class ServerRequest ] {
     }
   }
 }
-object(ServerRequest)#1 (29) {
+object(ServerRequest)#1 (28) {
   ["_initialized":"ServerRequest":private]=>
   bool(true)
   ["accept"]=>
@@ -93,9 +92,6 @@ object(ServerRequest)#1 (29) {
   ["contentType"]=>
   NULL
   ["cookie"]=>
-  array(0) {
-  }
-  ["env"]=>
   array(0) {
   }
   ["files"]=>

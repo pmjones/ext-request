@@ -68,7 +68,6 @@ _ServerRequest_ has these public properties.
 
 These properties are public, immutable, read-only, and cannot be modified or overridden.
 
-- `?array $env`: A copy of `$_ENV`.
 - `?array $files`: A copy of `$_FILES`.
 - `?array $query`: A copy of `$_GET`.
 - `?array $cookie`: A copy of `$_COOKIE`.
