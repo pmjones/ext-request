@@ -5,8 +5,27 @@
 #define PHP_REQUEST_NAME "request"
 #define PHP_REQUEST_VERSION "2.0.0"
 
+#ifdef PHP_WIN32
+#	ifdef REQUEST_EXPORTS
+#		define PHP_REQUEST_API __declspec(dllexport)
+#	elif defined(COMPILE_DL_REQUEST)
+#		define PHP_REQUEST_API __declspec(dllimport)
+#	else
+#		define PHP_REQUEST_API /* nothing */
+#	endif
+#elif defined(__GNUC__) && __GNUC__ >= 4
+#	define PHP_REQUEST_API __attribute__ ((visibility("default")))
+#else
+#	define PHP_REQUEST_API
+#endif
+
 extern zend_module_entry request_module_entry;
 #define phpext_request_ptr &request_module_entry
+
+extern PHP_REQUEST_API zend_class_entry *ServerRequest_ce_ptr;
+extern PHP_REQUEST_API zend_class_entry *ServerResponse_ce_ptr;
+extern PHP_REQUEST_API zend_class_entry *ServerResponseInterface_ce_ptr;
+extern PHP_REQUEST_API zend_class_entry *ServerResponseSender_ce_ptr;
 
 /* {{{ ServerResponse Argument Info */
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponseInterface_getVersion_args, 0, 0, IS_STRING, 1)

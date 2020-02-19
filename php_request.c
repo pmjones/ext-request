@@ -87,10 +87,10 @@ zend_module_entry request_module_entry = {
 ZEND_GET_MODULE(request)      // Common for all PHP extensions which are build as shared modules
 #endif
 
-zend_class_entry *ServerRequest_ce_ptr;
-zend_class_entry *ServerResponse_ce_ptr;
-zend_class_entry *ServerResponseInterface_ce_ptr;
-zend_class_entry *ServerResponseSender_ce_ptr;
+PHP_REQUEST_API zend_class_entry *ServerRequest_ce_ptr;
+PHP_REQUEST_API zend_class_entry *ServerResponse_ce_ptr;
+PHP_REQUEST_API zend_class_entry *ServerResponseInterface_ce_ptr;
+PHP_REQUEST_API zend_class_entry *ServerResponseSender_ce_ptr;
 
 /* {{{ server_request_normalize_header_name */
 void server_request_normalize_header_name(char *key, size_t key_length)
