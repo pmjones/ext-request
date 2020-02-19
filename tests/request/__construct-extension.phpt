@@ -59,9 +59,9 @@ object(ExtRequest)#1 (29) {
   NULL
   ["headers"]=>
   NULL
-  ["method"]=>
+  ["input"]=>
   NULL
-  ["post"]=>
+  ["method"]=>
   NULL
   ["requestedWith"]=>
   NULL

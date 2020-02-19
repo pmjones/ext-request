@@ -40,8 +40,8 @@ Class [ <internal:request> class ServerRequest ] {
     Property [ <default> public $forwardedProto ]
     Property [ <default> public $get ]
     Property [ <default> public $headers ]
+    Property [ <default> public $input ]
     Property [ <default> public $method ]
-    Property [ <default> public $post ]
     Property [ <default> public $requestedWith ]
     Property [ <default> public $server ]
     Property [ <default> public $uploads ]
@@ -117,11 +117,11 @@ object(ServerRequest)#1 (29) {
   ["headers"]=>
   array(0) {
   }
-  ["method"]=>
-  NULL
-  ["post"]=>
+  ["input"]=>
   array(0) {
   }
+  ["method"]=>
+  NULL
   ["requestedWith"]=>
   NULL
   ["server"]=>
