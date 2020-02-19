@@ -10,9 +10,6 @@ var_dump(get_class($request));
 
 // Globals argument
 $fakeGlobals = array(
-    '_ENV' => array(
-        'c' => 'd',
-    ),
     '_SERVER' => array(
         'HTTP_HOST' => 'foo.bar'
     ),
@@ -33,7 +30,6 @@ $fakeGlobals = array(
 );
 $request = new ServerRequest($fakeGlobals);
 var_dump(
-    $request->env === $fakeGlobals['_ENV'] &&
     $request->server === $fakeGlobals['_SERVER'] &&
     $request->get === $fakeGlobals['_GET'] &&
     $request->post === $fakeGlobals['_POST'] &&

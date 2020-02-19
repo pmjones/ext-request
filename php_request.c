@@ -1092,7 +1092,6 @@ PHP_METHOD(ServerRequest, __construct)
     server_request_init_array_prop(_this_zval, ZEND_STRL("acceptLanguage"));
     server_request_init_array_prop(_this_zval, ZEND_STRL("authDigest"));
     server_request_init_array_prop(_this_zval, ZEND_STRL("cookie"));
-    server_request_init_array_prop(_this_zval, ZEND_STRL("env"));
     server_request_init_array_prop(_this_zval, ZEND_STRL("files"));
     server_request_init_array_prop(_this_zval, ZEND_STRL("forwarded"));
     server_request_init_array_prop(_this_zval, ZEND_STRL("forwardedFor"));
@@ -1104,7 +1103,6 @@ PHP_METHOD(ServerRequest, __construct)
     server_request_init_array_prop(_this_zval, ZEND_STRL("url"));
 
     // Copy superglobals
-    server_request_copy_global_prop(_this_zval, ZEND_STRL("env"),    globals, ZEND_STRL("_ENV"));
     server_request_copy_global_prop(_this_zval, ZEND_STRL("server"), globals, ZEND_STRL("_SERVER"));
     server_request_copy_global_prop(_this_zval, ZEND_STRL("cookie"), globals, ZEND_STRL("_COOKIE"));
     server_request_copy_global_prop(_this_zval, ZEND_STRL("files"),  globals, ZEND_STRL("_FILES"));
@@ -1223,8 +1221,6 @@ PHP_MINIT_FUNCTION(serverrequest)
     register_default_prop_handlers(ZEND_STRL("contentType"));
     zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("cookie"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("cookie"));
-    zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("env"), ZEND_ACC_PUBLIC);
-    register_default_prop_handlers(ZEND_STRL("env"));
     zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("files"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("files"));
     zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("forwarded"), ZEND_ACC_PUBLIC);
