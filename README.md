@@ -5,11 +5,11 @@ This extension provides server-side request and response objects for PHP.
 These are *not* HTTP message objects proper. They are more like wrappers
 for existing global PHP variables and functions.
 
-This extension defines three classes in the global namespace:
+This extension defines three classes and one interface in the global namespace:
 
 - ServerRequest, composed of read-only copies of PHP superglobals and some other commonly-used values.
 
-- ServerResponse, essentially a wrapper around (and buffer for) response-related PHP functions.
+- ServerResponse and ServerResponseInterface, essentially a wrapper around (and buffer for) response-related PHP functions.
 
 - ServerResponseSender, for sending a ServerResponse.
 
