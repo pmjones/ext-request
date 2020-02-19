@@ -70,7 +70,7 @@ These properties are public, immutable, read-only, and cannot be modified or ove
 
 - `?array $env`: A copy of `$_ENV`.
 - `?array $files`: A copy of `$_FILES`.
-- `?array $get`: A copy of `$_GET`.
+- `?array $query`: A copy of `$_GET`.
 - `?array $cookie`: A copy of `$_COOKIE`.
 - `?array $input`: A copy of `$_POST`.
 - `?array $server`: A copy of `$_SERVER`.

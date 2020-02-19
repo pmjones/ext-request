@@ -38,10 +38,10 @@ Class [ <internal:request> class ServerRequest ] {
     Property [ <default> public $forwardedFor ]
     Property [ <default> public $forwardedHost ]
     Property [ <default> public $forwardedProto ]
-    Property [ <default> public $get ]
     Property [ <default> public $headers ]
     Property [ <default> public $input ]
     Property [ <default> public $method ]
+    Property [ <default> public $query ]
     Property [ <default> public $requestedWith ]
     Property [ <default> public $server ]
     Property [ <default> public $uploads ]
@@ -111,9 +111,6 @@ object(ServerRequest)#1 (29) {
   NULL
   ["forwardedProto"]=>
   NULL
-  ["get"]=>
-  array(0) {
-  }
   ["headers"]=>
   array(0) {
   }
@@ -122,6 +119,9 @@ object(ServerRequest)#1 (29) {
   }
   ["method"]=>
   NULL
+  ["query"]=>
+  array(0) {
+  }
   ["requestedWith"]=>
   NULL
   ["server"]=>

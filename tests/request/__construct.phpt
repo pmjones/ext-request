@@ -35,8 +35,8 @@ $request = new ServerRequest($fakeGlobals);
 var_dump(
     $request->env === $fakeGlobals['_ENV'] &&
     $request->server === $fakeGlobals['_SERVER'] &&
-    $request->get === $fakeGlobals['_GET'] &&
     $request->input === $fakeGlobals['_POST'] &&
+    $request->query === $fakeGlobals['_GET'] &&
     $request->files === $fakeGlobals['_FILES'] &&
     $request->cookie === $fakeGlobals['_COOKIE']
 );
@@ -51,7 +51,7 @@ $request = new ServerRequest(array(
     ],
 ));
 var_dump($request->url['host']);
-var_dump($request->get['foo']);
+var_dump($request->query['foo']);
 
 // Check for immutability in globals
 $_GET['foo'] = new stdClass();
