@@ -6,7 +6,7 @@ foo=bar&baz=bat
 <?php
 $_SERVER['HTTP_HOST'] = 'example.com';
 $request = new ServerRequest($GLOBALS);
-var_dump($request->post);
+var_dump($request->input);
 --EXPECT--
 array(2) {
   ["foo"]=>

@@ -32,16 +32,15 @@ Class [ <internal:request> class ServerRequest ] {
     Property [ <default> public $contentMd5 ]
     Property [ <default> public $contentType ]
     Property [ <default> public $cookie ]
-    Property [ <default> public $env ]
     Property [ <default> public $files ]
     Property [ <default> public $forwarded ]
     Property [ <default> public $forwardedFor ]
     Property [ <default> public $forwardedHost ]
     Property [ <default> public $forwardedProto ]
-    Property [ <default> public $get ]
     Property [ <default> public $headers ]
+    Property [ <default> public $input ]
     Property [ <default> public $method ]
-    Property [ <default> public $post ]
+    Property [ <default> public $query ]
     Property [ <default> public $server ]
     Property [ <default> public $uploads ]
     Property [ <default> public $url ]
@@ -94,9 +93,6 @@ object(ServerRequest)#1 (28) {
   ["cookie"]=>
   array(0) {
   }
-  ["env"]=>
-  array(0) {
-  }
   ["files"]=>
   array(0) {
   }
@@ -110,15 +106,15 @@ object(ServerRequest)#1 (28) {
   NULL
   ["forwardedProto"]=>
   NULL
-  ["get"]=>
+  ["headers"]=>
   array(0) {
   }
-  ["headers"]=>
+  ["input"]=>
   array(0) {
   }
   ["method"]=>
   NULL
-  ["post"]=>
+  ["query"]=>
   array(0) {
   }
   ["server"]=>

@@ -43,8 +43,6 @@ object(ExtRequest)#1 (28) {
   NULL
   ["cookie"]=>
   NULL
-  ["env"]=>
-  NULL
   ["files"]=>
   NULL
   ["forwarded"]=>
@@ -55,13 +53,13 @@ object(ExtRequest)#1 (28) {
   NULL
   ["forwardedProto"]=>
   NULL
-  ["get"]=>
-  NULL
   ["headers"]=>
+  NULL
+  ["input"]=>
   NULL
   ["method"]=>
   NULL
-  ["post"]=>
+  ["query"]=>
   NULL
   ["server"]=>
   NULL
