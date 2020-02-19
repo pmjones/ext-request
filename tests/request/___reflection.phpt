@@ -16,7 +16,7 @@ Class [ <internal:request> class ServerRequest ] {
   - Static methods [0] {
   }
 
-  - Properties [28] {
+  - Properties [27] {
     Property [ <default> private $_initialized ]
     Property [ <default> public $accept ]
     Property [ <default> public $acceptCharset ]
@@ -56,7 +56,7 @@ Class [ <internal:request> class ServerRequest ] {
     }
   }
 }
-object(ServerRequest)#1 (28) {
+object(ServerRequest)#1 (27) {
   ["_initialized":"ServerRequest":private]=>
   bool(true)
   ["accept"]=>

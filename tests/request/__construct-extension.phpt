@@ -12,7 +12,7 @@ $ext = new ExtRequest();
 var_dump($ext);
 var_dump($ext->accept);
 --EXPECT--
-object(ExtRequest)#1 (28) {
+object(ExtRequest)#1 (27) {
   ["_initialized":"ServerRequest":private]=>
   bool(false)
   ["accept"]=>
