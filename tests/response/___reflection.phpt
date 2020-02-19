@@ -7,7 +7,7 @@ $response = new ServerResponse();
 var_dump($response);
 var_dump($response->getHeaders());
 --EXPECT--
-Class [ <internal:request> class ServerResponse ] {
+Class [ <internal:request> class ServerResponse implements ServerResponseInterface ] {
 
   - Constants [0] {
   }
@@ -28,7 +28,7 @@ Class [ <internal:request> class ServerResponse ] {
   }
 
   - Methods [19] {
-    Method [ <internal:request> final public method setVersion ] {
+    Method [ <internal:request, prototype ServerResponseInterface> final public method setVersion ] {
 
       - Parameters [1] {
         Parameter #0 [ <required> string $version ]
@@ -36,14 +36,14 @@ Class [ <internal:request> class ServerResponse ] {
       - Return [ void ]
     }
 
-    Method [ <internal:request> final public method getVersion ] {
+    Method [ <internal:request, prototype ServerResponseInterface> final public method getVersion ] {
 
       - Parameters [0] {
       }
       - Return [ string or NULL ]
     }
 
-    Method [ <internal:request> final public method setCode ] {
+    Method [ <internal:request, prototype ServerResponseInterface> final public method setCode ] {
 
       - Parameters [1] {
         Parameter #0 [ <required> int $code ]
@@ -51,14 +51,14 @@ Class [ <internal:request> class ServerResponse ] {
       - Return [ void ]
     }
 
-    Method [ <internal:request> final public method getCode ] {
+    Method [ <internal:request, prototype ServerResponseInterface> final public method getCode ] {
 
       - Parameters [0] {
       }
       - Return [ int or NULL ]
     }
 
-    Method [ <internal:request> final public method setHeader ] {
+    Method [ <internal:request, prototype ServerResponseInterface> final public method setHeader ] {
 
       - Parameters [2] {
         Parameter #0 [ <required> string $label ]
@@ -67,7 +67,7 @@ Class [ <internal:request> class ServerResponse ] {
       - Return [ void ]
     }
 
-    Method [ <internal:request> final public method addHeader ] {
+    Method [ <internal:request, prototype ServerResponseInterface> final public method addHeader ] {
 
       - Parameters [2] {
         Parameter #0 [ <required> string $label ]
@@ -76,7 +76,7 @@ Class [ <internal:request> class ServerResponse ] {
       - Return [ void ]
     }
 
-    Method [ <internal:request> final public method unsetHeader ] {
+    Method [ <internal:request, prototype ServerResponseInterface> final public method unsetHeader ] {
 
       - Parameters [1] {
         Parameter #0 [ <required> string $label ]
@@ -84,21 +84,21 @@ Class [ <internal:request> class ServerResponse ] {
       - Return [ void ]
     }
 
-    Method [ <internal:request> final public method unsetHeaders ] {
+    Method [ <internal:request, prototype ServerResponseInterface> final public method unsetHeaders ] {
 
       - Parameters [0] {
       }
       - Return [ void ]
     }
 
-    Method [ <internal:request> final public method getHeaders ] {
+    Method [ <internal:request, prototype ServerResponseInterface> final public method getHeaders ] {
 
       - Parameters [0] {
       }
       - Return [ array or NULL ]
     }
 
-    Method [ <internal:request> final public method setCookie ] {
+    Method [ <internal:request, prototype ServerResponseInterface> final public method setCookie ] {
 
       - Parameters [7] {
         Parameter #0 [ <required> string $name ]
@@ -112,7 +112,7 @@ Class [ <internal:request> class ServerResponse ] {
       - Return [ bool ]
     }
 
-    Method [ <internal:request> final public method setRawCookie ] {
+    Method [ <internal:request, prototype ServerResponseInterface> final public method setRawCookie ] {
 
       - Parameters [7] {
         Parameter #0 [ <required> string $name ]
@@ -126,7 +126,7 @@ Class [ <internal:request> class ServerResponse ] {
       - Return [ bool ]
     }
 
-    Method [ <internal:request> final public method unsetCookie ] {
+    Method [ <internal:request, prototype ServerResponseInterface> final public method unsetCookie ] {
 
       - Parameters [1] {
         Parameter #0 [ <required> string $name ]
@@ -134,21 +134,21 @@ Class [ <internal:request> class ServerResponse ] {
       - Return [ void ]
     }
 
-    Method [ <internal:request> final public method unsetCookies ] {
+    Method [ <internal:request, prototype ServerResponseInterface> final public method unsetCookies ] {
 
       - Parameters [0] {
       }
       - Return [ void ]
     }
 
-    Method [ <internal:request> final public method getCookies ] {
+    Method [ <internal:request, prototype ServerResponseInterface> final public method getCookies ] {
 
       - Parameters [0] {
       }
       - Return [ array or NULL ]
     }
 
-    Method [ <internal:request> final public method setContent ] {
+    Method [ <internal:request, prototype ServerResponseInterface> final public method setContent ] {
 
       - Parameters [1] {
         Parameter #0 [ <required> $content ]
@@ -156,13 +156,13 @@ Class [ <internal:request> class ServerResponse ] {
       - Return [ void ]
     }
 
-    Method [ <internal:request> final public method getContent ] {
+    Method [ <internal:request, prototype ServerResponseInterface> final public method getContent ] {
 
       - Parameters [0] {
       }
     }
 
-    Method [ <internal:request> final public method setHeaderCallbacks ] {
+    Method [ <internal:request, prototype ServerResponseInterface> final public method setHeaderCallbacks ] {
 
       - Parameters [1] {
         Parameter #0 [ <required> array $callbacks ]
@@ -170,7 +170,7 @@ Class [ <internal:request> class ServerResponse ] {
       - Return [ void ]
     }
 
-    Method [ <internal:request> final public method addHeaderCallback ] {
+    Method [ <internal:request, prototype ServerResponseInterface> final public method addHeaderCallback ] {
 
       - Parameters [1] {
         Parameter #0 [ <required> callable $callback ]
@@ -178,7 +178,7 @@ Class [ <internal:request> class ServerResponse ] {
       - Return [ void ]
     }
 
-    Method [ <internal:request> final public method getHeaderCallbacks ] {
+    Method [ <internal:request, prototype ServerResponseInterface> final public method getHeaderCallbacks ] {
 
       - Parameters [0] {
       }

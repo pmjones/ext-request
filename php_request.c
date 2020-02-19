@@ -29,6 +29,7 @@
 
 static PHP_MINIT_FUNCTION(serverrequest);
 static PHP_MINIT_FUNCTION(serverresponse);
+static PHP_MINIT_FUNCTION(serverresponseinterface);
 static PHP_MINIT_FUNCTION(serverresponsesender);
 static PHP_MSHUTDOWN_FUNCTION(serverrequest);
 void server_request_parse_forwarded(zval *return_value, const unsigned char *str, size_t len);
@@ -37,6 +38,7 @@ void server_request_parse_forwarded(zval *return_value, const unsigned char *str
 static PHP_MINIT_FUNCTION(request)
 {
     PHP_MINIT(serverrequest)(INIT_FUNC_ARGS_PASSTHRU);
+    PHP_MINIT(serverresponseinterface)(INIT_FUNC_ARGS_PASSTHRU); // must be before serverresponse
     PHP_MINIT(serverresponse)(INIT_FUNC_ARGS_PASSTHRU);
     PHP_MINIT(serverresponsesender)(INIT_FUNC_ARGS_PASSTHRU);
     return SUCCESS;
@@ -87,6 +89,7 @@ ZEND_GET_MODULE(request)      // Common for all PHP extensions which are build a
 
 zend_class_entry *ServerRequest_ce_ptr;
 zend_class_entry *ServerResponse_ce_ptr;
+zend_class_entry *ServerResponseInterface_ce_ptr;
 zend_class_entry *ServerResponseSender_ce_ptr;
 
 /* {{{ server_request_normalize_header_name */
@@ -1280,81 +1283,45 @@ static inline void smart_str_appendz(smart_str *dest, zval *zv)
     return smart_str_appendz_ex(dest, zv, 0);
 }
 
+/* ServerResponseInterface ******************************************************** */
+
+/* {{{ ServerResponseInterface methods */
+static zend_function_entry ServerResponseInterface_methods[] = {
+    PHP_ABSTRACT_ME(ServerResponse, setVersion, ServerResponseInterface_setVersion_args)
+    PHP_ABSTRACT_ME(ServerResponse, getVersion, ServerResponseInterface_getVersion_args)
+    PHP_ABSTRACT_ME(ServerResponse, setCode, ServerResponseInterface_setCode_args)
+    PHP_ABSTRACT_ME(ServerResponse, getCode, ServerResponseInterface_getCode_args)
+    PHP_ABSTRACT_ME(ServerResponse, setHeader, ServerResponseInterface_addHeader_args)
+    PHP_ABSTRACT_ME(ServerResponse, addHeader, ServerResponseInterface_setHeader_args)
+    PHP_ABSTRACT_ME(ServerResponse, unsetHeader, ServerResponseInterface_unsetHeader_args)
+    PHP_ABSTRACT_ME(ServerResponse, unsetHeaders, ServerResponseInterface_unsetHeaders_args)
+    PHP_ABSTRACT_ME(ServerResponse, getHeaders, ServerResponseInterface_getHeaders_args)
+    PHP_ABSTRACT_ME(ServerResponse, setCookie, ServerResponseInterface_setCookie_args)
+    PHP_ABSTRACT_ME(ServerResponse, setRawCookie, ServerResponseInterface_setCookie_args)
+    PHP_ABSTRACT_ME(ServerResponse, unsetCookie, ServerResponseInterface_unsetCookie_args)
+    PHP_ABSTRACT_ME(ServerResponse, unsetCookies, ServerResponseInterface_unsetCookies_args)
+    PHP_ABSTRACT_ME(ServerResponse, getCookies, ServerResponseInterface_getCookies_args)
+    PHP_ABSTRACT_ME(ServerResponse, setContent, ServerResponseInterface_setContent_args)
+    PHP_ABSTRACT_ME(ServerResponse, getContent, ServerResponseInterface_getContent_args)
+    PHP_ABSTRACT_ME(ServerResponse, setHeaderCallbacks, ServerResponseInterface_setHeaderCallbacks_args)
+    PHP_ABSTRACT_ME(ServerResponse, addHeaderCallback, ServerResponseInterface_addHeaderCallback_args)
+    PHP_ABSTRACT_ME(ServerResponse, getHeaderCallbacks, ServerResponseInterface_getHeaderCallbacks_args)
+    PHP_FE_END
+};
+/* }}} ServerResponseInterface methods */
+
+/* {{{ PHP_MINIT_FUNCTION */
+PHP_MINIT_FUNCTION(serverresponseinterface)
+{
+    zend_class_entry ce;
+
+    INIT_CLASS_ENTRY(ce, "ServerResponseInterface", ServerResponseInterface_methods);
+    ServerResponseInterface_ce_ptr = zend_register_internal_class(&ce);
+
+    return SUCCESS;
+}
+
 /* ServerResponse *********************************************************** */
-
-/* {{{ ServerResponse Argument Info */
-ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_getVersion_args, 0, 0, IS_STRING, 1)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_setVersion_args, 0, 1, IS_VOID, 0)
-    ZEND_ARG_TYPE_INFO(0, version, IS_STRING, 0)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_getCode_args, 0, 0, IS_LONG, 1)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_setCode_args, 0, 1, IS_VOID, 0)
-    ZEND_ARG_TYPE_INFO(0, code, IS_LONG, 0)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_getHeaders_args, 0, 0, IS_ARRAY, 1)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_setHeader_args, 0, 2, IS_VOID, 0)
-    ZEND_ARG_TYPE_INFO(0, label, IS_STRING, 0)
-    ZEND_ARG_TYPE_INFO(0, value, IS_STRING, 0)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_addHeader_args, 0, 2, IS_VOID, 0)
-    ZEND_ARG_TYPE_INFO(0, label, IS_STRING, 0)
-    ZEND_ARG_TYPE_INFO(0, value, IS_STRING, 0)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_unsetHeader_args, 0, 1, IS_VOID, 0)
-    ZEND_ARG_TYPE_INFO(0, label, IS_STRING, 0)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_unsetHeaders_args, 0, 0, IS_VOID, 0)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_getCookies_args, 0, 0, IS_ARRAY, 1)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_setCookie_args, 0, 1, _IS_BOOL, 0)
-    ZEND_ARG_TYPE_INFO(0, name, IS_STRING, 0)
-    ZEND_ARG_TYPE_INFO(0, value, IS_STRING, 0)
-    ZEND_ARG_INFO(0, expires_or_options)
-    ZEND_ARG_TYPE_INFO(0, path, IS_STRING, 0)
-    ZEND_ARG_TYPE_INFO(0, domain, IS_STRING, 0)
-    ZEND_ARG_TYPE_INFO(0, secure, _IS_BOOL, 0)
-    ZEND_ARG_TYPE_INFO(0, httponly, _IS_BOOL, 0)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_unsetCookie_args, 0, 1, IS_VOID, 0)
-    ZEND_ARG_TYPE_INFO(0, name, IS_STRING, 0)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_unsetCookies_args, 0, 0, IS_VOID, 0)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_INFO_EX(ServerResponse_getContent_args, 0, 0, 0)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_setContent_args, 0, 1, IS_VOID, 0)
-    ZEND_ARG_INFO(0, content)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_addHeaderCallback_args, 0, 1, IS_VOID, 0)
-    ZEND_ARG_TYPE_INFO(0, callback, IS_CALLABLE, 0)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_setHeaderCallbacks_args, 0, 1, IS_VOID, 0)
-    ZEND_ARG_TYPE_INFO(0, callbacks, IS_ARRAY, 0)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponse_getHeaderCallbacks_args, 0, 0, IS_ARRAY, 1)
-ZEND_END_ARG_INFO()
-/* }}} Argument Info */
 
 /* {{{ proto string ServerResponse::getVersion() */
 static zval *server_response_get_version(zval *response)
@@ -1953,25 +1920,25 @@ PHP_METHOD(ServerResponse, getHeaderCallbacks)
 
 /* {{{ ServerResponse methods */
 static zend_function_entry ServerResponse_methods[] = {
-    PHP_ME(ServerResponse, setVersion, ServerResponse_setVersion_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
-    PHP_ME(ServerResponse, getVersion, ServerResponse_getVersion_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
-    PHP_ME(ServerResponse, setCode, ServerResponse_setCode_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
-    PHP_ME(ServerResponse, getCode, ServerResponse_getCode_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
-    PHP_ME(ServerResponse, setHeader, ServerResponse_addHeader_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
-    PHP_ME(ServerResponse, addHeader, ServerResponse_setHeader_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
-    PHP_ME(ServerResponse, unsetHeader, ServerResponse_unsetHeader_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
-    PHP_ME(ServerResponse, unsetHeaders, ServerResponse_unsetHeaders_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
-    PHP_ME(ServerResponse, getHeaders, ServerResponse_getHeaders_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
-    PHP_ME(ServerResponse, setCookie, ServerResponse_setCookie_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
-    PHP_ME(ServerResponse, setRawCookie, ServerResponse_setCookie_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
-    PHP_ME(ServerResponse, unsetCookie, ServerResponse_unsetCookie_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
-    PHP_ME(ServerResponse, unsetCookies, ServerResponse_unsetCookies_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
-    PHP_ME(ServerResponse, getCookies, ServerResponse_getCookies_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
-    PHP_ME(ServerResponse, setContent, ServerResponse_setContent_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
-    PHP_ME(ServerResponse, getContent, ServerResponse_getContent_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
-    PHP_ME(ServerResponse, setHeaderCallbacks, ServerResponse_setHeaderCallbacks_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
-    PHP_ME(ServerResponse, addHeaderCallback, ServerResponse_addHeaderCallback_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
-    PHP_ME(ServerResponse, getHeaderCallbacks, ServerResponse_getHeaderCallbacks_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+    PHP_ME(ServerResponse, setVersion, ServerResponseInterface_setVersion_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+    PHP_ME(ServerResponse, getVersion, ServerResponseInterface_getVersion_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+    PHP_ME(ServerResponse, setCode, ServerResponseInterface_setCode_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+    PHP_ME(ServerResponse, getCode, ServerResponseInterface_getCode_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+    PHP_ME(ServerResponse, setHeader, ServerResponseInterface_addHeader_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+    PHP_ME(ServerResponse, addHeader, ServerResponseInterface_setHeader_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+    PHP_ME(ServerResponse, unsetHeader, ServerResponseInterface_unsetHeader_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+    PHP_ME(ServerResponse, unsetHeaders, ServerResponseInterface_unsetHeaders_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+    PHP_ME(ServerResponse, getHeaders, ServerResponseInterface_getHeaders_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+    PHP_ME(ServerResponse, setCookie, ServerResponseInterface_setCookie_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+    PHP_ME(ServerResponse, setRawCookie, ServerResponseInterface_setCookie_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+    PHP_ME(ServerResponse, unsetCookie, ServerResponseInterface_unsetCookie_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+    PHP_ME(ServerResponse, unsetCookies, ServerResponseInterface_unsetCookies_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+    PHP_ME(ServerResponse, getCookies, ServerResponseInterface_getCookies_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+    PHP_ME(ServerResponse, setContent, ServerResponseInterface_setContent_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+    PHP_ME(ServerResponse, getContent, ServerResponseInterface_getContent_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+    PHP_ME(ServerResponse, setHeaderCallbacks, ServerResponseInterface_setHeaderCallbacks_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+    PHP_ME(ServerResponse, addHeaderCallback, ServerResponseInterface_addHeaderCallback_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+    PHP_ME(ServerResponse, getHeaderCallbacks, ServerResponseInterface_getHeaderCallbacks_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
     PHP_FE_END
 };
 /* }}} ServerResponse methods */
@@ -1983,6 +1950,7 @@ PHP_MINIT_FUNCTION(serverresponse)
 
     INIT_CLASS_ENTRY(ServerResponse_ce, "ServerResponse", ServerResponse_methods);
     ServerResponse_ce_ptr = zend_register_internal_class(&ServerResponse_ce);
+    zend_class_implements(ServerResponse_ce_ptr, 1, ServerResponseInterface_ce_ptr);
 
     zend_declare_property_null(ServerResponse_ce_ptr, ZEND_STRL("version"), ZEND_ACC_PRIVATE);
     zend_declare_property_null(ServerResponse_ce_ptr, ZEND_STRL("code"), ZEND_ACC_PRIVATE);
