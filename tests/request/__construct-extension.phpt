@@ -12,7 +12,7 @@ $ext = new ExtRequest();
 var_dump($ext);
 var_dump($ext->accept);
 --EXPECT--
-object(ExtRequest)#1 (29) {
+object(ExtRequest)#1 (28) {
   ["_initialized":"ServerRequest":private]=>
   bool(false)
   ["accept"]=>
@@ -62,8 +62,6 @@ object(ExtRequest)#1 (29) {
   ["method"]=>
   NULL
   ["post"]=>
-  NULL
-  ["requestedWith"]=>
   NULL
   ["server"]=>
   NULL

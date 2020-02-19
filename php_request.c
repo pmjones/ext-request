@@ -1066,7 +1066,6 @@ PHP_METHOD(ServerRequest, __construct)
     zval method = {0};
     zval headers = {0};
     zval uploads = {0};
-    zval *xreqwith_val;
 
     ZEND_PARSE_PARAMETERS_START(1, 2)
         Z_PARAM_ARRAY(globals)
@@ -1124,12 +1123,6 @@ PHP_METHOD(ServerRequest, __construct)
         // headers
         server_request_normalize_headers(&headers, server);
         zend_update_property(ServerRequest_ce_ptr, _this_zval, ZEND_STRL("headers"), &headers);
-
-        // requestedWith
-        xreqwith_val = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_X_REQUESTED_WITH"));
-        if( xreqwith_val && Z_TYPE_P(xreqwith_val) == IS_STRING ) {
-            zend_update_property(ServerRequest_ce_ptr, _this_zval, ZEND_STRL("requestedWith"), xreqwith_val);
-        }
 
         // method
         server_request_detect_method(&method, server);
@@ -1243,8 +1236,6 @@ PHP_MINIT_FUNCTION(serverrequest)
     register_default_prop_handlers(ZEND_STRL("method"));
     zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("post"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("post"));
-    zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("requestedWith"), ZEND_ACC_PUBLIC);
-    register_default_prop_handlers(ZEND_STRL("requestedWith"));
     zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("server"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("server"));
     zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("uploads"), ZEND_ACC_PUBLIC);

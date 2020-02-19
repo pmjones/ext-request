@@ -16,7 +16,7 @@ Class [ <internal:request> class ServerRequest ] {
   - Static methods [0] {
   }
 
-  - Properties [29] {
+  - Properties [28] {
     Property [ <default> private $_initialized ]
     Property [ <default> public $accept ]
     Property [ <default> public $acceptCharset ]
@@ -42,7 +42,6 @@ Class [ <internal:request> class ServerRequest ] {
     Property [ <default> public $headers ]
     Property [ <default> public $method ]
     Property [ <default> public $post ]
-    Property [ <default> public $requestedWith ]
     Property [ <default> public $server ]
     Property [ <default> public $uploads ]
     Property [ <default> public $url ]
@@ -58,7 +57,7 @@ Class [ <internal:request> class ServerRequest ] {
     }
   }
 }
-object(ServerRequest)#1 (29) {
+object(ServerRequest)#1 (28) {
   ["_initialized":"ServerRequest":private]=>
   bool(true)
   ["accept"]=>
@@ -122,8 +121,6 @@ object(ServerRequest)#1 (29) {
   ["post"]=>
   array(0) {
   }
-  ["requestedWith"]=>
-  NULL
   ["server"]=>
   array(0) {
   }
