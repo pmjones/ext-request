@@ -41,7 +41,6 @@ Class [ <internal:request> class ServerRequest ] {
     Property [ <default> public $input ]
     Property [ <default> public $method ]
     Property [ <default> public $query ]
-    Property [ <default> public $requestedWith ]
     Property [ <default> public $server ]
     Property [ <default> public $uploads ]
     Property [ <default> public $url ]
@@ -118,8 +117,6 @@ object(ServerRequest)#1 (28) {
   ["query"]=>
   array(0) {
   }
-  ["requestedWith"]=>
-  NULL
   ["server"]=>
   array(0) {
   }

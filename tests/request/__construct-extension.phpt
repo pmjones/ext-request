@@ -61,8 +61,6 @@ object(ExtRequest)#1 (28) {
   NULL
   ["query"]=>
   NULL
-  ["requestedWith"]=>
-  NULL
   ["server"]=>
   NULL
   ["uploads"]=>

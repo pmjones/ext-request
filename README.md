@@ -92,7 +92,6 @@ These properties are public, immutable, read-only, and cannot be modified or ove
   `HTTP_*` header keys, plus RFC 3875 headers not prefixed with `HTTP_`.
 - `?string $method`: The `$_SERVER['REQUEST_METHOD']` value, or the
   `$_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE']` value when appropriate.
-- `?string $requestedWith`: The value of `$_SERVER['HTTP_X_REQUESTED_WITH']`.
 
 ##### The `$accept*` Arrays
 
