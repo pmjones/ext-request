@@ -150,8 +150,7 @@ $path = $request->url[PHP_URL_PATH];
 $queryString = $requst->url[PHP_URL_QUERY];
 ```
 
-If ServerRequest cannot build the full URL string, or if `parse_url()` fails,
-the `$url` property will remain `null`.
+If `parse_url()` fail, the `$url` property will remain `null`.
 
 
 #### Content-related
