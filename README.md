@@ -152,7 +152,6 @@ $queryString = $requst->url[PHP_URL_QUERY];
 
 If `parse_url()` fails, the `$url` property will remain `null`.
 
-
 #### Content-related
 
 These properties are public, immutable, read-only, and cannot be modified or overridden.
