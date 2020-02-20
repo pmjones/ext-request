@@ -1303,7 +1303,7 @@ PHP_MINIT_FUNCTION(serverresponseinterface)
     zend_class_entry ce;
 
     INIT_CLASS_ENTRY(ce, "ServerResponseInterface", ServerResponseInterface_methods);
-    ServerResponseInterface_ce_ptr = zend_register_internal_class(&ce);
+    ServerResponseInterface_ce_ptr = zend_register_internal_interface(&ce);
 
     return SUCCESS;
 }
@@ -1954,27 +1954,27 @@ PHP_MINIT_FUNCTION(serverresponse)
 /* {{{ Argument Info */
 
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponseSender_send_args, 0, 1, IS_VOID, 0)
-    ZEND_ARG_OBJ_INFO(0, response, ServerResponse, 0)
+    ZEND_ARG_OBJ_INFO(0, response, ServerResponseInterface, 0)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponseSender_runHeaderCallbacks_args, 0, 1, IS_VOID, 0)
-    ZEND_ARG_OBJ_INFO(0, response, ServerResponse, 0)
+    ZEND_ARG_OBJ_INFO(0, response, ServerResponseInterface, 0)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponseSender_sendStatus_args, 0, 1, IS_VOID, 0)
-    ZEND_ARG_OBJ_INFO(0, response, ServerResponse, 0)
+    ZEND_ARG_OBJ_INFO(0, response, ServerResponseInterface, 0)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponseSender_sendHeaders_args, 0, 1, IS_VOID, 0)
-    ZEND_ARG_OBJ_INFO(0, response, ServerResponse, 0)
+    ZEND_ARG_OBJ_INFO(0, response, ServerResponseInterface, 0)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponseSender_sendCookies_args, 0, 1, IS_VOID, 0)
-    ZEND_ARG_OBJ_INFO(0, response, ServerResponse, 0)
+    ZEND_ARG_OBJ_INFO(0, response, ServerResponseInterface, 0)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponseSender_sendContent_args, 0, 1, IS_VOID, 0)
-    ZEND_ARG_OBJ_INFO(0, response, ServerResponse, 0)
+    ZEND_ARG_OBJ_INFO(0, response, ServerResponseInterface, 0)
 ZEND_END_ARG_INFO()
 
 /* }}} Argument Info */
@@ -1982,16 +1982,21 @@ ZEND_END_ARG_INFO()
 /* {{{ proto void ServerResponseSender::runHeaderCallbacks() */
 static void server_response_sender_run_header_callbacks(zval *response)
 {
-    zval *callbacks;
+    zval callbacks = {0};
     zval *callback;
 
-    callbacks = server_response_get_header_callbacks(response);
+#if PHP_MAJOR_VERSION >= 8
+    zend_call_method_with_0_params(Z_OBJ_P(response), Z_OBJCE_P(response), NULL, "getheadercallbacks", &callbacks);
+#else
+    zend_call_method_with_0_params(response, Z_OBJCE_P(response), NULL, "getheadercallbacks", &callbacks);
+#endif
 
-    if( !callbacks || Z_TYPE_P(callbacks) != IS_ARRAY ) {
+    if( Z_TYPE(callbacks) != IS_ARRAY ) {
+        zval_ptr_dtor(&callbacks);
         return;
     }
 
-    ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(callbacks), callback) {
+    ZEND_HASH_FOREACH_VAL(Z_ARRVAL(callbacks), callback) {
 
         int error;
         char *callback_error = NULL;
@@ -2023,6 +2028,8 @@ static void server_response_sender_run_header_callbacks(zval *response)
             efree(callback_error);
         }
     } ZEND_HASH_FOREACH_END();
+
+    zval_ptr_dtor(&callbacks);
 }
 
 PHP_METHOD(ServerResponseSender, runHeaderCallbacks)
@@ -2030,7 +2037,7 @@ PHP_METHOD(ServerResponseSender, runHeaderCallbacks)
     zval *response;
 
     ZEND_PARSE_PARAMETERS_START(1, 1)
-        Z_PARAM_OBJECT_OF_CLASS(response, ServerResponse_ce_ptr)
+        Z_PARAM_OBJECT_OF_CLASS(response, ServerResponseInterface_ce_ptr)
     ZEND_PARSE_PARAMETERS_END();
 
     server_response_sender_run_header_callbacks(response);
@@ -2042,25 +2049,33 @@ static void server_response_sender_send_status(zval *response)
 {
     sapi_header_line ctr = {0};
     zval *tmp;
+    zval code = {0};
+    zval version = {0};
     smart_str buf = {0};
 
+#if PHP_MAJOR_VERSION >= 8
+    zend_call_method_with_0_params(Z_OBJ_P(response), Z_OBJCE_P(response), NULL, "getcode", &code);
+    zend_call_method_with_0_params(Z_OBJ_P(response), Z_OBJCE_P(response), NULL, "getversion", &version);
+#else
+    zend_call_method_with_0_params(response, Z_OBJCE_P(response), NULL, "getcode", &code);
+    zend_call_method_with_0_params(response, Z_OBJCE_P(response), NULL, "getversion", &version);
+#endif
+
     // Make code
-    tmp = server_response_get_code(response);
-    if( tmp ) {
-        ctr.response_code = zval_get_long(tmp);
+    if( Z_TYPE(code) == IS_LONG ) {
+        ctr.response_code = zval_get_long(&code);
     } else {
         ctr.response_code = 200;
     }
 
-    // Make header
+    // Make status
     smart_str_appendl_ex(&buf, ZEND_STRL("HTTP/"), 0);
 
-    tmp = server_response_get_code(response);
-    if( tmp ) {
-        convert_to_string(tmp);
-        smart_str_append_ex(&buf, Z_STR_P(tmp), 0);
-    } else {
+    if (Z_TYPE(version) == IS_NULL || Z_TYPE(version) == IS_UNDEF) {
         smart_str_appendl_ex(&buf, ZEND_STRL("1.1"), 0);
+    } else {
+        convert_to_string(&version);
+        smart_str_append_ex(&buf, Z_STR(version), 0);
     }
 
     smart_str_appendc_ex(&buf, ' ', 0);
@@ -2073,6 +2088,9 @@ static void server_response_sender_send_status(zval *response)
     sapi_header_op(SAPI_HEADER_REPLACE, &ctr);
 
     smart_str_free(&buf);
+
+    zval_ptr_dtor(&code);
+    zval_ptr_dtor(&version);
 }
 
 PHP_METHOD(ServerResponseSender, sendStatus)
@@ -2080,7 +2098,7 @@ PHP_METHOD(ServerResponseSender, sendStatus)
     zval *response;
 
     ZEND_PARSE_PARAMETERS_START(1, 1)
-        Z_PARAM_OBJECT_OF_CLASS(response, ServerResponse_ce_ptr)
+        Z_PARAM_OBJECT_OF_CLASS(response, ServerResponseInterface_ce_ptr)
     ZEND_PARSE_PARAMETERS_END();
 
     server_response_sender_send_status(response);
@@ -2108,21 +2126,26 @@ static inline void server_response_sender_send_header(zend_string *header, zval 
 
 static void server_response_sender_send_headers(zval *response)
 {
-    zval *headers;
+    zval headers = {0};
     zend_ulong index;
     zend_string *label;
     zval *value;
 
-    headers = server_response_get_headers(response);
-    if( !headers || Z_TYPE_P(headers) != IS_ARRAY ) {
-        return;
+#if PHP_MAJOR_VERSION >= 8
+    zend_call_method_with_0_params(Z_OBJ_P(response), Z_OBJCE_P(response), NULL, "getheaders", &headers);
+#else
+    zend_call_method_with_0_params(response, Z_OBJCE_P(response), NULL, "getheaders", &headers);
+#endif
+
+    if( Z_TYPE(headers) == IS_ARRAY ) {
+        ZEND_HASH_FOREACH_KEY_VAL(Z_ARRVAL(headers), index, label, value) {
+            if( label ) {
+                server_response_sender_send_header(label, value);
+            }
+        } ZEND_HASH_FOREACH_END();
     }
 
-    ZEND_HASH_FOREACH_KEY_VAL(Z_ARRVAL_P(headers), index, label, value) {
-        if( label ) {
-            server_response_sender_send_header(label, value);
-        }
-    } ZEND_HASH_FOREACH_END();
+    zval_ptr_dtor(&headers);
 }
 
 PHP_METHOD(ServerResponseSender, sendHeaders)
@@ -2130,7 +2153,7 @@ PHP_METHOD(ServerResponseSender, sendHeaders)
     zval *response;
 
     ZEND_PARSE_PARAMETERS_START(1, 1)
-        Z_PARAM_OBJECT_OF_CLASS(response, ServerResponse_ce_ptr)
+        Z_PARAM_OBJECT_OF_CLASS(response, ServerResponseInterface_ce_ptr)
     ZEND_PARSE_PARAMETERS_END();
 
     server_response_sender_send_headers(response);
@@ -2189,23 +2212,26 @@ static inline void server_response_sender_send_cookie(zend_string *name, zval *a
 
 static void server_response_sender_send_cookies(zval *response)
 {
-    zval *cookies;
+    zval cookies = {0};
     zend_string *key;
     zend_ulong index;
     zval *val;
 
-    cookies = server_response_get_cookies(response);
+#if PHP_MAJOR_VERSION >= 8
+    zend_call_method_with_0_params(Z_OBJ_P(response), Z_OBJCE_P(response), NULL, "getcookies", &cookies);
+#else
+    zend_call_method_with_0_params(response, Z_OBJCE_P(response), NULL, "getcookies", &cookies);
+#endif
 
-    if( !cookies || Z_TYPE_P(cookies) != IS_ARRAY ) {
-        return;
+    if( Z_TYPE(cookies) == IS_ARRAY ) {
+        ZEND_HASH_FOREACH_KEY_VAL(Z_ARRVAL(cookies), index, key, val) {
+            if( key && Z_TYPE_P(val) == IS_ARRAY ) {
+                server_response_sender_send_cookie(key, val);
+            }
+        } ZEND_HASH_FOREACH_END();
     }
 
-    ZEND_HASH_FOREACH_KEY_VAL(Z_ARRVAL_P(cookies), index, key, val) {
-        if( key && Z_TYPE_P(val) == IS_ARRAY ) {
-            server_response_sender_send_cookie(key, val);
-        }
-    } ZEND_HASH_FOREACH_END();
-
+    zval_ptr_dtor(&cookies);
 }
 
 PHP_METHOD(ServerResponseSender, sendCookies)
@@ -2213,7 +2239,7 @@ PHP_METHOD(ServerResponseSender, sendCookies)
     zval *response;
 
     ZEND_PARSE_PARAMETERS_START(1, 1)
-        Z_PARAM_OBJECT_OF_CLASS(response, ServerResponse_ce_ptr)
+        Z_PARAM_OBJECT_OF_CLASS(response, ServerResponseInterface_ce_ptr)
     ZEND_PARSE_PARAMETERS_END();
 
     server_response_sender_send_cookies(response);
@@ -2228,15 +2254,19 @@ static void server_response_sender_send_content(zval *response)
     php_stream *stream;
     char *error;
     zval func_name = {0};
-    zval rv = {0};
+    zval rv = {0}, rv2 = {0};
     zval params[1] = {0};
     zval *return_value;
 
-    content = server_response_get_content(response);
-    if( !content ) {
-        return;
-    }
+    // Call getContent
+#if PHP_MAJOR_VERSION >= 8
+    zend_call_method_with_0_params(Z_OBJ_P(response), Z_OBJCE_P(response), NULL, "getcontent", &rv2);
+#else
+    zend_call_method_with_0_params(response, Z_OBJCE_P(response), NULL, "getcontent", &rv2);
+#endif
+    content = &rv2;
 
+    // Call again if the value was callable
     if( Z_TYPE_P(content) == IS_OBJECT && zend_is_callable(content, 0, NULL) ) {
         ZVAL_STRING(&func_name, "__invoke");
         ZVAL_ZVAL(&params[0], response, 1, 0);
@@ -2244,6 +2274,7 @@ static void server_response_sender_send_content(zval *response)
         zval_ptr_dtor(&func_name);
         zval_ptr_dtor(&params[0]);
         content = &rv;
+        zval_ptr_dtor(&rv2);
     } else {
         Z_TRY_ADDREF_P(content);
     }
@@ -2280,7 +2311,7 @@ PHP_METHOD(ServerResponseSender, sendContent)
     zval *response;
 
     ZEND_PARSE_PARAMETERS_START(1, 1)
-        Z_PARAM_OBJECT_OF_CLASS(response, ServerResponse_ce_ptr)
+        Z_PARAM_OBJECT_OF_CLASS(response, ServerResponseInterface_ce_ptr)
     ZEND_PARSE_PARAMETERS_END();
 
     server_response_sender_send_content(response);
@@ -2294,7 +2325,7 @@ PHP_METHOD(ServerResponseSender, send)
     zval *response;
 
     ZEND_PARSE_PARAMETERS_START(1, 1)
-        Z_PARAM_OBJECT_OF_CLASS(response, ServerResponse_ce_ptr)
+        Z_PARAM_OBJECT_OF_CLASS(response, ServerResponseInterface_ce_ptr)
     ZEND_PARSE_PARAMETERS_END();
 
     server_response_sender_run_header_callbacks(response);
