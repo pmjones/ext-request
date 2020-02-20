@@ -1078,14 +1078,14 @@ PHP_METHOD(ServerRequest, __construct)
 
     _this_zval = getThis();
 
-    // Check and update _initialized property
-    init = zend_read_property(ServerRequest_ce_ptr, _this_zval, ZEND_STRL("_initialized"), 0, &rv);
+    // Check and update isInitialized property
+    init = zend_read_property(ServerRequest_ce_ptr, _this_zval, ZEND_STRL("isInitialized"), 0, &rv);
     if( zend_is_true(init) ) {
         zend_string *ce_name = Z_OBJCE_P(_this_zval)->name;
         zend_throw_exception_ex(spl_ce_RuntimeException, 0, "%.*s::__construct() called after construction.", (int)ZSTR_LEN(ce_name), ZSTR_VAL(ce_name));
         return;
     }
-    zend_update_property_bool(ServerRequest_ce_ptr, _this_zval, ZEND_STRL("_initialized"), 1);
+    zend_update_property_bool(ServerRequest_ce_ptr, _this_zval, ZEND_STRL("isInitialized"), 1);
 
     // initialize array properties
     server_request_init_array_prop(_this_zval, ZEND_STRL("accept"));
@@ -1187,7 +1187,7 @@ PHP_MINIT_FUNCTION(serverrequest)
     ServerRequest_ce_ptr = zend_register_internal_class(&ce);
     ServerRequest_ce_ptr->create_object = server_request_obj_create;
 
-    zend_declare_property_bool(ServerRequest_ce_ptr, ZEND_STRL("_initialized"), 0, ZEND_ACC_PRIVATE);
+    zend_declare_property_bool(ServerRequest_ce_ptr, ZEND_STRL("isInitialized"), 0, ZEND_ACC_PRIVATE);
 
     zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("accept"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("accept"));
