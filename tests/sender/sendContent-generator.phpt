@@ -1,5 +1,5 @@
 --TEST--
-ServerResponseSender::send with generator
+ServerResponseSender::sendContent with generator
 --CGI--
 --INI--
 expose_php=0
