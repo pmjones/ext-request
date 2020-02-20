@@ -92,6 +92,8 @@ These properties are public, immutable, read-only, and cannot be modified or ove
   `HTTP_*` header keys, plus RFC 3875 headers not prefixed with `HTTP_`.
 - `?string $method`: The `$_SERVER['REQUEST_METHOD']` value, or the
   `$_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE']` value when appropriate.
+- `?array $url`: The result from applying `parse_url()` to a a URL string
+  constructed from various `$_SERVER` elements.
 
 ##### The `$accept*` Arrays
 
@@ -121,6 +123,36 @@ the following keys:
 'host' =>  The original value of the Host header field.
 'proto' => The value of the used protocol type.
 ```
+
+##### The `$url` Array
+
+ServerRequest attempts to build a string of the full request URL of the using
+the following:
+
+- If `$_SERVER['HTTPS'] === 'on'`, the scheme is 'https'; otherwise, it is
+  'http'.
+- If `$_SERVER['HTTP_HOST']` is present, it is used as the host name; otherwise,
+  `$_SERVER['SERVER_NAME']` is used.
+- If a port number is present on the host name, it is used as the port;
+  otherwise, `$_SERVER['SERVER_PORT']` is used.
+- `$_SERVER['REQUEST_URI']` is used for the path and query string.
+
+ServerRequest then passes that string through [`parse_url()`](https://www.php.net/parse_url)
+and retains the resulting array as `$url`.
+
+You can then retrieve the array elements using the `PHP_URL_*` constants:
+
+```php
+$scheme = $request->url[PHP_URL_SCHEME];
+$host = $request->url[PHP_URL_HOST];
+$port = $request->url[PHP_URL_PORT];
+$path = $request->url[PHP_URL_PATH];
+$queryString = $requst->url[PHP_URL_QUERY];
+```
+
+If ServerRequest cannot build the full URL string, or if `parse_url()` fails,
+the `$url` property will remain `null`.
+
 
 #### Content-related
 
