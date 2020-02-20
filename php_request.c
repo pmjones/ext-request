@@ -2247,6 +2247,50 @@ PHP_METHOD(ServerResponseSender, sendCookies)
 /* }}} ServerResponseSender::sendCookies */
 
 /* {{{ proto void ServerResponseSender::sendContent() */
+static inline void server_response_sender_send_iterable(zval *content) {
+    zend_object_iterator *iter;
+    zend_class_entry *ce = Z_OBJCE_P(content);
+    zval *val;
+    zend_string *val_str;
+
+    iter = ce->get_iterator(ce, content, 0);
+
+    if (EG(exception)) {
+        goto done;
+    }
+
+    if (iter->funcs->rewind) {
+        iter->funcs->rewind(iter);
+        if (EG(exception)) {
+            goto done;
+        }
+    }
+
+    while (iter->funcs->valid(iter) == SUCCESS) {
+        if (EG(exception)) {
+            goto done;
+        }
+
+        val = iter->funcs->get_current_data(iter);
+        if (EG(exception)) {
+            goto done;
+        }
+
+        val_str = zval_get_string(val);
+        php_output_write(ZSTR_VAL(val_str), ZSTR_LEN(val_str));
+        zend_string_release(val_str);
+        zval_ptr_dtor(val);
+
+        iter->funcs->move_forward(iter);
+        if (EG(exception)) {
+            goto done;
+        }
+    }
+
+done:
+    OBJ_RELEASE(&iter->std);
+}
+
 static void server_response_sender_send_content(zval *response)
 {
     zval *content;
@@ -2295,6 +2339,13 @@ static void server_response_sender_send_content(zval *response)
         case IS_STRING:
             php_output_write(Z_STRVAL_P(content), Z_STRLEN_P(content));
             break;
+
+        case IS_OBJECT:
+            if (instanceof_function(Z_OBJCE_P(content), zend_ce_traversable)) {
+                server_response_sender_send_iterable(content);
+                break;
+            }
+            // !fallthrough to default!
 
         default:
             content_str = zval_get_string(content);
