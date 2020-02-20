@@ -17,7 +17,7 @@ Class [ <internal:request> class ServerRequest ] {
   }
 
   - Properties [27] {
-    Property [ <default> private $_initialized ]
+    Property [ <default> private $isInitialized ]
     Property [ <default> public $accept ]
     Property [ <default> public $acceptCharset ]
     Property [ <default> public $acceptEncoding ]
@@ -57,7 +57,7 @@ Class [ <internal:request> class ServerRequest ] {
   }
 }
 object(ServerRequest)#1 (27) {
-  ["_initialized":"ServerRequest":private]=>
+  ["isInitialized":"ServerRequest":private]=>
   bool(true)
   ["accept"]=>
   array(0) {
