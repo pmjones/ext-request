@@ -74,6 +74,10 @@ class MyServerResponse implements ServerResponseInterface
         return $this->cookies;
     }
 
+    public function hasCookie(string $name): bool {
+        return isset($this->cookies[$name]);
+    }
+
     public function unsetCookie(string $name): void {
         unset($this->cookies[$name]);
     }
