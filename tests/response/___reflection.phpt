@@ -27,7 +27,7 @@ Class [ <internal:request> class ServerResponse implements ServerResponseInterfa
     Property [ <default> private $callbacks ]
   }
 
-  - Methods [20] {
+  - Methods [21] {
     Method [ <internal:request, prototype ServerResponseInterface> final public method setVersion ] {
 
       - Parameters [1] {
@@ -82,6 +82,14 @@ Class [ <internal:request> class ServerResponse implements ServerResponseInterfa
         Parameter #0 [ <required> string $label ]
       }
       - Return [ void ]
+    }
+
+    Method [ <internal:request, prototype ServerResponseInterface> final public method getHeader ] {
+
+      - Parameters [1] {
+        Parameter #0 [ <required> string $label ]
+      }
+      - Return [ string or NULL ]
     }
 
     Method [ <internal:request, prototype ServerResponseInterface> final public method hasHeader ] {

@@ -40,6 +40,10 @@ class MyServerResponse implements ServerResponseInterface
         return isset($this->headers[strtolower($label)]);
     }
 
+    public function getHeader(string $label): ?string {
+        return $this->headers[strtolower($label)] ?? null;
+    }
+
     public function unsetHeaders(): void {
         $this->headers = [];
     }
