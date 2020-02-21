@@ -70,6 +70,10 @@ class MyServerResponse implements ServerResponseInterface
         return true;
     }
 
+    public function getCookie(string $name): ?array {
+        return $this->cookies[$name];
+    }
+
     public function getCookies(): array {
         return $this->cookies;
     }
