@@ -8,43 +8,49 @@ class MyServerResponse implements ServerResponseInterface
     private $cookies = [];
     private $callbacks = [];
 
-    public function setVersion(string $version): void {
+    public function setVersion(string $version): ServerResponseInterface {
         $this->version = $version;
+        return $this;
     }
 
     public function getVersion(): string {
         return $this->version;
     }
 
-    public function setCode(int $code): void {
+    public function setCode(int $code): ServerResponseInterface {
         $this->code = $code;
+        return $this;
     }
 
     public function getCode(): int {
         return $this->code;
     }
 
-    public function setHeader(string $label, string $value): void {
+    public function setHeader(string $label, string $value): ServerResponseInterface {
         $this->headers[strtolower($label)] = $value; // wrong but this is just for testing
+        return $this;
     }
 
-    public function addHeader(string $label, string $value): void {
+    public function addHeader(string $label, string $value): ServerResponseInterface {
         $this->headers[strtolower($label)] = $value; // wrong but this is just for testing
+        return $this;
     }
 
-    public function unsetHeader(string $label): void {
+    public function unsetHeader(string $label): ServerResponseInterface {
         unset($this->headers[$label]);
+        return $this;
     }
 
-    public function unsetHeaders(): void {
+    public function unsetHeaders(): ServerResponseInterface {
         $this->headers = [];
+        return $this;
     }
 
     public function getHeaders(): array {
         return $this->headers;
     }
 
-    public function setCookie(string $name, string $value = NULL, $expires_or_options = NULL, string $path = NULL, string $domain = NULL, bool $secure = NULL, bool $httponly = NULL): bool {
+    public function setCookie(string $name, string $value = NULL, $expires_or_options = NULL, string $path = NULL, string $domain = NULL, bool $secure = NULL, bool $httponly = NULL): ServerResponseInterface {
         $this->cookies[$name] = [
             'value' => $value,
             'expires' => $expires_or_options,
@@ -54,10 +60,10 @@ class MyServerResponse implements ServerResponseInterface
             'httponly' => $httponly,
             'url_encode' => true,
         ];
-        return true;
+        return $this;
     }
 
-    public function setRawCookie(string $name, string $value = NULL, $expires_or_options = NULL, string $path = NULL, string $domain = NULL, bool $secure = NULL, bool $httponly = NULL): bool {
+    public function setRawCookie(string $name, string $value = NULL, $expires_or_options = NULL, string $path = NULL, string $domain = NULL, bool $secure = NULL, bool $httponly = NULL): ServerResponseInterface {
         $this->cookies[$name] = [
             'value' => $value,
             'expires' => $expires_or_options,
@@ -67,35 +73,40 @@ class MyServerResponse implements ServerResponseInterface
             'httponly' => $httponly,
             'url_encode' => true,
         ];
-        return true;
+        return $this;
     }
 
     public function getCookies(): array {
         return $this->cookies;
     }
 
-    public function unsetCookie(string $name): void {
+    public function unsetCookie(string $name): ServerResponseInterface {
         unset($this->cookies[$name]);
+        return $this;
     }
 
-    public function unsetCookies(): void {
+    public function unsetCookies(): ServerResponseInterface {
         $this->cookies = [];
+        return $this;
     }
 
-    public function setContent($content): void {
+    public function setContent($content): ServerResponseInterface {
         $this->content = $content;
+        return $this;
     }
 
     public function getContent() {
         return $this->content;
     }
 
-    public function setHeaderCallbacks(array $callbacks): void {
+    public function setHeaderCallbacks(array $callbacks): ServerResponseInterface {
         $this->callbacks = $callbacks;
+        return $this;
     }
 
-    public function addHeaderCallback($callback): void {
+    public function addHeaderCallback($callback): ServerResponseInterface {
         $this->callbacks[] = $callback;
+        return $this;
     }
 
     public function getHeaderCallbacks(): array {

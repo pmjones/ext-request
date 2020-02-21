@@ -33,7 +33,7 @@ Class [ <internal:request> class ServerResponse implements ServerResponseInterfa
       - Parameters [1] {
         Parameter #0 [ <required> string $version ]
       }
-      - Return [ void ]
+      - Return [ ServerResponseInterface ]
     }
 
     Method [ <internal:request, prototype ServerResponseInterface> final public method getVersion ] {
@@ -48,7 +48,7 @@ Class [ <internal:request> class ServerResponse implements ServerResponseInterfa
       - Parameters [1] {
         Parameter #0 [ <required> int $code ]
       }
-      - Return [ void ]
+      - Return [ ServerResponseInterface ]
     }
 
     Method [ <internal:request, prototype ServerResponseInterface> final public method getCode ] {
@@ -64,7 +64,7 @@ Class [ <internal:request> class ServerResponse implements ServerResponseInterfa
         Parameter #0 [ <required> string $label ]
         Parameter #1 [ <required> string $value ]
       }
-      - Return [ void ]
+      - Return [ ServerResponseInterface ]
     }
 
     Method [ <internal:request, prototype ServerResponseInterface> final public method addHeader ] {
@@ -73,7 +73,7 @@ Class [ <internal:request> class ServerResponse implements ServerResponseInterfa
         Parameter #0 [ <required> string $label ]
         Parameter #1 [ <required> string $value ]
       }
-      - Return [ void ]
+      - Return [ ServerResponseInterface ]
     }
 
     Method [ <internal:request, prototype ServerResponseInterface> final public method unsetHeader ] {
@@ -81,14 +81,14 @@ Class [ <internal:request> class ServerResponse implements ServerResponseInterfa
       - Parameters [1] {
         Parameter #0 [ <required> string $label ]
       }
-      - Return [ void ]
+      - Return [ ServerResponseInterface ]
     }
 
     Method [ <internal:request, prototype ServerResponseInterface> final public method unsetHeaders ] {
 
       - Parameters [0] {
       }
-      - Return [ void ]
+      - Return [ ServerResponseInterface ]
     }
 
     Method [ <internal:request, prototype ServerResponseInterface> final public method getHeaders ] {
@@ -109,7 +109,7 @@ Class [ <internal:request> class ServerResponse implements ServerResponseInterfa
         Parameter #5 [ <optional> bool $secure ]
         Parameter #6 [ <optional> bool $httponly ]
       }
-      - Return [ bool ]
+      - Return [ ServerResponseInterface ]
     }
 
     Method [ <internal:request, prototype ServerResponseInterface> final public method setRawCookie ] {
@@ -123,7 +123,7 @@ Class [ <internal:request> class ServerResponse implements ServerResponseInterfa
         Parameter #5 [ <optional> bool $secure ]
         Parameter #6 [ <optional> bool $httponly ]
       }
-      - Return [ bool ]
+      - Return [ ServerResponseInterface ]
     }
 
     Method [ <internal:request, prototype ServerResponseInterface> final public method unsetCookie ] {
@@ -131,14 +131,14 @@ Class [ <internal:request> class ServerResponse implements ServerResponseInterfa
       - Parameters [1] {
         Parameter #0 [ <required> string $name ]
       }
-      - Return [ void ]
+      - Return [ ServerResponseInterface ]
     }
 
     Method [ <internal:request, prototype ServerResponseInterface> final public method unsetCookies ] {
 
       - Parameters [0] {
       }
-      - Return [ void ]
+      - Return [ ServerResponseInterface ]
     }
 
     Method [ <internal:request, prototype ServerResponseInterface> final public method getCookies ] {
@@ -153,7 +153,7 @@ Class [ <internal:request> class ServerResponse implements ServerResponseInterfa
       - Parameters [1] {
         Parameter #0 [ <required> $content ]
       }
-      - Return [ void ]
+      - Return [ ServerResponseInterface ]
     }
 
     Method [ <internal:request, prototype ServerResponseInterface> final public method getContent ] {
@@ -167,7 +167,7 @@ Class [ <internal:request> class ServerResponse implements ServerResponseInterfa
       - Parameters [1] {
         Parameter #0 [ <required> array $callbacks ]
       }
-      - Return [ void ]
+      - Return [ ServerResponseInterface ]
     }
 
     Method [ <internal:request, prototype ServerResponseInterface> final public method addHeaderCallback ] {
@@ -175,7 +175,7 @@ Class [ <internal:request> class ServerResponse implements ServerResponseInterfa
       - Parameters [1] {
         Parameter #0 [ <required> callable $callback ]
       }
-      - Return [ void ]
+      - Return [ ServerResponseInterface ]
     }
 
     Method [ <internal:request, prototype ServerResponseInterface> final public method getHeaderCallbacks ] {
