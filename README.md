@@ -219,8 +219,8 @@ _ServerResponse_ has no public properties.
 
 ### Methods
 
-_ServerResponse_ has these public methods, all of which are declared `final`;
-they may not be overridden.
+_ServerResponse_ implements _ServerResponseInterface_, which has these public
+methods; all of them are declared `final` and so may not be overridden.
 
 #### HTTP Version
 
@@ -289,7 +289,7 @@ while HTTP/1.x has no such requirement, lower-case is also recognized as valid.
 
 - `getHeaderCallbacks() : ?array`: Returns the array of header callbacks.
 
-The header callback signature should be `function (ServerResponse $response)`;
+The header callback signature should be `function (ServerResponseInterface $response)`;
 any return value is ignored.
 
 #### Content
@@ -342,25 +342,25 @@ This class has no properties of any kind.
 
 _ServerResponseSender_ has these public methods:
 
-- `send(ServerResponse $response) : void`: Calls the following methods in order;
+- `send(ServerResponseInterface $response) : void`: Calls the following methods in order;
   that is: runHeaderCallbacks(), sendStatus(), sendHeaders(), sendCookies(), and
   sendContent().
 
-- `runHeaderCallbacks(ServerResponse $response) : void`: Invokes each callback
+- `runHeaderCallbacks(ServerResponseInterface $response) : void`: Invokes each callback
   returned by ServerResponse::getHeaderCallbacks().
 
-- `sendStatus(ServerResponse $response) : void`: Sends the HTTP status line
+- `sendStatus(ServerResponseInterface $response) : void`: Sends the HTTP status line
   using header(). The line is composed of ServerResponse::getVersion() and
   ServerResponse::getCode(). If the version is `null` it defaults to `1.1`;
   if the code is null is defaults to `200`.
 
-- `sendHeaders(ServerResponse $response) : void`: Sends each header returned
+- `sendHeaders(ServerResponseInterface $response) : void`: Sends each header returned
   by ServerResponse::getHeaders() using header().
 
-- `sendCookies(ServerResponse $response) : void`: Sends each cookie returned
+- `sendCookies(ServerResponseInterface $response) : void`: Sends each cookie returned
   by ServerResponse::getCookies() using setcookie() or setrawcookie().
 
-- `sendContent(ServerResponse $response) : void`: Sends the content returned
+- `sendContent(ServerResponseInterface $response) : void`: Sends the content returned
   by ServerResponse::getContent().
 
     - If the content is a resource, it is sent using `rewind()` and then
