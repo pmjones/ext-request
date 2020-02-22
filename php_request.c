@@ -1285,6 +1285,7 @@ static zend_function_entry ServerResponseInterface_methods[] = {
     PHP_ABSTRACT_ME(ServerResponse, hasHeader, ServerResponseInterface_hasHeader_args)
     PHP_ABSTRACT_ME(ServerResponse, unsetHeaders, ServerResponseInterface_unsetHeaders_args)
     PHP_ABSTRACT_ME(ServerResponse, getHeaders, ServerResponseInterface_getHeaders_args)
+    PHP_ABSTRACT_ME(ServerResponse, hasCookie, ServerResponseInterface_hasCookie_args)
     PHP_ABSTRACT_ME(ServerResponse, setCookie, ServerResponseInterface_setCookie_args)
     PHP_ABSTRACT_ME(ServerResponse, setRawCookie, ServerResponseInterface_setCookie_args)
     PHP_ABSTRACT_ME(ServerResponse, unsetCookie, ServerResponseInterface_unsetCookie_args)
@@ -1626,6 +1627,32 @@ PHP_METHOD(ServerResponse, getCookies)
     RETVAL_ZVAL(server_response_get_cookies(_this_zval), 1, 0);
 }
 /* }}} ServerResponse::getCookies */
+
+/* {{{ proto bool ServerResponse::hasCookie(string $name) */
+PHP_METHOD(ServerResponse, hasCookie)
+{
+    zval *_this_zval = getThis();
+    zend_string *name;
+    zval *cookies;
+    zval *retval;
+
+    ZEND_PARSE_PARAMETERS_START(1, 1)
+        Z_PARAM_STR(name)
+    ZEND_PARSE_PARAMETERS_END();
+
+    cookies = zend_read_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("cookies"), 0, NULL);
+    if( !cookies || Z_TYPE_P(cookies) != IS_ARRAY ) {
+        RETURN_FALSE;
+    }
+
+    retval = zend_hash_find(Z_ARRVAL_P(cookies), name);
+    if( retval ) {
+        RETURN_TRUE;
+    } else {
+        RETURN_FALSE;
+    }
+}
+/* }}} ServerResponse::hasCookie */
 
 /* {{{ proto void ServerResponse::setCookie(string name [, string value [, int expires [, string path [, string domain [, bool secure[, bool httponly]]]]]]) */
 static void php_head_parse_cookie_options_array(zval *options, zend_long *expires, zend_string **path, zend_string **domain, zend_bool *secure, zend_bool *httponly, zend_string **samesite)
@@ -1984,6 +2011,7 @@ static zend_function_entry ServerResponse_methods[] = {
     PHP_ME(ServerResponse, setRawCookie, ServerResponseInterface_setCookie_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
     PHP_ME(ServerResponse, unsetCookie, ServerResponseInterface_unsetCookie_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
     PHP_ME(ServerResponse, unsetCookies, ServerResponseInterface_unsetCookies_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+    PHP_ME(ServerResponse, hasCookie, ServerResponseInterface_hasCookie_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
     PHP_ME(ServerResponse, getCookies, ServerResponseInterface_getCookies_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
     PHP_ME(ServerResponse, setContent, ServerResponseInterface_setContent_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
     PHP_ME(ServerResponse, getContent, ServerResponseInterface_getContent_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)

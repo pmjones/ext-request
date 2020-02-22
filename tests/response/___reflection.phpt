@@ -27,7 +27,7 @@ Class [ <internal:request> class ServerResponse implements ServerResponseInterfa
     Property [ <default> private $callbacks ]
   }
 
-  - Methods [21] {
+  - Methods [22] {
     Method [ <internal:request, prototype ServerResponseInterface> final public method setVersion ] {
 
       - Parameters [1] {
@@ -155,6 +155,14 @@ Class [ <internal:request> class ServerResponse implements ServerResponseInterfa
       - Parameters [0] {
       }
       - Return [ void ]
+    }
+
+    Method [ <internal:request, prototype ServerResponseInterface> final public method hasCookie ] {
+
+      - Parameters [1] {
+        Parameter #0 [ <required> string $name ]
+      }
+      - Return [ bool ]
     }
 
     Method [ <internal:request, prototype ServerResponseInterface> final public method getCookies ] {

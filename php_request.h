@@ -70,6 +70,10 @@ ZEND_END_ARG_INFO()
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponseInterface_unsetHeaders_args, 0, 0, IS_VOID, 0)
 ZEND_END_ARG_INFO()
 
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponseInterface_hasCookie_args, 0, 1, _IS_BOOL, 0)
+    ZEND_ARG_TYPE_INFO(0, name, IS_STRING, 0)
+ZEND_END_ARG_INFO()
+
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponseInterface_getCookies_args, 0, 0, IS_ARRAY, 1)
 ZEND_END_ARG_INFO()
 
