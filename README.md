@@ -224,32 +224,36 @@ they may not be overridden.
 
 #### HTTP Version
 
-- `setVersion(string $version) : void`: Sets the HTTP version for the response (typically
+- `setVersion(string $version) : ServerResponseInterface`: Sets the HTTP version for the response (typically
   '1.0' or '1.1').
 
 - `getVersion() : ?string`: Returns the HTTP version for the response.
 
 #### Response Code
 
-- `setCode(int $code) : void`: Sets the HTTP response code; a buffered equivalent of
+- `setCode(int $code) : ServerResponseInterface`: Sets the HTTP response code; a buffered equivalent of
   `http_response_code($code)`.
 
 - `getCode() : ?int`: Gets the HTTP response code.
 
 #### Headers
 
-- `setHeader(string $label, string $value) : void`: Overwrites an HTTP header; a
+- `setHeader(string $label, string $value) : ServerResponseInterface`: Overwrites an HTTP header; a
   buffered equivalent of `header("$label: $value", true)`.
 
-- `addHeader(string $label, string $value) : void`: Appends to an HTTP header,
+- `addHeader(string $label, string $value) : ServerResponseInterface`: Appends to an HTTP header,
   comma-separating it from the existing value; a buffered equivalent of
   `header("$label: $value", false)`.
 
-- `unsetHeader(string $label) : void`: Removes a header from the buffer.
+- `unsetHeader(string $label) : ServerResponseInterface`: Removes a header from the buffer.
 
-- `unsetHeaders() : void`: Removes all headers from the buffer.
+- `unsetHeaders() : ServerResponseInterface`: Removes all headers from the buffer.
 
 - `getHeaders() : ?array`: Returns the array of headers to be sent.
+
+- `getHeader(string $label) : ?string`: Returns a header from the buffer.
+
+- `hasHeader(string $label) : bool`: Returns true if a header exists in buffer.
 
 The header field labels are retained internally in lower-case, and are sent as
 lower-case. This is to [comply with HTTP/2 requirements](https://tools.ietf.org/html/rfc7540#section-8.1.2);
@@ -257,26 +261,30 @@ while HTTP/1.x has no such requirement, lower-case is also recognized as valid.
 
 #### Cookies
 
-- `setCookie(...) : bool`: A buffered equivalent of
+- `setCookie(...) : ServerResponseInterface`: A buffered equivalent of
   [`setcookie()`](http://php.net/setcookie) with identical arguments.
 
-- `setRawCookie(...) : bool`: A buffered equivalent of
+- `setRawCookie(...) : ServerResponseInterface`: A buffered equivalent of
   [`setrawcookie()`](http://php.net/setrawcookie) with identical arguments.
 
-- `unsetCookie(string $name) : void`: Removes a cooke from the buffer.
+- `unsetCookie(string $name) : ServerResponseInterface`: Removes a cookie from the buffer.
 
-- `unsetCookies() : void`: Removes all cookies from the buffer.
+- `unsetCookies() : ServerResponseInterface`: Removes all cookies from the buffer.
 
 - `getCookies() : ?array`: Returns the array of cookies to be sent.
 
+- `getCookie(string $name) : ?array`: Returns a cookie from the buffer.
+
+- `hasCookie(string $name) : bool`: Returns true if a cookie exists in buffer.
+
 #### Header Callbacks
 
-- `setHeaderCallbacks(array $callbacks) : void`: Sets an array of callbacks to
+- `setHeaderCallbacks(array $callbacks) : ServerResponseInterface`: Sets an array of callbacks to
   be invoked just before headers are sent. It replaces any existing callbacks.
   This is similar to [`header_register_callback()`](https://secure.php.net/header_register_callback),
   except that *multiple* callbacks may be registered with the Response.
 
-- `addHeaderCallback(callable $callback) : void`: Appends one callback to the
+- `addHeaderCallback(callable $callback) : ServerResponseInterface`: Appends one callback to the
   current array of header callbacks.
 
 - `getHeaderCallbacks() : ?array`: Returns the array of header callbacks.
@@ -286,7 +294,7 @@ any return value is ignored.
 
 #### Content
 
-- `setContent(mixed $content) : void`: Sets the content of the response. This
+- `setContent(mixed $content) : ServerResponseInterface`: Sets the content of the response. This
   may be null, a string, resource, object, or anything else.
 
 - `getContent() : mixed`: Returns the content of the response. This may be null,
