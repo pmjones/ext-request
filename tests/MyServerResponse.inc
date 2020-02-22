@@ -36,6 +36,14 @@ class MyServerResponse implements ServerResponseInterface
         unset($this->headers[$label]);
     }
 
+    public function hasHeader(string $label): bool {
+        return isset($this->headers[strtolower($label)]);
+    }
+
+    public function getHeader(string $label): ?string {
+        return $this->headers[strtolower($label)] ?? null;
+    }
+
     public function unsetHeaders(): void {
         $this->headers = [];
     }
@@ -76,6 +84,10 @@ class MyServerResponse implements ServerResponseInterface
 
     public function getCookies(): array {
         return $this->cookies;
+    }
+
+    public function hasCookie(string $name): bool {
+        return isset($this->cookies[$name]);
     }
 
     public function unsetCookie(string $name): void {
