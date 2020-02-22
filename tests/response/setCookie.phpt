@@ -3,7 +3,7 @@ ServerResponse::setCookie
 --FILE--
 <?php
 $response = new ServerResponse();
-$response->setCookie('cookie1', 'v1&%v2');
+var_dump($response->setCookie('cookie1', 'v1&%v2') === $response);
 $response->setRawCookie('cookie2', 'v3&%v4');
 $response->setCookie('cookie3', 'value3', 1234567890, "/path", "doma.in", true, true);
 $response->setCookie('cookie4', 'value4', [
@@ -23,6 +23,7 @@ $response->setCookie('baz', 'dib');
 $response->unsetCookie('foo');
 var_dump($response->getCookies());
 --EXPECT--
+bool(true)
 array(5) {
   ["cookie1"]=>
   array(8) {

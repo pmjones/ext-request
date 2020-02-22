@@ -3,7 +3,7 @@ ServerResponse::setHeader
 --FILE--
 <?php
 $response = new ServerResponse();
-$response->setHeader('Foo-Bar', 'baz');
+var_dump($response->setHeader('Foo-Bar', 'baz') === $response);
 $response->setHeader('foo-bar', 'dib');
 var_dump($response->getHeaders());
 $response->unsetHeaders();
@@ -15,6 +15,7 @@ $response->unsetHeader('foo-bar');
 $response->unsetHeader('no-such');
 var_dump($response->getHeaders());
 --EXPECT--
+bool(true)
 array(1) {
   ["foo-bar"]=>
   string(3) "dib"
