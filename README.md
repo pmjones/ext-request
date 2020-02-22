@@ -363,17 +363,20 @@ _ServerResponseSender_ has these public methods:
 - `sendContent(ServerResponse $response) : void`: Sends the content returned
   by ServerResponse::getContent().
 
-    - If the content is a resource, it is sent using rewind() and then
-      fpassthru().
+    - If the content is a resource, it is sent using `rewind()` and then
+      `fpassthru()`; there is no further handling thereafter.
 
     - If the content is a callable object or closure, it is invoked, and
-      then its return value (if any) is echoed as a string; note that object
-      returns will be cast to string at this point, invoking the `__toString()`
+      its return value (if any) is passed along to be handled by the next step.
+
+    - If the content or returned value is iterable, it is `foreach()`-ed
+      through, and each value is echoed as a string; note that object values
+      will be cast to string at this point, invoking their `__toString()`
       method if present.
 
-    - Otherwise, the content is echoed as a string; note that objects will be
-      cast to string at this point, invoking the `__toString()` method if
-      present.
+    - Otherwise, the content or returned value is echoed as a string; note that
+      an object will be cast to string at this point, invoking its
+      `__toString()` method if present.
 
 ### Extending and Overriding
 
