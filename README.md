@@ -222,19 +222,19 @@ _ServerResponse_ has no public properties.
 _ServerResponse_ implements _ServerResponseInterface_, which has these public
 methods; all of them are declared `final` and so may not be overridden.
 
-#### HTTP Version
+#### Protocol Version
 
-- `setVersion(string $version) : ServerResponseInterface`: Sets the HTTP version for the response (typically
+- `setVersion(string $version) : ServerResponseInterface`: Sets the protocol version for the response (typically
   '1.0' or '1.1').
 
-- `getVersion() : ?string`: Returns the HTTP version for the response.
+- `getVersion() : ?string`: Returns the protocoal version for the response.
 
-#### Response Code
+#### Status Code
 
-- `setCode(int $code) : ServerResponseInterface`: Sets the HTTP response code; a buffered equivalent of
+- `setCode(int $code) : ServerResponseInterface`: Sets status code for the response; a buffered equivalent of
   `http_response_code($code)`.
 
-- `getCode() : ?int`: Gets the HTTP response code.
+- `getCode() : ?int`: Gets the status code for the response.
 
 #### Headers
 
