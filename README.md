@@ -185,7 +185,7 @@ The _ServerRequest_ object has no public methods other than its constructor:
 decoration and composition over extension in all but the most trivial of cases.**
 
 ServerRequest has a constructor. Child classes overriding `__construct()`
-should be sure to call `parent::__contruct()`, or else the public read-only
+should be sure to call `parent::__construct()`, or else the public read-only
 properties will not be set (defaulting to `null` in all cases).
 
 The public read-only properties cannot be overridden; however, child classes may
@@ -222,19 +222,19 @@ _ServerResponse_ has no public properties.
 _ServerResponse_ implements _ServerResponseInterface_, which has these public
 methods; all of them are declared `final` and so may not be overridden.
 
-#### HTTP Version
+#### Protocol Version
 
-- `setVersion(string $version) : ServerResponseInterface`: Sets the HTTP version for the response (typically
+- `setVersion(string $version) : ServerResponseInterface`: Sets the protocol version for the response (typically
   '1.0' or '1.1').
 
-- `getVersion() : ?string`: Returns the HTTP version for the response.
+- `getVersion() : ?string`: Returns the protocol version for the response.
 
-#### Response Code
+#### Status Code
 
-- `setCode(int $code) : ServerResponseInterface`: Sets the HTTP response code; a buffered equivalent of
+- `setCode(int $code) : ServerResponseInterface`: Sets the status code for the response; a buffered equivalent of
   `http_response_code($code)`.
 
-- `getCode() : ?int`: Gets the HTTP response code.
+- `getCode() : ?int`: Gets the status code for the response.
 
 #### Headers
 
