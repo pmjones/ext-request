@@ -249,7 +249,7 @@ These properties are public, immutable, read-only, and cannot be modified or ove
 
 The _ServerRequest_ object has no public methods other than its constructor:
 
-- `__construct(array $globals, [string $content])`
+- `__construct(array $globals, [?string $content = null])`
 
 ### Extending and Overriding
 
