@@ -4,182 +4,225 @@ ServerRequest::$uploads (complex)
 <?php
 $_SERVER['HTTP_HOST'] = 'example.com';
 $_FILES = [
-  'foo' => [
+  'dib' => [
     'name' => [
-      'bar' => [
-        'bar-a' => '',
-        'bar-b' => '',
-        'bar-c' => '',
+      'dib1' => [
+        'dib1a' => '',
+        'dib1b' => '',
+        'dib1c' => '',
       ],
-      'baz' => [
-        'baz-a' => '',
-        'baz-b' => '',
-        'baz-c' => '',
+      'dib2' => [
+        'dib2a' => '',
+        'dib2b' => '',
+        'dib2c' => '',
       ],
-      'qux' => [
-        'qux-a' => '',
-        'qux-b' => '',
-        'qux-c' => '',
+      'dib3' => [
+        'dib3a' => '',
+        'dib3b' => '',
+        'dib3c' => '',
       ],
     ],
     'type' => [
-      'bar' => [
-        'bar-a' => '',
-        'bar-b' => '',
-        'bar-c' => '',
+      'dib1' => [
+        'dib1a' => '',
+        'dib1b' => '',
+        'dib1c' => '',
       ],
-      'baz' => [
-        'baz-a' => '',
-        'baz-b' => '',
-        'baz-c' => '',
+      'dib2' => [
+        'dib2a' => '',
+        'dib2b' => '',
+        'dib2c' => '',
       ],
-      'qux' => [
-        'qux-a' => '',
-        'qux-b' => '',
-        'qux-c' => '',
+      'dib3' => [
+        'dib3a' => '',
+        'dib3b' => '',
+        'dib3c' => '',
       ],
     ],
     'tmp_name' => [
-      'bar' => [
-        'bar-a' => '',
-        'bar-b' => '',
-        'bar-c' => '',
+      'dib1' => [
+        'dib1a' => '',
+        'dib1b' => '',
+        'dib1c' => '',
       ],
-      'baz' => [
-        'baz-a' => '',
-        'baz-b' => '',
-        'baz-c' => '',
+      'dib2' => [
+        'dib2a' => '',
+        'dib2b' => '',
+        'dib2c' => '',
       ],
-      'qux' => [
-        'qux-a' => '',
-        'qux-b' => '',
-        'qux-c' => '',
+      'dib3' => [
+        'dib3a' => '',
+        'dib3b' => '',
+        'dib3c' => '',
       ],
     ],
     'error' => [
-      'bar' => [
-        'bar-a' => 4,
-        'bar-b' => 4,
-        'bar-c' => 4,
+      'dib1' => [
+        'dib1a' => 4,
+        'dib1b' => 4,
+        'dib1c' => 4,
       ],
-      'baz' => [
-        'baz-a' => 4,
-        'baz-b' => 4,
-        'baz-c' => 4,
+      'dib2' => [
+        'dib2a' => 4,
+        'dib2b' => 4,
+        'dib2c' => 4,
       ],
-      'qux' => [
-        'qux-a' => 4,
-        'qux-b' => 4,
-        'qux-c' => 4,
+      'dib3' => [
+        'dib3a' => 4,
+        'dib3b' => 4,
+        'dib3c' => 4,
       ],
     ],
     'size' => [
-      'bar' => [
-        'bar-a' => 0,
-        'bar-b' => 0,
-        'bar-c' => 0,
+      'dib1' => [
+        'dib1a' => 0,
+        'dib1b' => 0,
+        'dib1c' => 0,
       ],
-      'baz' => [
-        'baz-a' => 0,
-        'baz-b' => 0,
-        'baz-c' => 0,
+      'dib2' => [
+        'dib2a' => 0,
+        'dib2b' => 0,
+        'dib2c' => 0,
       ],
-      'qux' => [
-        'qux-a' => 0,
-        'qux-b' => 0,
-        'qux-c' => 0,
+      'dib3' => [
+        'dib3a' => 0,
+        'dib3b' => 0,
+        'dib3c' => 0,
       ],
     ],
   ],
 ];
 $request = new ServerRequest($GLOBALS);
-$output = var_export($request->uploads, true);
-$output = str_replace(' ' . PHP_EOL, "\n", $output);
-echo $output;
+var_dump($request->uploads);
 --EXPECTF--
-array (
-  'foo' =>
-  array (
-    'bar' =>
-    array (
-      'bar-a' =>
-      array (
-        'error' => 4,
-        'name' => '',
-        'size' => 0,
-        'tmp_name' => '',
-        'type' => '',
-      ),
-      'bar-b' =>
-      array (
-        'error' => 4,
-        'name' => '',
-        'size' => 0,
-        'tmp_name' => '',
-        'type' => '',
-      ),
-      'bar-c' =>
-      array (
-        'error' => 4,
-        'name' => '',
-        'size' => 0,
-        'tmp_name' => '',
-        'type' => '',
-      ),
-    ),
-    'baz' =>
-    array (
-      'baz-a' =>
-      array (
-        'error' => 4,
-        'name' => '',
-        'size' => 0,
-        'tmp_name' => '',
-        'type' => '',
-      ),
-      'baz-b' =>
-      array (
-        'error' => 4,
-        'name' => '',
-        'size' => 0,
-        'tmp_name' => '',
-        'type' => '',
-      ),
-      'baz-c' =>
-      array (
-        'error' => 4,
-        'name' => '',
-        'size' => 0,
-        'tmp_name' => '',
-        'type' => '',
-      ),
-    ),
-    'qux' =>
-    array (
-      'qux-a' =>
-      array (
-        'error' => 4,
-        'name' => '',
-        'size' => 0,
-        'tmp_name' => '',
-        'type' => '',
-      ),
-      'qux-b' =>
-      array (
-        'error' => 4,
-        'name' => '',
-        'size' => 0,
-        'tmp_name' => '',
-        'type' => '',
-      ),
-      'qux-c' =>
-      array (
-        'error' => 4,
-        'name' => '',
-        'size' => 0,
-        'tmp_name' => '',
-        'type' => '',
-      ),
-    ),
-  ),
-)
+array(1) {
+  ["dib"]=>
+  array(3) {
+    ["dib1"]=>
+    array(3) {
+      ["dib1a"]=>
+      array(5) {
+        ["error"]=>
+        int(4)
+        ["name"]=>
+        string(0) ""
+        ["size"]=>
+        int(0)
+        ["tmp_name"]=>
+        string(0) ""
+        ["type"]=>
+        string(0) ""
+      }
+      ["dib1b"]=>
+      array(5) {
+        ["error"]=>
+        int(4)
+        ["name"]=>
+        string(0) ""
+        ["size"]=>
+        int(0)
+        ["tmp_name"]=>
+        string(0) ""
+        ["type"]=>
+        string(0) ""
+      }
+      ["dib1c"]=>
+      array(5) {
+        ["error"]=>
+        int(4)
+        ["name"]=>
+        string(0) ""
+        ["size"]=>
+        int(0)
+        ["tmp_name"]=>
+        string(0) ""
+        ["type"]=>
+        string(0) ""
+      }
+    }
+    ["dib2"]=>
+    array(3) {
+      ["dib2a"]=>
+      array(5) {
+        ["error"]=>
+        int(4)
+        ["name"]=>
+        string(0) ""
+        ["size"]=>
+        int(0)
+        ["tmp_name"]=>
+        string(0) ""
+        ["type"]=>
+        string(0) ""
+      }
+      ["dib2b"]=>
+      array(5) {
+        ["error"]=>
+        int(4)
+        ["name"]=>
+        string(0) ""
+        ["size"]=>
+        int(0)
+        ["tmp_name"]=>
+        string(0) ""
+        ["type"]=>
+        string(0) ""
+      }
+      ["dib2c"]=>
+      array(5) {
+        ["error"]=>
+        int(4)
+        ["name"]=>
+        string(0) ""
+        ["size"]=>
+        int(0)
+        ["tmp_name"]=>
+        string(0) ""
+        ["type"]=>
+        string(0) ""
+      }
+    }
+    ["dib3"]=>
+    array(3) {
+      ["dib3a"]=>
+      array(5) {
+        ["error"]=>
+        int(4)
+        ["name"]=>
+        string(0) ""
+        ["size"]=>
+        int(0)
+        ["tmp_name"]=>
+        string(0) ""
+        ["type"]=>
+        string(0) ""
+      }
+      ["dib3b"]=>
+      array(5) {
+        ["error"]=>
+        int(4)
+        ["name"]=>
+        string(0) ""
+        ["size"]=>
+        int(0)
+        ["tmp_name"]=>
+        string(0) ""
+        ["type"]=>
+        string(0) ""
+      }
+      ["dib3c"]=>
+      array(5) {
+        ["error"]=>
+        int(4)
+        ["name"]=>
+        string(0) ""
+        ["size"]=>
+        int(0)
+        ["tmp_name"]=>
+        string(0) ""
+        ["type"]=>
+        string(0) ""
+      }
+    }
+  }
+}
