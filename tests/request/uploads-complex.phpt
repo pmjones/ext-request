@@ -94,7 +94,7 @@ $_FILES = [
 ];
 $request = new ServerRequest($GLOBALS);
 $output = var_export($request->uploads, true);
-$output = str_replace(' ' . PHP_EOL, PHP_EOL, $output);
+$output = str_replace(' ' . PHP_EOL, "\n", $output);
 echo $output;
 --EXPECTF--
 array (
