@@ -1,11 +1,11 @@
 --TEST--
-ServerRequest::$post
+SapiRequest::$post
 --POST--
 foo=bar&baz=bat
 --FILE--
 <?php
 $_SERVER['HTTP_HOST'] = 'example.com';
-$request = new ServerRequest($GLOBALS);
+$request = new SapiRequest($GLOBALS);
 var_dump($request->input);
 --EXPECT--
 array(2) {

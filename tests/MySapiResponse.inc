@@ -1,6 +1,6 @@
 <?php
 
-class MyServerResponse implements ServerResponseInterface
+class MySapiResponse implements SapiResponseInterface
 {
     private $code = 200;
     private $version = '1.0';
@@ -8,7 +8,7 @@ class MyServerResponse implements ServerResponseInterface
     private $cookies = [];
     private $callbacks = [];
 
-    public function setVersion(string $version): ServerResponseInterface {
+    public function setVersion(string $version): SapiResponseInterface {
         $this->version = $version;
         return $this;
     }
@@ -17,7 +17,7 @@ class MyServerResponse implements ServerResponseInterface
         return $this->version;
     }
 
-    public function setCode(int $code): ServerResponseInterface {
+    public function setCode(int $code): SapiResponseInterface {
         $this->code = $code;
         return $this;
     }
@@ -26,17 +26,17 @@ class MyServerResponse implements ServerResponseInterface
         return $this->code;
     }
 
-    public function setHeader(string $label, string $value): ServerResponseInterface {
+    public function setHeader(string $label, string $value): SapiResponseInterface {
         $this->headers[strtolower($label)] = $value; // wrong but this is just for testing
         return $this;
     }
 
-    public function addHeader(string $label, string $value): ServerResponseInterface {
+    public function addHeader(string $label, string $value): SapiResponseInterface {
         $this->headers[strtolower($label)] = $value; // wrong but this is just for testing
         return $this;
     }
 
-    public function unsetHeader(string $label): ServerResponseInterface {
+    public function unsetHeader(string $label): SapiResponseInterface {
         unset($this->headers[$label]);
         return $this;
     }
@@ -49,7 +49,7 @@ class MyServerResponse implements ServerResponseInterface
         return $this->headers[strtolower($label)] ?? null;
     }
 
-    public function unsetHeaders(): ServerResponseInterface {
+    public function unsetHeaders(): SapiResponseInterface {
         $this->headers = [];
         return $this;
     }
@@ -58,7 +58,7 @@ class MyServerResponse implements ServerResponseInterface
         return $this->headers;
     }
 
-    public function setCookie(string $name, string $value = NULL, $expires_or_options = NULL, string $path = NULL, string $domain = NULL, bool $secure = NULL, bool $httponly = NULL): ServerResponseInterface {
+    public function setCookie(string $name, string $value = NULL, $expires_or_options = NULL, string $path = NULL, string $domain = NULL, bool $secure = NULL, bool $httponly = NULL): SapiResponseInterface {
         $this->cookies[$name] = [
             'value' => $value,
             'expires' => $expires_or_options,
@@ -71,7 +71,7 @@ class MyServerResponse implements ServerResponseInterface
         return $this;
     }
 
-    public function setRawCookie(string $name, string $value = NULL, $expires_or_options = NULL, string $path = NULL, string $domain = NULL, bool $secure = NULL, bool $httponly = NULL): ServerResponseInterface {
+    public function setRawCookie(string $name, string $value = NULL, $expires_or_options = NULL, string $path = NULL, string $domain = NULL, bool $secure = NULL, bool $httponly = NULL): SapiResponseInterface {
         $this->cookies[$name] = [
             'value' => $value,
             'expires' => $expires_or_options,
@@ -96,17 +96,17 @@ class MyServerResponse implements ServerResponseInterface
         return isset($this->cookies[$name]);
     }
 
-    public function unsetCookie(string $name): ServerResponseInterface {
+    public function unsetCookie(string $name): SapiResponseInterface {
         unset($this->cookies[$name]);
         return $this;
     }
 
-    public function unsetCookies(): ServerResponseInterface {
+    public function unsetCookies(): SapiResponseInterface {
         $this->cookies = [];
         return $this;
     }
 
-    public function setContent($content): ServerResponseInterface {
+    public function setContent($content): SapiResponseInterface {
         $this->content = $content;
         return $this;
     }
@@ -115,12 +115,12 @@ class MyServerResponse implements ServerResponseInterface
         return $this->content;
     }
 
-    public function setHeaderCallbacks(array $callbacks): ServerResponseInterface {
+    public function setHeaderCallbacks(array $callbacks): SapiResponseInterface {
         $this->callbacks = $callbacks;
         return $this;
     }
 
-    public function addHeaderCallback($callback): ServerResponseInterface {
+    public function addHeaderCallback($callback): SapiResponseInterface {
         $this->callbacks[] = $callback;
         return $this;
     }

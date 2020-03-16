@@ -1,10 +1,10 @@
 --TEST--
-ServerRequest::__clone
+SapiRequest::__clone
 --FILE--
 <?php
 $_SERVER['HTTP_HOST'] = 'localhost';
 
-$request = new ServerRequest($GLOBALS);
+$request = new SapiRequest($GLOBALS);
 
 $_SERVER['HTTP_HOST'] = 'example.com';
 $clone = clone $request;

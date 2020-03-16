@@ -1,5 +1,5 @@
 --TEST--
-ServerResponseSender::sendContent __invoke()
+SapiResponseSender::sendContent __invoke()
 --CGI--
 --INI--
 expose_php=0
@@ -8,15 +8,15 @@ expose_php=0
 
 class Invokable
 {
-    public function __invoke(ServerResponse $response)
+    public function __invoke(SapiResponse $response)
     {
         echo count($response->getHeaders() ?? []);
         echo 'foo';
         return 'bar';
     }
 }
-$response = new ServerResponse();
+$response = new SapiResponse();
 $response->setContent(new Invokable());
-(new ServerResponseSender())->send($response);
+(new SapiResponseSender())->send($response);
 --EXPECT--
 0foobar

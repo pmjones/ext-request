@@ -1,8 +1,8 @@
 --TEST--
-ServerResponse::setHeader
+SapiResponse::setHeader
 --FILE--
 <?php
-$response = new ServerResponse();
+$response = new SapiResponse();
 var_dump($response->setHeader('Foo-Bar', 'baz') === $response);
 $response->setHeader('foo-bar', 'dib');
 var_dump($response->getHeaders());

@@ -1,9 +1,9 @@
 --TEST--
-ServerRequest::__set
+SapiRequest::__set
 --FILE--
 <?php
 $_SERVER['HTTP_HOST'] = 'localhost';
-$request = new ServerRequest($GLOBALS);
+$request = new SapiRequest($GLOBALS);
 try {
     $request->method = 'PATCH';
 } catch( Exception $e ) {
@@ -16,6 +16,6 @@ try {
 }
 --EXPECT--
 string(16) "RuntimeException"
-string(36) "ServerRequest::$method is read-only."
+string(34) "SapiRequest::$method is read-only."
 string(16) "RuntimeException"
-string(46) "ServerRequest::$noSuchProperty does not exist."
+string(44) "SapiRequest::$noSuchProperty does not exist."

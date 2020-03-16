@@ -1,11 +1,11 @@
 --TEST--
-ServerRequest::$content (cli)
+SapiRequest::$content (cli)
 --FILE--
 <?php
 $_SERVER['HTTP_HOST'] = 'localhost';
-$request = new ServerRequest($GLOBALS);
+$request = new SapiRequest($GLOBALS);
 var_dump($request->content);
-$request = new ServerRequest($GLOBALS, 'foobar');
+$request = new SapiRequest($GLOBALS, 'foobar');
 var_dump($request->content);
 --EXPECT--
 NULL

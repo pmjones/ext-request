@@ -1,12 +1,12 @@
 --TEST--
-ServerResponseSender::sendContent (string)
+SapiResponseSender::sendContent (string)
 --CGI--
 --INI--
 expose_php=0
 --FILE--
 <?php
-$response = new ServerResponse();
+$response = new SapiResponse();
 $response->setContent('foo');
-(new ServerResponseSender())->send($response);
+(new SapiResponseSender())->send($response);
 --EXPECT--
 foo

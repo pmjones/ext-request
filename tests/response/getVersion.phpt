@@ -1,8 +1,8 @@
 --TEST--
-ServerResponse::getVersion
+SapiResponse::getVersion
 --FILE--
 <?php
-$response = new ServerResponse();
+$response = new SapiResponse();
 var_dump($response->getVersion());
 --EXPECT--
 NULL

@@ -1,20 +1,20 @@
 --TEST--
-ServerRequest::parseDigestAuth
+SapiRequest::parseDigestAuth
 --FILE--
 <?php
-$request = new ServerRequest(['_SERVER' => ['PHP_AUTH_TYPE' => 'Digest', 'PHP_AUTH_DIGEST' => null]]);
+$request = new SapiRequest(['_SERVER' => ['PHP_AUTH_TYPE' => 'Digest', 'PHP_AUTH_DIGEST' => null]]);
 var_dump($request->authDigest);
 
-$request = new ServerRequest(['_SERVER' => ['PHP_AUTH_TYPE' => 'Digest', 'PHP_AUTH_DIGEST' => '']]);
+$request = new SapiRequest(['_SERVER' => ['PHP_AUTH_TYPE' => 'Digest', 'PHP_AUTH_DIGEST' => '']]);
 var_dump($request->authDigest);
 
-$request = new ServerRequest(['_SERVER' => ['PHP_AUTH_TYPE' => 'Digest', 'PHP_AUTH_DIGEST' => 'nonce="foo",nc=\'bar\',cnonce=baz,qop="dib",username="zim",uri="gir",response="irk"']]);
+$request = new SapiRequest(['_SERVER' => ['PHP_AUTH_TYPE' => 'Digest', 'PHP_AUTH_DIGEST' => 'nonce="foo",nc=\'bar\',cnonce=baz,qop="dib",username="zim",uri="gir",response="irk"']]);
 var_dump($request->authDigest);
 
-$request = new ServerRequest(['_SERVER' => ['PHP_AUTH_TYPE' => 'Digest', 'PHP_AUTH_DIGEST' => ' nonce="foo\\"",nc=\'bar\' ,cnonce= baz , qop="dib",username="zim " , uri="gir" ,response= "irk" ']]);
+$request = new SapiRequest(['_SERVER' => ['PHP_AUTH_TYPE' => 'Digest', 'PHP_AUTH_DIGEST' => ' nonce="foo\\"",nc=\'bar\' ,cnonce= baz , qop="dib",username="zim " , uri="gir" ,response= "irk" ']]);
 var_dump($request->authDigest);
 
-$request = new ServerRequest(['_SERVER' => ['PHP_AUTH_TYPE' => 'Digest', 'PHP_AUTH_DIGEST' => 'nonce="foo",nc=\'bar\',cnonce=baz']]);
+$request = new SapiRequest(['_SERVER' => ['PHP_AUTH_TYPE' => 'Digest', 'PHP_AUTH_DIGEST' => 'nonce="foo",nc=\'bar\',cnonce=baz']]);
 var_dump($request->authDigest);
 
 --EXPECTF--

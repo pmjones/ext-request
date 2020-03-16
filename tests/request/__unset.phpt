@@ -1,9 +1,9 @@
 --TEST--
-ServerRequest::__unset
+SapiRequest::__unset
 --FILE--
 <?php
 $_SERVER['HTTP_HOST'] = 'localhost';
-$request = new ServerRequest($GLOBALS);
+$request = new SapiRequest($GLOBALS);
 unset($request->no_such_prop);
 try {
     unset($request->method);
@@ -12,4 +12,4 @@ try {
 }
 --EXPECT--
 string(16) "RuntimeException"
-string(36) "ServerRequest::$method is read-only."
+string(34) "SapiRequest::$method is read-only."

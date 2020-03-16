@@ -27,20 +27,20 @@
 
 #include "php_request.h"
 
-static PHP_MINIT_FUNCTION(serverrequest);
-static PHP_MINIT_FUNCTION(serverresponse);
-static PHP_MINIT_FUNCTION(serverresponseinterface);
-static PHP_MINIT_FUNCTION(serverresponsesender);
-static PHP_MSHUTDOWN_FUNCTION(serverrequest);
-void server_request_parse_forwarded(zval *return_value, const unsigned char *str, size_t len);
+static PHP_MINIT_FUNCTION(sapirequest);
+static PHP_MINIT_FUNCTION(sapiresponse);
+static PHP_MINIT_FUNCTION(sapiresponseinterface);
+static PHP_MINIT_FUNCTION(sapiresponsesender);
+static PHP_MSHUTDOWN_FUNCTION(sapirequest);
+void sapi_request_parse_forwarded(zval *return_value, const unsigned char *str, size_t len);
 
 /* {{{ PHP_MINIT_FUNCTION */
 static PHP_MINIT_FUNCTION(request)
 {
-    PHP_MINIT(serverrequest)(INIT_FUNC_ARGS_PASSTHRU);
-    PHP_MINIT(serverresponseinterface)(INIT_FUNC_ARGS_PASSTHRU); // must be before serverresponse
-    PHP_MINIT(serverresponse)(INIT_FUNC_ARGS_PASSTHRU);
-    PHP_MINIT(serverresponsesender)(INIT_FUNC_ARGS_PASSTHRU);
+    PHP_MINIT(sapirequest)(INIT_FUNC_ARGS_PASSTHRU);
+    PHP_MINIT(sapiresponseinterface)(INIT_FUNC_ARGS_PASSTHRU); // must be before sapiresponse
+    PHP_MINIT(sapiresponse)(INIT_FUNC_ARGS_PASSTHRU);
+    PHP_MINIT(sapiresponsesender)(INIT_FUNC_ARGS_PASSTHRU);
     return SUCCESS;
 }
 /* }}} */
@@ -57,7 +57,7 @@ static PHP_MINFO_FUNCTION(request)
 /* {{{ PHP_MSHUTDOWN_FUNCTION */
 static PHP_MSHUTDOWN_FUNCTION(request)
 {
-    PHP_MSHUTDOWN(serverrequest)(SHUTDOWN_FUNC_ARGS_PASSTHRU);
+    PHP_MSHUTDOWN(sapirequest)(SHUTDOWN_FUNC_ARGS_PASSTHRU);
     return SUCCESS;
 }
 /* }}} */
@@ -87,13 +87,13 @@ zend_module_entry request_module_entry = {
 ZEND_GET_MODULE(request)      // Common for all PHP extensions which are build as shared modules
 #endif
 
-PHP_REQUEST_API zend_class_entry *ServerRequest_ce_ptr;
-PHP_REQUEST_API zend_class_entry *ServerResponse_ce_ptr;
-PHP_REQUEST_API zend_class_entry *ServerResponseInterface_ce_ptr;
-PHP_REQUEST_API zend_class_entry *ServerResponseSender_ce_ptr;
+PHP_REQUEST_API zend_class_entry *SapiRequest_ce_ptr;
+PHP_REQUEST_API zend_class_entry *SapiResponse_ce_ptr;
+PHP_REQUEST_API zend_class_entry *SapiResponseInterface_ce_ptr;
+PHP_REQUEST_API zend_class_entry *SapiResponseSender_ce_ptr;
 
-/* {{{ server_request_normalize_header_name */
-void server_request_normalize_header_name(char *key, size_t key_length)
+/* {{{ sapi_request_normalize_header_name */
+void sapi_request_normalize_header_name(char *key, size_t key_length)
 {
     register char *r = key;
     register char *r_end = r + key_length - 1;
@@ -109,28 +109,28 @@ void server_request_normalize_header_name(char *key, size_t key_length)
     }
 }
 
-static zend_string *server_request_normalize_header_name_ex(zend_string *in)
+static zend_string *sapi_request_normalize_header_name_ex(zend_string *in)
 {
     zend_string *out = php_trim(in, ZEND_STRL(" \t\r\n\v"), 3);
-    server_request_normalize_header_name(ZSTR_VAL(out), ZSTR_LEN(out));
+    sapi_request_normalize_header_name(ZSTR_VAL(out), ZSTR_LEN(out));
     zend_string_forget_hash_val(out);
     zend_string_hash_val(out);
     return out;
 }
-/* }}} server_request_normalize_header_name */
+/* }}} sapi_request_normalize_header_name */
 
-/* ServerRequest ************************************************************ */
+/* SapiRequest ************************************************************ */
 
-extern void server_request_parse_accept(zval *return_value, const unsigned char *str, size_t len);
-extern void server_request_parse_content_type(zval *return_value, const unsigned char *str, size_t len);
-extern void server_request_parse_digest_auth(zval *return_value, const unsigned char *str, size_t len);
-extern void server_request_parse_x_forwarded_for(zval *return_value, const unsigned char *str, size_t len);
-extern void server_request_parse_x_forwarded(zval *return_value, const unsigned char *str, size_t len);
-extern void server_request_normalize_header_name(char *key, size_t key_length);
+extern void sapi_request_parse_accept(zval *return_value, const unsigned char *str, size_t len);
+extern void sapi_request_parse_content_type(zval *return_value, const unsigned char *str, size_t len);
+extern void sapi_request_parse_digest_auth(zval *return_value, const unsigned char *str, size_t len);
+extern void sapi_request_parse_x_forwarded_for(zval *return_value, const unsigned char *str, size_t len);
+extern void sapi_request_parse_x_forwarded(zval *return_value, const unsigned char *str, size_t len);
+extern void sapi_request_normalize_header_name(char *key, size_t key_length);
 
 
-static zend_object_handlers ServerRequest_obj_handlers;
-static HashTable ServerRequest_prop_handlers;
+static zend_object_handlers SapiRequest_obj_handlers;
+static HashTable SapiRequest_prop_handlers;
 
 struct prop_handlers {
     zend_object_has_property_t has_property;
@@ -140,14 +140,14 @@ struct prop_handlers {
 };
 
 /* {{{ Argument Info */
-ZEND_BEGIN_ARG_INFO_EX(ServerRequest_construct_args, 0, 0, 1)
+ZEND_BEGIN_ARG_INFO_EX(SapiRequest_construct_args, 0, 0, 1)
     ZEND_ARG_ARRAY_INFO(0, globals, 0)
     ZEND_ARG_TYPE_INFO(0, content, IS_STRING, 1)
 ZEND_END_ARG_INFO()
 /* }}} Argument Info */
 
-/* {{ server_request_detect_method */
-static void server_request_detect_method(zval *return_value, zval *server)
+/* {{ sapi_request_detect_method */
+static void sapi_request_detect_method(zval *return_value, zval *server)
 {
     zend_string *tmp;
     zval *val;
@@ -177,8 +177,8 @@ static void server_request_detect_method(zval *return_value, zval *server)
 }
 /* }}} */
 
-/* {{{ server_request_is_secure */
-static zend_bool server_request_is_secure(zval *server)
+/* {{{ sapi_request_is_secure */
+static zend_bool sapi_request_is_secure(zval *server)
 {
     zval *tmp;
 
@@ -192,8 +192,8 @@ static zend_bool server_request_is_secure(zval *server)
 }
 /* }}} */
 
-/* {{{ server_request_detect_url */
-static inline const unsigned char *server_request_extract_port_from_host(const unsigned char *host, size_t len)
+/* {{{ sapi_request_detect_url */
+static inline const unsigned char *sapi_request_extract_port_from_host(const unsigned char *host, size_t len)
 {
     const unsigned char *right = host + len - 1;
     const unsigned char *left = len > 6 ? right - 6 : host;
@@ -209,7 +209,7 @@ static inline const unsigned char *server_request_extract_port_from_host(const u
     return NULL;
 }
 
-static inline zend_string *server_request_extract_host_from_server(zval *server)
+static inline zend_string *sapi_request_extract_host_from_server(zval *server)
 {
     zval *tmp;
     zend_string *host;
@@ -229,12 +229,12 @@ static inline zend_string *server_request_extract_host_from_server(zval *server)
     return host;
 }
 
-static inline zend_long server_request_extract_port_from_server(zval *server, zend_string *host)
+static inline zend_long sapi_request_extract_port_from_server(zval *server, zend_string *host)
 {
     zval *tmp;
 
     // Get port
-    if( NULL != server_request_extract_port_from_host(ZSTR_VAL(host), ZSTR_LEN(host)) ) {
+    if( NULL != sapi_request_extract_port_from_host(ZSTR_VAL(host), ZSTR_LEN(host)) ) {
         // no need to extract
     } else if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("SERVER_PORT"))) ) {
         return zval_get_long(tmp);
@@ -243,7 +243,7 @@ static inline zend_long server_request_extract_port_from_server(zval *server, ze
     return 0;
 }
 
-static inline zend_string *server_request_extract_uri_from_server(zval *server)
+static inline zend_string *sapi_request_extract_uri_from_server(zval *server)
 {
     zval *tmp;
 
@@ -255,19 +255,19 @@ static inline zend_string *server_request_extract_uri_from_server(zval *server)
     return NULL;
 }
 
-static zend_string *server_request_detect_url(zval *server)
+static zend_string *sapi_request_detect_url(zval *server)
 {
     zval *tmp;
     zend_string *host;
     zend_long port;
     zend_string *uri;
     smart_str buf = {0};
-    zend_bool is_secure = server_request_is_secure(server);
+    zend_bool is_secure = sapi_request_is_secure(server);
     const char *fake_host = "___";
 
-    host = server_request_extract_host_from_server(server);
-    port = server_request_extract_port_from_server(server, host);
-    uri = server_request_extract_uri_from_server(server);
+    host = sapi_request_extract_host_from_server(server);
+    port = sapi_request_extract_port_from_server(server, host);
+    uri = sapi_request_extract_uri_from_server(server);
 
     if( ! strcmp(ZSTR_VAL(host), fake_host) && ! port && ! uri ) {
         return NULL;
@@ -294,8 +294,8 @@ static zend_string *server_request_detect_url(zval *server)
 }
 /* }}} */
 
-/* {{{ server_request_normalize_headers */
-static void server_request_normalize_headers(zval *return_value, zval *server)
+/* {{{ sapi_request_normalize_headers */
+static void sapi_request_normalize_headers(zval *return_value, zval *server)
 {
     zend_string *key;
     zend_ulong index;
@@ -311,7 +311,7 @@ static void server_request_normalize_headers(zval *return_value, zval *server)
     ZEND_HASH_FOREACH_KEY_VAL(Z_ARRVAL_P(server), index, key, val) {
         if( key && ZSTR_LEN(key) > 5 && strncmp(ZSTR_VAL(key), http_str, http_len) == 0 ) {
             tmp = zend_string_init(ZSTR_VAL(key) + http_len, ZSTR_LEN(key) - http_len, 0);
-            server_request_normalize_header_name(ZSTR_VAL(tmp), ZSTR_LEN(tmp));
+            sapi_request_normalize_header_name(ZSTR_VAL(tmp), ZSTR_LEN(tmp));
             add_assoc_zval_ex(return_value, ZSTR_VAL(tmp), ZSTR_LEN(tmp), val);
             zend_string_release(tmp);
         }
@@ -327,10 +327,10 @@ static void server_request_normalize_headers(zval *return_value, zval *server)
 }
 /* }}} */
 
-/* {{{ server_request_normalize_files */
-static void server_request_upload_from_spec(zval *return_value, zval *file);
+/* {{{ sapi_request_normalize_files */
+static void sapi_request_upload_from_spec(zval *return_value, zval *file);
 
-static inline void server_request_copy_upload_key(zval *return_value, zval *nested, const char *key1, size_t key1_len, zend_ulong index2, zend_string *key2)
+static inline void sapi_request_copy_upload_key(zval *return_value, zval *nested, const char *key1, size_t key1_len, zend_ulong index2, zend_string *key2)
 {
     zval *tmp = zend_hash_str_find(Z_ARRVAL_P(nested), key1, key1_len);
     if( !tmp ) {
@@ -353,7 +353,7 @@ static inline void server_request_copy_upload_key(zval *return_value, zval *nest
     }
 }
 
-static inline void server_request_upload_from_nested(zval *return_value, zval *nested, zval *tmp_name)
+static inline void sapi_request_upload_from_nested(zval *return_value, zval *nested, zval *tmp_name)
 {
     zend_string *key;
     zend_ulong index;
@@ -364,13 +364,13 @@ static inline void server_request_upload_from_nested(zval *return_value, zval *n
 
     ZEND_HASH_FOREACH_KEY(Z_ARRVAL_P(tmp_name), index, key) {
         array_init(&tmp);
-        server_request_copy_upload_key(&tmp, nested, ZEND_STRL("error"), index, key);
-        server_request_copy_upload_key(&tmp, nested, ZEND_STRL("name"), index, key);
-        server_request_copy_upload_key(&tmp, nested, ZEND_STRL("size"), index, key);
-        server_request_copy_upload_key(&tmp, nested, ZEND_STRL("tmp_name"), index, key);
-        server_request_copy_upload_key(&tmp, nested, ZEND_STRL("type"), index, key);
+        sapi_request_copy_upload_key(&tmp, nested, ZEND_STRL("error"), index, key);
+        sapi_request_copy_upload_key(&tmp, nested, ZEND_STRL("name"), index, key);
+        sapi_request_copy_upload_key(&tmp, nested, ZEND_STRL("size"), index, key);
+        sapi_request_copy_upload_key(&tmp, nested, ZEND_STRL("tmp_name"), index, key);
+        sapi_request_copy_upload_key(&tmp, nested, ZEND_STRL("type"), index, key);
 
-        server_request_upload_from_spec(&tmp2, &tmp);
+        sapi_request_upload_from_spec(&tmp2, &tmp);
         if( key ) {
             add_assoc_zval_ex(return_value, ZSTR_VAL(key), ZSTR_LEN(key), &tmp2);
         } else {
@@ -379,17 +379,17 @@ static inline void server_request_upload_from_nested(zval *return_value, zval *n
     } ZEND_HASH_FOREACH_END();
 }
 
-static void server_request_upload_from_spec(zval *return_value, zval *file)
+static void sapi_request_upload_from_spec(zval *return_value, zval *file)
 {
     zval *tmp = zend_hash_str_find(Z_ARRVAL_P(file), ZEND_STRL("tmp_name"));
     if( tmp && Z_TYPE_P(tmp) == IS_ARRAY ) {
-        server_request_upload_from_nested(return_value, file, tmp);
+        sapi_request_upload_from_nested(return_value, file, tmp);
     } else {
         ZVAL_ZVAL(return_value, file, 0, 0);
     }
 }
 
-static void server_request_normalize_files(zval *return_value, zval *files)
+static void sapi_request_normalize_files(zval *return_value, zval *files)
 {
     zend_string *key;
     zend_ulong index;
@@ -398,7 +398,7 @@ static void server_request_normalize_files(zval *return_value, zval *files)
 
     ZEND_HASH_FOREACH_KEY_VAL(Z_ARRVAL_P(files), index, key, val) {
         if( Z_TYPE_P(val) == IS_ARRAY ) {
-            server_request_upload_from_spec(&tmp, val);
+            sapi_request_upload_from_spec(&tmp, val);
             if( key ) {
                 add_assoc_zval_ex(return_value, ZSTR_VAL(key), ZSTR_LEN(key), &tmp);
             } else {
@@ -409,40 +409,40 @@ static void server_request_normalize_files(zval *return_value, zval *files)
 }
 /* }}} */
 
-/* {{{ server_request_obj_create */
-static zend_object *server_request_obj_create(zend_class_entry *ce)
+/* {{{ sapi_request_obj_create */
+static zend_object *sapi_request_obj_create(zend_class_entry *ce)
 {
     zend_object *obj;
 
     obj = ecalloc(1, sizeof(*obj) + zend_object_properties_size(ce));
     zend_object_std_init(obj, ce);
     object_properties_init(obj, ce);
-    obj->handlers = &ServerRequest_obj_handlers;
+    obj->handlers = &SapiRequest_obj_handlers;
 
     return obj;
 }
 /* }}} */
 
-/* {{{ server_request_clone_obj */
+/* {{{ sapi_request_clone_obj */
 #if PHP_MAJOR_VERSION >= 8
-static zend_object *server_request_clone_obj(zend_object *zobject)
+static zend_object *sapi_request_clone_obj(zend_object *zobject)
 {
     zend_object * new_obj = std_object_handlers.clone_obj(zobject);
-    new_obj->handlers = &ServerRequest_obj_handlers;
+    new_obj->handlers = &SapiRequest_obj_handlers;
     return new_obj;
 }
 #else
-static zend_object *server_request_clone_obj(zval *zobject)
+static zend_object *sapi_request_clone_obj(zval *zobject)
 {
     zend_object * new_obj = std_object_handlers.clone_obj(zobject);
-    new_obj->handlers = &ServerRequest_obj_handlers;
+    new_obj->handlers = &SapiRequest_obj_handlers;
     return new_obj;
 }
 #endif
 /* }}} */
 
-/* {{{ server_request_assert_immutable */
-static int server_request_value_is_immutable(zval *value)
+/* {{{ sapi_request_assert_immutable */
+static int sapi_request_value_is_immutable(zval *value)
 {
     zval *val;
     switch( Z_TYPE_P(value) ) {
@@ -455,7 +455,7 @@ static int server_request_value_is_immutable(zval *value)
             return 1;
         case IS_ARRAY:
             ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(value), val) {
-                if( !server_request_value_is_immutable(val) ) {
+                if( !sapi_request_value_is_immutable(val) ) {
                     return 0;
                 }
             } ZEND_HASH_FOREACH_END();
@@ -465,39 +465,39 @@ static int server_request_value_is_immutable(zval *value)
     }
 }
 
-static void server_request_assert_immutable(zval *value, const char *desc, size_t desc_len)
+static void sapi_request_assert_immutable(zval *value, const char *desc, size_t desc_len)
 {
-    if( !server_request_value_is_immutable(value) ) {
+    if( !sapi_request_value_is_immutable(value) ) {
         zend_throw_exception_ex(spl_ce_UnexpectedValueException, 0, "All $%.*s values must be null, scalar, or array.", (int)desc_len, desc);
     }
 }
 /* }}} */
 
-/* {{{ server_request_object_default_has_property */
+/* {{{ sapi_request_object_default_has_property */
 #if PHP_MAJOR_VERSION >= 8
-static int server_request_object_default_has_property(zend_object *object, zend_object *member, int check_empty, void **cache_slot)
+static int sapi_request_object_default_has_property(zend_object *object, zend_object *member, int check_empty, void **cache_slot)
 {
     return 1;
 }
 #else
-static int server_request_object_default_has_property(zval *object, zval *member, int check_empty, void **cache_slot)
+static int sapi_request_object_default_has_property(zval *object, zval *member, int check_empty, void **cache_slot)
 {
     return 1;
 }
 #endif
 /* }}} */
 
-/* {{{ server_request_throw_readonly_exception */
-static inline void server_request_throw_readonly_exception(zend_object *object, zend_string *member)
+/* {{{ sapi_request_throw_readonly_exception */
+static inline void sapi_request_throw_readonly_exception(zend_object *object, zend_string *member)
 {
     zend_string *ce_name = object->ce->name;
     zend_throw_exception_ex(spl_ce_RuntimeException, 0, "%.*s::$%.*s is read-only.", (int)ZSTR_LEN(ce_name), ZSTR_VAL(ce_name), (int)ZSTR_LEN(member), ZSTR_VAL(member));
 }
 /* }}} */
 
-/* {{{ server_request_object_default_read_property */
+/* {{{ sapi_request_object_default_read_property */
 #if PHP_MAJOR_VERSION >= 8
-static zval *server_request_object_default_read_property(zend_object *object, zend_string *member, int type, void **cache_slot, zval *rv)
+static zval *sapi_request_object_default_read_property(zend_object *object, zend_string *member, int type, void **cache_slot, zval *rv)
 {
     zval *retval;
     php_stream *stream;
@@ -509,7 +509,7 @@ static zval *server_request_object_default_read_property(zend_object *object, ze
     // Make sure the property can't be modified
     if( !Z_ISREF_P(rv) && (type == BP_VAR_W || type == BP_VAR_RW  || type == BP_VAR_UNSET) ) {
         SEPARATE_ZVAL(rv);
-        server_request_throw_readonly_exception(object, member);
+        sapi_request_throw_readonly_exception(object, member);
     }
 
     if (strcmp(ZSTR_VAL(member), "content")) {
@@ -535,7 +535,7 @@ static zval *server_request_object_default_read_property(zend_object *object, ze
     return rv;
 }
 #else
-static zval *server_request_object_default_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv)
+static zval *sapi_request_object_default_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv)
 {
     zval *retval;
     php_stream *stream;
@@ -547,7 +547,7 @@ static zval *server_request_object_default_read_property(zval *object, zval *mem
     // Make sure the property can't be modified
     if( !Z_ISREF_P(rv) && (type == BP_VAR_W || type == BP_VAR_RW  || type == BP_VAR_UNSET) ) {
         SEPARATE_ZVAL(rv);
-        server_request_throw_readonly_exception(Z_OBJ_P(object), Z_STR_P(member));
+        sapi_request_throw_readonly_exception(Z_OBJ_P(object), Z_STR_P(member));
     }
 
     if (strcmp(Z_STRVAL_P(member), "content")) {
@@ -575,32 +575,32 @@ static zval *server_request_object_default_read_property(zval *object, zval *mem
 #endif
 /* }}} */
 
-/* {{{ server_request_object_default_write_property */
+/* {{{ sapi_request_object_default_write_property */
 #if PHP_MAJOR_VERSION >= 8
-static zval *server_request_object_default_write_property(zend_object *object, zend_string *member, zval *value, void **cache_slot)
+static zval *sapi_request_object_default_write_property(zend_object *object, zend_string *member, zval *value, void **cache_slot)
 {
-    if( zend_get_executed_scope() != ServerRequest_ce_ptr ) {
-        server_request_throw_readonly_exception(object, member);
+    if( zend_get_executed_scope() != SapiRequest_ce_ptr ) {
+        sapi_request_throw_readonly_exception(object, member);
         return NULL;
     } else {
         return std_object_handlers.write_property(object, member, value, cache_slot);
     }
 }
 #elif PHP_MAJOR_VERSION >= 7 && PHP_MINOR_VERSION >= 4
-static zval *server_request_object_default_write_property(zval *object, zval *member, zval *value, void **cache_slot)
+static zval *sapi_request_object_default_write_property(zval *object, zval *member, zval *value, void **cache_slot)
 {
-    if( zend_get_executed_scope() != ServerRequest_ce_ptr ) {
-        server_request_throw_readonly_exception(Z_OBJ_P(object), Z_STR_P(member));
+    if( zend_get_executed_scope() != SapiRequest_ce_ptr ) {
+        sapi_request_throw_readonly_exception(Z_OBJ_P(object), Z_STR_P(member));
         return NULL;
     } else {
         return std_object_handlers.write_property(object, member, value, cache_slot);
     }
 }
 #else
-static void server_request_object_default_write_property(zval *object, zval *member, zval *value, void **cache_slot)
+static void sapi_request_object_default_write_property(zval *object, zval *member, zval *value, void **cache_slot)
 {
-    if( zend_get_executed_scope() != ServerRequest_ce_ptr ) {
-        server_request_throw_readonly_exception(Z_OBJ_P(object), Z_STR_P(member));
+    if( zend_get_executed_scope() != SapiRequest_ce_ptr ) {
+        sapi_request_throw_readonly_exception(Z_OBJ_P(object), Z_STR_P(member));
     } else {
         std_object_handlers.write_property(object, member, value, cache_slot);
     }
@@ -608,21 +608,21 @@ static void server_request_object_default_write_property(zval *object, zval *mem
 #endif
 /* }}} */
 
-/* {{{ server_request_object_default_unset_property */
+/* {{{ sapi_request_object_default_unset_property */
 #if PHP_MAJOR_VERSION >= 8
-static void server_request_object_default_unset_property(zend_object *object, zend_string *member, void **cache_slot)
+static void sapi_request_object_default_unset_property(zend_object *object, zend_string *member, void **cache_slot)
 {
-    if( zend_get_executed_scope() != ServerRequest_ce_ptr ) {
-        server_request_throw_readonly_exception(object, member);
+    if( zend_get_executed_scope() != SapiRequest_ce_ptr ) {
+        sapi_request_throw_readonly_exception(object, member);
     } else {
         std_object_handlers.unset_property(object, member, cache_slot);
     }
 }
 #else
-static void server_request_object_default_unset_property(zval *object, zval *member, void **cache_slot)
+static void sapi_request_object_default_unset_property(zval *object, zval *member, void **cache_slot)
 {
-    if( zend_get_executed_scope() != ServerRequest_ce_ptr ) {
-        server_request_throw_readonly_exception(Z_OBJ_P(object), Z_STR_P(member));
+    if( zend_get_executed_scope() != SapiRequest_ce_ptr ) {
+        sapi_request_throw_readonly_exception(Z_OBJ_P(object), Z_STR_P(member));
     } else {
         std_object_handlers.unset_property(object, member, cache_slot);
     }
@@ -630,25 +630,25 @@ static void server_request_object_default_unset_property(zval *object, zval *mem
 #endif
 /* }}} */
 
-/* {{{ server_request_object_has_property */
+/* {{{ sapi_request_object_has_property */
 #if PHP_MAJOR_VERSION >= 8
-static int server_request_object_has_property(zend_object *object, zend_string *member, int has_set_exists, void **cache_slot)
+static int sapi_request_object_has_property(zend_object *object, zend_string *member, int has_set_exists, void **cache_slot)
 {
-    struct prop_handlers *hnd = zend_hash_str_find_ptr(&ServerRequest_prop_handlers, ZSTR_VAL(member), ZSTR_LEN(member));
+    struct prop_handlers *hnd = zend_hash_str_find_ptr(&SapiRequest_prop_handlers, ZSTR_VAL(member), ZSTR_LEN(member));
     return (hnd ? hnd->has_property : std_object_handlers.has_property)(object, member, has_set_exists, cache_slot);
 }
 #else
-static int server_request_object_has_property(zval *object, zval *member, int has_set_exists, void **cache_slot)
+static int sapi_request_object_has_property(zval *object, zval *member, int has_set_exists, void **cache_slot)
 {
-    struct prop_handlers *hnd = zend_hash_str_find_ptr(&ServerRequest_prop_handlers, Z_STRVAL_P(member), Z_STRLEN_P(member));
+    struct prop_handlers *hnd = zend_hash_str_find_ptr(&SapiRequest_prop_handlers, Z_STRVAL_P(member), Z_STRLEN_P(member));
     return (hnd ? hnd->has_property : std_object_handlers.has_property)(object, member, has_set_exists, cache_slot);
 }
 #endif
 /* }}} */
 
-/* {{{ server_request_object_read_property */
+/* {{{ sapi_request_object_read_property */
 #if PHP_MAJOR_VERSION >= 8
-static zval *server_request_object_read_property(zend_object *object, zend_string *member, int type, void **cache_slot, zval *rv)
+static zval *sapi_request_object_read_property(zend_object *object, zend_string *member, int type, void **cache_slot, zval *rv)
 {
     if( !object->ce->__get && !std_object_handlers.has_property(object, member, 2, cache_slot) ) {
         zend_string *ce_name = object->ce->name;
@@ -656,11 +656,11 @@ static zval *server_request_object_read_property(zend_object *object, zend_strin
         ZVAL_NULL(rv);
         return rv;
     }
-    struct prop_handlers *hnd = zend_hash_str_find_ptr(&ServerRequest_prop_handlers, ZSTR_VAL(member), ZSTR_LEN(member));
+    struct prop_handlers *hnd = zend_hash_str_find_ptr(&SapiRequest_prop_handlers, ZSTR_VAL(member), ZSTR_LEN(member));
     return (hnd ? hnd->read_property : std_object_handlers.read_property)(object, member, type, cache_slot, rv);
 }
 #else
-static zval *server_request_object_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv)
+static zval *sapi_request_object_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv)
 {
     if( !Z_OBJCE_P(object)->__get && !std_object_handlers.has_property(object, member, 2, cache_slot) ) {
         zend_string *ce_name = Z_OBJCE_P(object)->name;
@@ -670,15 +670,15 @@ static zval *server_request_object_read_property(zval *object, zval *member, int
         ZVAL_NULL(rv);
         return rv;
     }
-    struct prop_handlers *hnd = zend_hash_str_find_ptr(&ServerRequest_prop_handlers, Z_STRVAL_P(member), Z_STRLEN_P(member));
+    struct prop_handlers *hnd = zend_hash_str_find_ptr(&SapiRequest_prop_handlers, Z_STRVAL_P(member), Z_STRLEN_P(member));
     return (hnd ? hnd->read_property : std_object_handlers.read_property)(object, member, type, cache_slot, rv);
 }
 #endif
 /* }}} */
 
-/* {{{ server_request_object_write_property */
+/* {{{ sapi_request_object_write_property */
 #if PHP_MAJOR_VERSION >= 8
-static zval *server_request_object_write_property(zend_object *object, zend_string *member, zval *value, void **cache_slot)
+static zval *sapi_request_object_write_property(zend_object *object, zend_string *member, zval *value, void **cache_slot)
 {
     if( !object->ce->__get && !std_object_handlers.has_property(object, member, 2, cache_slot) ) {
         zend_string *ce_name = object->ce->name;
@@ -687,15 +687,15 @@ static zval *server_request_object_write_property(zend_object *object, zend_stri
     }
 
     if( !object->ce->__set && !std_object_handlers.has_property(object, member, 2, cache_slot) ) {
-        server_request_throw_readonly_exception(object, member);
+        sapi_request_throw_readonly_exception(object, member);
         return NULL;
     }
 
-    struct prop_handlers *hnd = zend_hash_str_find_ptr(&ServerRequest_prop_handlers, ZSTR_VAL(member), ZSTR_LEN(member));
+    struct prop_handlers *hnd = zend_hash_str_find_ptr(&SapiRequest_prop_handlers, ZSTR_VAL(member), ZSTR_LEN(member));
     return (hnd ? hnd->write_property : std_object_handlers.write_property)(object, member, value, cache_slot);
 }
 #elif PHP_MAJOR_VERSION >= 7 && PHP_MINOR_VERSION >= 4
-static zval *server_request_object_write_property(zval *object, zval *member, zval *value, void **cache_slot)
+static zval *sapi_request_object_write_property(zval *object, zval *member, zval *value, void **cache_slot)
 {
     if( !Z_OBJCE_P(object)->__get && !std_object_handlers.has_property(object, member, 2, cache_slot) ) {
         zend_string *ce_name = Z_OBJCE_P(object)->name;
@@ -706,15 +706,15 @@ static zval *server_request_object_write_property(zval *object, zval *member, zv
     }
 
     if( !Z_OBJCE_P(object)->__set && !std_object_handlers.has_property(object, member, 2, cache_slot) ) {
-        server_request_throw_readonly_exception(Z_OBJ_P(object), Z_STR_P(member));
+        sapi_request_throw_readonly_exception(Z_OBJ_P(object), Z_STR_P(member));
         return NULL;
     }
 
-    struct prop_handlers *hnd = zend_hash_str_find_ptr(&ServerRequest_prop_handlers, Z_STRVAL_P(member), Z_STRLEN_P(member));
+    struct prop_handlers *hnd = zend_hash_str_find_ptr(&SapiRequest_prop_handlers, Z_STRVAL_P(member), Z_STRLEN_P(member));
     return (hnd ? hnd->write_property : std_object_handlers.write_property)(object, member, value, cache_slot);
 }
 #else
-static void server_request_object_write_property(zval *object, zval *member, zval *value, void **cache_slot)
+static void sapi_request_object_write_property(zval *object, zval *member, zval *value, void **cache_slot)
 {
     if( !Z_OBJCE_P(object)->__get && !std_object_handlers.has_property(object, member, 2, cache_slot) ) {
         zend_string *ce_name = Z_OBJCE_P(object)->name;
@@ -725,40 +725,40 @@ static void server_request_object_write_property(zval *object, zval *member, zva
     }
 
     if( !Z_OBJCE_P(object)->__set && !std_object_handlers.has_property(object, member, 2, cache_slot) ) {
-        server_request_throw_readonly_exception(Z_OBJ_P(object), Z_STR_P(member));
+        sapi_request_throw_readonly_exception(Z_OBJ_P(object), Z_STR_P(member));
         return;
     }
 
-    struct prop_handlers *hnd = zend_hash_str_find_ptr(&ServerRequest_prop_handlers, Z_STRVAL_P(member), Z_STRLEN_P(member));
+    struct prop_handlers *hnd = zend_hash_str_find_ptr(&SapiRequest_prop_handlers, Z_STRVAL_P(member), Z_STRLEN_P(member));
     (hnd ? hnd->write_property : std_object_handlers.write_property)(object, member, value, cache_slot);
 }
 #endif
 /* }}} */
 
-/* {{{ server_request_object_unset_property */
+/* {{{ sapi_request_object_unset_property */
 #if PHP_MAJOR_VERSION >= 8
-static void server_request_object_unset_property(zend_object *object, zend_string *member, void **cache_slot)
+static void sapi_request_object_unset_property(zend_object *object, zend_string *member, void **cache_slot)
 {
-    struct prop_handlers *hnd = zend_hash_str_find_ptr(&ServerRequest_prop_handlers, ZSTR_VAL(member), ZSTR_LEN(member));
+    struct prop_handlers *hnd = zend_hash_str_find_ptr(&SapiRequest_prop_handlers, ZSTR_VAL(member), ZSTR_LEN(member));
     return (hnd ? hnd->unset_property : std_object_handlers.unset_property)(object, member, cache_slot);
 }
 #else
-static void server_request_object_unset_property(zval *object, zval *member, void **cache_slot)
+static void sapi_request_object_unset_property(zval *object, zval *member, void **cache_slot)
 {
-    struct prop_handlers *hnd = zend_hash_str_find_ptr(&ServerRequest_prop_handlers, Z_STRVAL_P(member), Z_STRLEN_P(member));
+    struct prop_handlers *hnd = zend_hash_str_find_ptr(&SapiRequest_prop_handlers, Z_STRVAL_P(member), Z_STRLEN_P(member));
     return (hnd ? hnd->unset_property : std_object_handlers.unset_property)(object, member, cache_slot);
 }
 #endif
 /* }}} */
 
-/* {{{ server_request_object_get_property_ptr_ptr */
+/* {{{ sapi_request_object_get_property_ptr_ptr */
 #if PHP_MAJOR_VERSION >= 8
-static zval *server_request_object_get_property_ptr_ptr(zend_object *object, zend_string *name, int type, void **cache_slot)
+static zval *sapi_request_object_get_property_ptr_ptr(zend_object *object, zend_string *name, int type, void **cache_slot)
 {
     return NULL;
 }
 #else
-static zval *server_request_object_get_property_ptr_ptr(zval *object, zval *name, int type, void **cache_slot)
+static zval *sapi_request_object_get_property_ptr_ptr(zval *object, zval *name, int type, void **cache_slot)
 {
     return NULL;
 }
@@ -779,23 +779,23 @@ static inline void register_prop_handlers(
     hnd.read_property = read_property ? read_property : std_object_handlers.read_property;
     hnd.write_property = write_property ? write_property : std_object_handlers.write_property;
     hnd.unset_property = unset_property ? unset_property : std_object_handlers.unset_property;
-    zend_hash_str_update_mem(&ServerRequest_prop_handlers, name, name_length, &hnd, sizeof(hnd));
+    zend_hash_str_update_mem(&SapiRequest_prop_handlers, name, name_length, &hnd, sizeof(hnd));
 }
 static inline void register_default_prop_handlers(const char *name, size_t name_length)
 {
     register_prop_handlers(
         name,
         name_length,
-        server_request_object_default_has_property,
-        server_request_object_default_read_property,
-        server_request_object_default_write_property,
-        server_request_object_default_unset_property
+        sapi_request_object_default_has_property,
+        sapi_request_object_default_read_property,
+        sapi_request_object_default_write_property,
+        sapi_request_object_default_unset_property
     );
 }
 /* }}} */
 
-/* {{{ proto ServerRequest::__construct([ array $globals ]) */
-static inline void server_request_copy_global_prop(
+/* {{{ proto SapiRequest::__construct([ array $globals ]) */
+static inline void sapi_request_copy_global_prop(
     zval *obj,
     const char *obj_key,
     size_t obj_key_length,
@@ -810,27 +810,27 @@ static inline void server_request_copy_global_prop(
     }
     if( tmp ) {
         // Assert immutable
-        server_request_assert_immutable(tmp, glob_key, glob_key_length);
+        sapi_request_assert_immutable(tmp, glob_key, glob_key_length);
         if( EG(exception) ) {
             return;
         }
         // Update property value
-        zend_update_property(ServerRequest_ce_ptr, obj, obj_key, obj_key_length, tmp);
+        zend_update_property(SapiRequest_ce_ptr, obj, obj_key, obj_key_length, tmp);
         Z_TRY_ADDREF_P(tmp);
     }
 }
 
-static inline void server_request_init_array_prop(
+static inline void sapi_request_init_array_prop(
     zval *obj,
     const char *obj_key,
     size_t obj_key_length
 ) {
     zval tmp = {0};
     array_init(&tmp);
-    zend_update_property(ServerRequest_ce_ptr, obj, obj_key, obj_key_length, &tmp);
+    zend_update_property(SapiRequest_ce_ptr, obj, obj_key, obj_key_length, &tmp);
 }
 
-static inline void server_request_set_forwarded(zval *object, zval *server)
+static inline void sapi_request_set_forwarded(zval *object, zval *server)
 {
     zval forwardedFor;
     zval forwardedHost;
@@ -841,39 +841,39 @@ static inline void server_request_set_forwarded(zval *object, zval *server)
 
     if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_X_FORWARDED_FOR"))) ) {
         array_init(&forwardedFor);
-        server_request_parse_x_forwarded_for(&forwardedFor, Z_STRVAL_P(tmp), Z_STRLEN_P(tmp));
-        zend_update_property(ServerRequest_ce_ptr, object, ZEND_STRL("forwardedFor"), &forwardedFor);
+        sapi_request_parse_x_forwarded_for(&forwardedFor, Z_STRVAL_P(tmp), Z_STRLEN_P(tmp));
+        zend_update_property(SapiRequest_ce_ptr, object, ZEND_STRL("forwardedFor"), &forwardedFor);
     }
 
     if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_X_FORWARDED_HOST"))) ) {
         convert_to_string(tmp);
         tmp_str = php_trim(Z_STR_P(tmp), ZEND_STRL(" \t\r\n\v"), 3);
         ZVAL_STR(&forwardedHost, tmp_str);
-        zend_update_property(ServerRequest_ce_ptr, object, ZEND_STRL("forwardedHost"), &forwardedHost);
+        zend_update_property(SapiRequest_ce_ptr, object, ZEND_STRL("forwardedHost"), &forwardedHost);
     }
 
     if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_X_FORWARDED_PROTO"))) ) {
         convert_to_string(tmp);
         tmp_str = php_trim(Z_STR_P(tmp), ZEND_STRL(" \t\r\n\v"), 3);
         ZVAL_STR(&forwardedProto, tmp_str);
-        zend_update_property(ServerRequest_ce_ptr, object, ZEND_STRL("forwardedProto"), &forwardedProto);
+        zend_update_property(SapiRequest_ce_ptr, object, ZEND_STRL("forwardedProto"), &forwardedProto);
     }
 
     if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_FORWARDED"))) ) {
         array_init(&forwarded);
-        server_request_parse_forwarded(&forwarded, Z_STRVAL_P(tmp), Z_STRLEN_P(tmp));
-        zend_update_property(ServerRequest_ce_ptr, object, ZEND_STRL("forwarded"), &forwarded);
+        sapi_request_parse_forwarded(&forwarded, Z_STRVAL_P(tmp), Z_STRLEN_P(tmp));
+        zend_update_property(SapiRequest_ce_ptr, object, ZEND_STRL("forwarded"), &forwarded);
     }
 }
 
-static inline void server_request_set_url(zval *object, zval *server)
+static inline void sapi_request_set_url(zval *object, zval *server)
 {
     zend_string *tmp;
     php_url *url;
     zval arr = {0};
     const char *fake_host = "___";
 
-    tmp = server_request_detect_url(server);
+    tmp = sapi_request_detect_url(server);
     if( !tmp ) {
         return;
     }
@@ -927,12 +927,12 @@ static inline void server_request_set_url(zval *object, zval *server)
         add_assoc_null(&arr, "fragment");
     }
 
-    zend_update_property(ServerRequest_ce_ptr, object, ZEND_STRL("url"), &arr);
+    zend_update_property(SapiRequest_ce_ptr, object, ZEND_STRL("url"), &arr);
 
     php_url_free(url);
 }
 
-static inline void server_request_set_accept_by_name(zval *object, zval *server, const char *src, size_t src_length, const char *dest, size_t dest_length)
+static inline void sapi_request_set_accept_by_name(zval *object, zval *server, const char *src, size_t src_length, const char *dest, size_t dest_length)
 {
     zval val = {0};
     zval *tmp;
@@ -940,12 +940,12 @@ static inline void server_request_set_accept_by_name(zval *object, zval *server,
     array_init(&val);
     tmp = zend_hash_str_find(Z_ARRVAL_P(server), src, src_length);
     if( tmp && Z_TYPE_P(tmp) == IS_STRING ) {
-        server_request_parse_accept(&val, Z_STRVAL_P(tmp), Z_STRLEN_P(tmp));
-        zend_update_property(ServerRequest_ce_ptr, object, dest, dest_length, &val);
+        sapi_request_parse_accept(&val, Z_STRVAL_P(tmp), Z_STRLEN_P(tmp));
+        zend_update_property(SapiRequest_ce_ptr, object, dest, dest_length, &val);
     }
 }
 
-static inline void server_request_parse_accept_language(zval *lang)
+static inline void sapi_request_parse_accept_language(zval *lang)
 {
     zend_string *key;
     zend_ulong index;
@@ -977,87 +977,87 @@ static inline void server_request_parse_accept_language(zval *lang)
     } ZEND_HASH_FOREACH_END();
 }
 
-static inline void server_request_set_accept_language(zval *object, zval *server)
+static inline void sapi_request_set_accept_language(zval *object, zval *server)
 {
     zval val = {0};
     zval *tmp;
 
     array_init(&val);
     if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_ACCEPT_LANGUAGE"))) ) {
-        server_request_parse_accept(&val, Z_STRVAL_P(tmp), Z_STRLEN_P(tmp));
-        server_request_parse_accept_language(&val);
-        zend_update_property(ServerRequest_ce_ptr, object, ZEND_STRL("acceptLanguage"), &val);
+        sapi_request_parse_accept(&val, Z_STRVAL_P(tmp), Z_STRLEN_P(tmp));
+        sapi_request_parse_accept_language(&val);
+        zend_update_property(SapiRequest_ce_ptr, object, ZEND_STRL("acceptLanguage"), &val);
     }
 }
 
-static inline void server_request_set_auth(zval *object, zval *server)
+static inline void sapi_request_set_auth(zval *object, zval *server)
 {
     zval *tmp;
     zval digest = {0};
 
     if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("PHP_AUTH_PW"))) ) {
-        zend_update_property(ServerRequest_ce_ptr, object, ZEND_STRL("authPw"), tmp);
+        zend_update_property(SapiRequest_ce_ptr, object, ZEND_STRL("authPw"), tmp);
     }
 
     if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("PHP_AUTH_TYPE"))) ) {
-        zend_update_property(ServerRequest_ce_ptr, object, ZEND_STRL("authType"), tmp);
+        zend_update_property(SapiRequest_ce_ptr, object, ZEND_STRL("authType"), tmp);
     }
 
     if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("PHP_AUTH_USER"))) ) {
-        zend_update_property(ServerRequest_ce_ptr, object, ZEND_STRL("authUser"), tmp);
+        zend_update_property(SapiRequest_ce_ptr, object, ZEND_STRL("authUser"), tmp);
     }
 
     if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("PHP_AUTH_DIGEST"))) ) {
         zend_string *str = zval_get_string(tmp);
-        server_request_parse_digest_auth(&digest, ZSTR_VAL(str), ZSTR_LEN(str));
-        zend_update_property(ServerRequest_ce_ptr, object, ZEND_STRL("authDigest"), &digest);
+        sapi_request_parse_digest_auth(&digest, ZSTR_VAL(str), ZSTR_LEN(str));
+        zend_update_property(SapiRequest_ce_ptr, object, ZEND_STRL("authDigest"), &digest);
     }
 
 }
 
-static inline void server_request_set_content_length(zval *object, zval *length)
+static inline void sapi_request_set_content_length(zval *object, zval *length)
 {
     zend_string *tmp = php_trim(Z_STR_P(length), ZEND_STRL("0123456789 \t\r\n\v"), 3);
     if( zend_string_equals_literal(tmp, "") ) {
         zend_string_release(tmp);
         convert_to_long(length);
-        zend_update_property(ServerRequest_ce_ptr, object, ZEND_STRL("contentLength"), length);
+        zend_update_property(SapiRequest_ce_ptr, object, ZEND_STRL("contentLength"), length);
     }
 }
 
-static inline void server_request_set_content(zval *object, zval *server)
+static inline void sapi_request_set_content(zval *object, zval *server)
 {
     zval *tmp;
     zval zv = {0};
     zval contentType = {0};
 
     if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_CONTENT_MD5"))) ) {
-        zend_update_property(ServerRequest_ce_ptr, object, ZEND_STRL("contentMd5"), tmp);
+        zend_update_property(SapiRequest_ce_ptr, object, ZEND_STRL("contentMd5"), tmp);
     }
 
     if( tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_CONTENT_LENGTH")) ) {
-        server_request_set_content_length(object, tmp);
+        sapi_request_set_content_length(object, tmp);
     }
 
     if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_CONTENT_TYPE"))) && Z_TYPE_P(tmp) == IS_STRING ) {
-        server_request_parse_content_type(&contentType, Z_STRVAL_P(tmp), Z_STRLEN_P(tmp));
+        sapi_request_parse_content_type(&contentType, Z_STRVAL_P(tmp), Z_STRLEN_P(tmp));
         if( Z_TYPE(contentType) == IS_ARRAY ) {
             // contentType
             tmp = zend_hash_str_find(Z_ARRVAL(contentType), ZEND_STRL("value"));
             if( tmp ) {
-                zend_update_property(ServerRequest_ce_ptr, object, ZEND_STRL("contentType"), tmp);
+                zend_update_property(SapiRequest_ce_ptr, object, ZEND_STRL("contentType"), tmp);
             }
             // charset
             tmp = zend_hash_str_find(Z_ARRVAL(contentType), ZEND_STRL("charset"));
             if( tmp ) {
-                zend_update_property(ServerRequest_ce_ptr, object, ZEND_STRL("contentCharset"), tmp);
+                zend_update_property(SapiRequest_ce_ptr, object, ZEND_STRL("contentCharset"), tmp);
             }
         }
     }
 }
 
-/* {{{ ServerRequest::__construct */
-PHP_METHOD(ServerRequest, __construct)
+/* {{{ SapiRequest::__construct */
+PHP_METHOD(SapiRequest, __construct)
 {
     zval *_this_zval;
     zval *init;
@@ -1079,37 +1079,37 @@ PHP_METHOD(ServerRequest, __construct)
     _this_zval = getThis();
 
     // Check and update isInitialized property
-    init = zend_read_property(ServerRequest_ce_ptr, _this_zval, ZEND_STRL("isInitialized"), 0, &rv);
+    init = zend_read_property(SapiRequest_ce_ptr, _this_zval, ZEND_STRL("isInitialized"), 0, &rv);
     if( zend_is_true(init) ) {
         zend_string *ce_name = Z_OBJCE_P(_this_zval)->name;
         zend_throw_exception_ex(spl_ce_RuntimeException, 0, "%.*s::__construct() called after construction.", (int)ZSTR_LEN(ce_name), ZSTR_VAL(ce_name));
         return;
     }
-    zend_update_property_bool(ServerRequest_ce_ptr, _this_zval, ZEND_STRL("isInitialized"), 1);
+    zend_update_property_bool(SapiRequest_ce_ptr, _this_zval, ZEND_STRL("isInitialized"), 1);
 
     // initialize array properties
-    server_request_init_array_prop(_this_zval, ZEND_STRL("accept"));
-    server_request_init_array_prop(_this_zval, ZEND_STRL("acceptCharset"));
-    server_request_init_array_prop(_this_zval, ZEND_STRL("acceptEncoding"));
-    server_request_init_array_prop(_this_zval, ZEND_STRL("acceptLanguage"));
-    server_request_init_array_prop(_this_zval, ZEND_STRL("authDigest"));
-    server_request_init_array_prop(_this_zval, ZEND_STRL("cookie"));
-    server_request_init_array_prop(_this_zval, ZEND_STRL("files"));
-    server_request_init_array_prop(_this_zval, ZEND_STRL("forwarded"));
-    server_request_init_array_prop(_this_zval, ZEND_STRL("forwardedFor"));
-    server_request_init_array_prop(_this_zval, ZEND_STRL("headers"));
-    server_request_init_array_prop(_this_zval, ZEND_STRL("input"));
-    server_request_init_array_prop(_this_zval, ZEND_STRL("query"));
-    server_request_init_array_prop(_this_zval, ZEND_STRL("server"));
-    server_request_init_array_prop(_this_zval, ZEND_STRL("uploads"));
-    server_request_init_array_prop(_this_zval, ZEND_STRL("url"));
+    sapi_request_init_array_prop(_this_zval, ZEND_STRL("accept"));
+    sapi_request_init_array_prop(_this_zval, ZEND_STRL("acceptCharset"));
+    sapi_request_init_array_prop(_this_zval, ZEND_STRL("acceptEncoding"));
+    sapi_request_init_array_prop(_this_zval, ZEND_STRL("acceptLanguage"));
+    sapi_request_init_array_prop(_this_zval, ZEND_STRL("authDigest"));
+    sapi_request_init_array_prop(_this_zval, ZEND_STRL("cookie"));
+    sapi_request_init_array_prop(_this_zval, ZEND_STRL("files"));
+    sapi_request_init_array_prop(_this_zval, ZEND_STRL("forwarded"));
+    sapi_request_init_array_prop(_this_zval, ZEND_STRL("forwardedFor"));
+    sapi_request_init_array_prop(_this_zval, ZEND_STRL("headers"));
+    sapi_request_init_array_prop(_this_zval, ZEND_STRL("input"));
+    sapi_request_init_array_prop(_this_zval, ZEND_STRL("query"));
+    sapi_request_init_array_prop(_this_zval, ZEND_STRL("server"));
+    sapi_request_init_array_prop(_this_zval, ZEND_STRL("uploads"));
+    sapi_request_init_array_prop(_this_zval, ZEND_STRL("url"));
 
     // Copy superglobals
-    server_request_copy_global_prop(_this_zval, ZEND_STRL("server"), globals, ZEND_STRL("_SERVER"));
-    server_request_copy_global_prop(_this_zval, ZEND_STRL("cookie"), globals, ZEND_STRL("_COOKIE"));
-    server_request_copy_global_prop(_this_zval, ZEND_STRL("files"),  globals, ZEND_STRL("_FILES"));
-    server_request_copy_global_prop(_this_zval, ZEND_STRL("input"),  globals, ZEND_STRL("_POST"));
-    server_request_copy_global_prop(_this_zval, ZEND_STRL("query"),  globals, ZEND_STRL("_GET"));
+    sapi_request_copy_global_prop(_this_zval, ZEND_STRL("server"), globals, ZEND_STRL("_SERVER"));
+    sapi_request_copy_global_prop(_this_zval, ZEND_STRL("cookie"), globals, ZEND_STRL("_COOKIE"));
+    sapi_request_copy_global_prop(_this_zval, ZEND_STRL("files"),  globals, ZEND_STRL("_FILES"));
+    sapi_request_copy_global_prop(_this_zval, ZEND_STRL("input"),  globals, ZEND_STRL("_POST"));
+    sapi_request_copy_global_prop(_this_zval, ZEND_STRL("query"),  globals, ZEND_STRL("_GET"));
 
     // Check if previous step threw
     if( EG(exception) ) {
@@ -1122,133 +1122,133 @@ PHP_METHOD(ServerRequest, __construct)
     // Internal setters that require server
     if( server && Z_TYPE_P(server) == IS_ARRAY ) {
         // headers
-        server_request_normalize_headers(&headers, server);
-        zend_update_property(ServerRequest_ce_ptr, _this_zval, ZEND_STRL("headers"), &headers);
+        sapi_request_normalize_headers(&headers, server);
+        zend_update_property(SapiRequest_ce_ptr, _this_zval, ZEND_STRL("headers"), &headers);
 
         // method
-        server_request_detect_method(&method, server);
-        zend_update_property(ServerRequest_ce_ptr, _this_zval, ZEND_STRL("method"), &method);
+        sapi_request_detect_method(&method, server);
+        zend_update_property(SapiRequest_ce_ptr, _this_zval, ZEND_STRL("method"), &method);
 
         // forwarded
-        server_request_set_forwarded(_this_zval, server);
+        sapi_request_set_forwarded(_this_zval, server);
 
         // url
-        server_request_set_url(_this_zval, server);
+        sapi_request_set_url(_this_zval, server);
 
         // accepts
-        server_request_set_accept_by_name(_this_zval, server, ZEND_STRL("HTTP_ACCEPT"), ZEND_STRL("accept"));
-        server_request_set_accept_by_name(_this_zval, server, ZEND_STRL("HTTP_ACCEPT_CHARSET"), ZEND_STRL("acceptCharset"));
-        server_request_set_accept_by_name(_this_zval, server, ZEND_STRL("HTTP_ACCEPT_ENCODING"), ZEND_STRL("acceptEncoding"));
-        server_request_set_accept_language(_this_zval, server);
+        sapi_request_set_accept_by_name(_this_zval, server, ZEND_STRL("HTTP_ACCEPT"), ZEND_STRL("accept"));
+        sapi_request_set_accept_by_name(_this_zval, server, ZEND_STRL("HTTP_ACCEPT_CHARSET"), ZEND_STRL("acceptCharset"));
+        sapi_request_set_accept_by_name(_this_zval, server, ZEND_STRL("HTTP_ACCEPT_ENCODING"), ZEND_STRL("acceptEncoding"));
+        sapi_request_set_accept_language(_this_zval, server);
 
         // auth
-        server_request_set_auth(_this_zval, server);
-        server_request_set_content(_this_zval, server);
+        sapi_request_set_auth(_this_zval, server);
+        sapi_request_set_content(_this_zval, server);
     }
 
     // Read back files property
-    files = zend_read_property(ServerRequest_ce_ptr, _this_zval, ZEND_STRL("files"), 0, &rv);
+    files = zend_read_property(SapiRequest_ce_ptr, _this_zval, ZEND_STRL("files"), 0, &rv);
 
     if( files && Z_TYPE_P(files) == IS_ARRAY ) {
         array_init(&uploads);
-        server_request_normalize_files(&uploads, files);
-        zend_update_property(ServerRequest_ce_ptr, _this_zval, ZEND_STRL("uploads"), &uploads);
+        sapi_request_normalize_files(&uploads, files);
+        zend_update_property(SapiRequest_ce_ptr, _this_zval, ZEND_STRL("uploads"), &uploads);
     }
 
     if (content && Z_TYPE_P(content) == IS_STRING) {
-        zend_update_property(ServerRequest_ce_ptr, _this_zval, ZEND_STRL("content"), content);
+        zend_update_property(SapiRequest_ce_ptr, _this_zval, ZEND_STRL("content"), content);
     }
 }
-/* }}} ServerRequest::__construct */
+/* }}} SapiRequest::__construct */
 
-/* {{{ ServerRequest methods */
-static zend_function_entry ServerRequest_methods[] = {
-    PHP_ME(ServerRequest, __construct, ServerRequest_construct_args, ZEND_ACC_PUBLIC)
+/* {{{ SapiRequest methods */
+static zend_function_entry SapiRequest_methods[] = {
+    PHP_ME(SapiRequest, __construct, SapiRequest_construct_args, ZEND_ACC_PUBLIC)
     PHP_FE_END
 };
-/* }}} ServerRequest methods */
+/* }}} SapiRequest methods */
 
 /* {{{ PHP_MINIT_FUNCTION */
-PHP_MINIT_FUNCTION(serverrequest)
+PHP_MINIT_FUNCTION(sapirequest)
 {
     zend_class_entry ce;
 
-    zend_hash_init(&ServerRequest_prop_handlers, 0, NULL, NULL, 1);
+    zend_hash_init(&SapiRequest_prop_handlers, 0, NULL, NULL, 1);
 
-    memcpy(&ServerRequest_obj_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
-    ServerRequest_obj_handlers.has_property = server_request_object_has_property;
-    ServerRequest_obj_handlers.read_property = server_request_object_read_property;
-    ServerRequest_obj_handlers.write_property = server_request_object_write_property;
-    ServerRequest_obj_handlers.unset_property = server_request_object_unset_property;
-    ServerRequest_obj_handlers.get_property_ptr_ptr = server_request_object_get_property_ptr_ptr;
-    ServerRequest_obj_handlers.clone_obj = server_request_clone_obj;
+    memcpy(&SapiRequest_obj_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
+    SapiRequest_obj_handlers.has_property = sapi_request_object_has_property;
+    SapiRequest_obj_handlers.read_property = sapi_request_object_read_property;
+    SapiRequest_obj_handlers.write_property = sapi_request_object_write_property;
+    SapiRequest_obj_handlers.unset_property = sapi_request_object_unset_property;
+    SapiRequest_obj_handlers.get_property_ptr_ptr = sapi_request_object_get_property_ptr_ptr;
+    SapiRequest_obj_handlers.clone_obj = sapi_request_clone_obj;
 
-    INIT_CLASS_ENTRY(ce, "ServerRequest", ServerRequest_methods);
-    ServerRequest_ce_ptr = zend_register_internal_class(&ce);
-    ServerRequest_ce_ptr->create_object = server_request_obj_create;
+    INIT_CLASS_ENTRY(ce, "SapiRequest", SapiRequest_methods);
+    SapiRequest_ce_ptr = zend_register_internal_class(&ce);
+    SapiRequest_ce_ptr->create_object = sapi_request_obj_create;
 
-    zend_declare_property_bool(ServerRequest_ce_ptr, ZEND_STRL("isInitialized"), 0, ZEND_ACC_PRIVATE);
+    zend_declare_property_bool(SapiRequest_ce_ptr, ZEND_STRL("isInitialized"), 0, ZEND_ACC_PRIVATE);
 
-    zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("accept"), ZEND_ACC_PUBLIC);
+    zend_declare_property_null(SapiRequest_ce_ptr, ZEND_STRL("accept"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("accept"));
-    zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("acceptCharset"), ZEND_ACC_PUBLIC);
+    zend_declare_property_null(SapiRequest_ce_ptr, ZEND_STRL("acceptCharset"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("acceptCharset"));
-    zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("acceptEncoding"), ZEND_ACC_PUBLIC);
+    zend_declare_property_null(SapiRequest_ce_ptr, ZEND_STRL("acceptEncoding"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("acceptEncoding"));
-    zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("acceptLanguage"), ZEND_ACC_PUBLIC);
+    zend_declare_property_null(SapiRequest_ce_ptr, ZEND_STRL("acceptLanguage"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("acceptLanguage"));
-    zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("authDigest"), ZEND_ACC_PUBLIC);
+    zend_declare_property_null(SapiRequest_ce_ptr, ZEND_STRL("authDigest"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("authDigest"));
-    zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("authPw"), ZEND_ACC_PUBLIC);
+    zend_declare_property_null(SapiRequest_ce_ptr, ZEND_STRL("authPw"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("authPw"));
-    zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("authType"), ZEND_ACC_PUBLIC);
+    zend_declare_property_null(SapiRequest_ce_ptr, ZEND_STRL("authType"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("authType"));
-    zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("authUser"), ZEND_ACC_PUBLIC);
+    zend_declare_property_null(SapiRequest_ce_ptr, ZEND_STRL("authUser"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("authUser"));
-    zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("content"), ZEND_ACC_PUBLIC);
+    zend_declare_property_null(SapiRequest_ce_ptr, ZEND_STRL("content"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("content"));
-    zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("contentCharset"), ZEND_ACC_PUBLIC);
+    zend_declare_property_null(SapiRequest_ce_ptr, ZEND_STRL("contentCharset"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("contentCharset"));
-    zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("contentLength"), ZEND_ACC_PUBLIC);
+    zend_declare_property_null(SapiRequest_ce_ptr, ZEND_STRL("contentLength"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("contentLength"));
-    zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("contentMd5"), ZEND_ACC_PUBLIC);
+    zend_declare_property_null(SapiRequest_ce_ptr, ZEND_STRL("contentMd5"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("contentMd5"));
-    zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("contentType"), ZEND_ACC_PUBLIC);
+    zend_declare_property_null(SapiRequest_ce_ptr, ZEND_STRL("contentType"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("contentType"));
-    zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("cookie"), ZEND_ACC_PUBLIC);
+    zend_declare_property_null(SapiRequest_ce_ptr, ZEND_STRL("cookie"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("cookie"));
-    zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("files"), ZEND_ACC_PUBLIC);
+    zend_declare_property_null(SapiRequest_ce_ptr, ZEND_STRL("files"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("files"));
-    zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("forwarded"), ZEND_ACC_PUBLIC);
+    zend_declare_property_null(SapiRequest_ce_ptr, ZEND_STRL("forwarded"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("forwarded"));
-    zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("forwardedFor"), ZEND_ACC_PUBLIC);
+    zend_declare_property_null(SapiRequest_ce_ptr, ZEND_STRL("forwardedFor"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("forwardedFor"));
-    zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("forwardedHost"), ZEND_ACC_PUBLIC);
+    zend_declare_property_null(SapiRequest_ce_ptr, ZEND_STRL("forwardedHost"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("forwardedHost"));
-    zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("forwardedProto"), ZEND_ACC_PUBLIC);
+    zend_declare_property_null(SapiRequest_ce_ptr, ZEND_STRL("forwardedProto"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("forwardedProto"));
-    zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("headers"), ZEND_ACC_PUBLIC);
+    zend_declare_property_null(SapiRequest_ce_ptr, ZEND_STRL("headers"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("headers"));
-    zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("input"), ZEND_ACC_PUBLIC);
+    zend_declare_property_null(SapiRequest_ce_ptr, ZEND_STRL("input"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("input"));
-    zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("method"), ZEND_ACC_PUBLIC);
+    zend_declare_property_null(SapiRequest_ce_ptr, ZEND_STRL("method"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("method"));
-    zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("query"), ZEND_ACC_PUBLIC);
+    zend_declare_property_null(SapiRequest_ce_ptr, ZEND_STRL("query"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("query"));
-    zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("server"), ZEND_ACC_PUBLIC);
+    zend_declare_property_null(SapiRequest_ce_ptr, ZEND_STRL("server"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("server"));
-    zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("uploads"), ZEND_ACC_PUBLIC);
+    zend_declare_property_null(SapiRequest_ce_ptr, ZEND_STRL("uploads"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("uploads"));
-    zend_declare_property_null(ServerRequest_ce_ptr, ZEND_STRL("url"), ZEND_ACC_PUBLIC);
+    zend_declare_property_null(SapiRequest_ce_ptr, ZEND_STRL("url"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("url"));
     return SUCCESS;
 }
 /* }}} */
 
 /* {{{ PHP_MSHUTDOWN_FUNCTION */
-PHP_MSHUTDOWN_FUNCTION(serverrequest)
+PHP_MSHUTDOWN_FUNCTION(sapirequest)
 {
-    zend_hash_destroy(&ServerRequest_prop_handlers);
+    zend_hash_destroy(&SapiRequest_prop_handlers);
     return SUCCESS;
 }
 /* }}} */
@@ -1270,69 +1270,69 @@ static inline void smart_str_appendz(smart_str *dest, zval *zv)
     return smart_str_appendz_ex(dest, zv, 0);
 }
 
-/* ServerResponseInterface ******************************************************** */
+/* SapiResponseInterface ******************************************************** */
 
-/* {{{ ServerResponseInterface methods */
-static zend_function_entry ServerResponseInterface_methods[] = {
-    PHP_ABSTRACT_ME(ServerResponse, setVersion, ServerResponseInterface_setVersion_args)
-    PHP_ABSTRACT_ME(ServerResponse, getVersion, ServerResponseInterface_getVersion_args)
-    PHP_ABSTRACT_ME(ServerResponse, setCode, ServerResponseInterface_setCode_args)
-    PHP_ABSTRACT_ME(ServerResponse, getCode, ServerResponseInterface_getCode_args)
-    PHP_ABSTRACT_ME(ServerResponse, addHeader, ServerResponseInterface_addHeader_args)
-    PHP_ABSTRACT_ME(ServerResponse, setHeader, ServerResponseInterface_setHeader_args)
-    PHP_ABSTRACT_ME(ServerResponse, unsetHeader, ServerResponseInterface_unsetHeader_args)
-    PHP_ABSTRACT_ME(ServerResponse, getHeader, ServerResponseInterface_getHeader_args)
-    PHP_ABSTRACT_ME(ServerResponse, hasHeader, ServerResponseInterface_hasHeader_args)
-    PHP_ABSTRACT_ME(ServerResponse, unsetHeaders, ServerResponseInterface_unsetHeaders_args)
-    PHP_ABSTRACT_ME(ServerResponse, getHeaders, ServerResponseInterface_getHeaders_args)
-    PHP_ABSTRACT_ME(ServerResponse, getCookie, ServerResponseInterface_getCookie_args)
-    PHP_ABSTRACT_ME(ServerResponse, hasCookie, ServerResponseInterface_hasCookie_args)
-    PHP_ABSTRACT_ME(ServerResponse, setCookie, ServerResponseInterface_setCookie_args)
-    PHP_ABSTRACT_ME(ServerResponse, setRawCookie, ServerResponseInterface_setCookie_args)
-    PHP_ABSTRACT_ME(ServerResponse, unsetCookie, ServerResponseInterface_unsetCookie_args)
-    PHP_ABSTRACT_ME(ServerResponse, unsetCookies, ServerResponseInterface_unsetCookies_args)
-    PHP_ABSTRACT_ME(ServerResponse, getCookies, ServerResponseInterface_getCookies_args)
-    PHP_ABSTRACT_ME(ServerResponse, setContent, ServerResponseInterface_setContent_args)
-    PHP_ABSTRACT_ME(ServerResponse, getContent, ServerResponseInterface_getContent_args)
-    PHP_ABSTRACT_ME(ServerResponse, setHeaderCallbacks, ServerResponseInterface_setHeaderCallbacks_args)
-    PHP_ABSTRACT_ME(ServerResponse, addHeaderCallback, ServerResponseInterface_addHeaderCallback_args)
-    PHP_ABSTRACT_ME(ServerResponse, getHeaderCallbacks, ServerResponseInterface_getHeaderCallbacks_args)
+/* {{{ SapiResponseInterface methods */
+static zend_function_entry SapiResponseInterface_methods[] = {
+    PHP_ABSTRACT_ME(SapiResponse, setVersion, SapiResponseInterface_setVersion_args)
+    PHP_ABSTRACT_ME(SapiResponse, getVersion, SapiResponseInterface_getVersion_args)
+    PHP_ABSTRACT_ME(SapiResponse, setCode, SapiResponseInterface_setCode_args)
+    PHP_ABSTRACT_ME(SapiResponse, getCode, SapiResponseInterface_getCode_args)
+    PHP_ABSTRACT_ME(SapiResponse, addHeader, SapiResponseInterface_addHeader_args)
+    PHP_ABSTRACT_ME(SapiResponse, setHeader, SapiResponseInterface_setHeader_args)
+    PHP_ABSTRACT_ME(SapiResponse, unsetHeader, SapiResponseInterface_unsetHeader_args)
+    PHP_ABSTRACT_ME(SapiResponse, getHeader, SapiResponseInterface_getHeader_args)
+    PHP_ABSTRACT_ME(SapiResponse, hasHeader, SapiResponseInterface_hasHeader_args)
+    PHP_ABSTRACT_ME(SapiResponse, unsetHeaders, SapiResponseInterface_unsetHeaders_args)
+    PHP_ABSTRACT_ME(SapiResponse, getHeaders, SapiResponseInterface_getHeaders_args)
+    PHP_ABSTRACT_ME(SapiResponse, getCookie, SapiResponseInterface_getCookie_args)
+    PHP_ABSTRACT_ME(SapiResponse, hasCookie, SapiResponseInterface_hasCookie_args)
+    PHP_ABSTRACT_ME(SapiResponse, setCookie, SapiResponseInterface_setCookie_args)
+    PHP_ABSTRACT_ME(SapiResponse, setRawCookie, SapiResponseInterface_setCookie_args)
+    PHP_ABSTRACT_ME(SapiResponse, unsetCookie, SapiResponseInterface_unsetCookie_args)
+    PHP_ABSTRACT_ME(SapiResponse, unsetCookies, SapiResponseInterface_unsetCookies_args)
+    PHP_ABSTRACT_ME(SapiResponse, getCookies, SapiResponseInterface_getCookies_args)
+    PHP_ABSTRACT_ME(SapiResponse, setContent, SapiResponseInterface_setContent_args)
+    PHP_ABSTRACT_ME(SapiResponse, getContent, SapiResponseInterface_getContent_args)
+    PHP_ABSTRACT_ME(SapiResponse, setHeaderCallbacks, SapiResponseInterface_setHeaderCallbacks_args)
+    PHP_ABSTRACT_ME(SapiResponse, addHeaderCallback, SapiResponseInterface_addHeaderCallback_args)
+    PHP_ABSTRACT_ME(SapiResponse, getHeaderCallbacks, SapiResponseInterface_getHeaderCallbacks_args)
     PHP_FE_END
 };
-/* }}} ServerResponseInterface methods */
+/* }}} SapiResponseInterface methods */
 
 /* {{{ PHP_MINIT_FUNCTION */
-PHP_MINIT_FUNCTION(serverresponseinterface)
+PHP_MINIT_FUNCTION(sapiresponseinterface)
 {
     zend_class_entry ce;
 
-    INIT_CLASS_ENTRY(ce, "ServerResponseInterface", ServerResponseInterface_methods);
-    ServerResponseInterface_ce_ptr = zend_register_internal_interface(&ce);
+    INIT_CLASS_ENTRY(ce, "SapiResponseInterface", SapiResponseInterface_methods);
+    SapiResponseInterface_ce_ptr = zend_register_internal_interface(&ce);
 
     return SUCCESS;
 }
 
-/* ServerResponse *********************************************************** */
+/* SapiResponse *********************************************************** */
 
-/* {{{ proto string ServerResponse::getVersion() */
-static zval *server_response_get_version(zval *response)
+/* {{{ proto string SapiResponse::getVersion() */
+static zval *sapi_response_get_version(zval *response)
 {
-    return zend_read_property(ServerResponse_ce_ptr, response, ZEND_STRL("version"), 0, NULL);
+    return zend_read_property(SapiResponse_ce_ptr, response, ZEND_STRL("version"), 0, NULL);
 }
 
-PHP_METHOD(ServerResponse, getVersion)
+PHP_METHOD(SapiResponse, getVersion)
 {
     zval *_this_zval = getThis();
 
     ZEND_PARSE_PARAMETERS_START(0, 0)
     ZEND_PARSE_PARAMETERS_END();
 
-    RETVAL_ZVAL(server_response_get_version(_this_zval), 1, 0);
+    RETVAL_ZVAL(sapi_response_get_version(_this_zval), 1, 0);
 }
-/* }}} ServerResponse::getVersion */
+/* }}} SapiResponse::getVersion */
 
-/* {{{ proto ServerResponseInterface ServerResponse::setVersion(string $version) */
-PHP_METHOD(ServerResponse, setVersion)
+/* {{{ proto SapiResponseInterface SapiResponse::setVersion(string $version) */
+PHP_METHOD(SapiResponse, setVersion)
 {
     zval *_this_zval = getThis();
     zend_string *version;
@@ -1341,31 +1341,31 @@ PHP_METHOD(ServerResponse, setVersion)
         Z_PARAM_STR(version)
     ZEND_PARSE_PARAMETERS_END();
 
-    zend_update_property_str(ServerResponse_ce_ptr, _this_zval, ZEND_STRL("version"), version);
+    zend_update_property_str(SapiResponse_ce_ptr, _this_zval, ZEND_STRL("version"), version);
 
     RETURN_ZVAL(_this_zval, 1, 0);
 }
-/* }}} ServerResponse::setVersion */
+/* }}} SapiResponse::setVersion */
 
-/* {{{ proto int ServerResponse::getCode() */
-static zval *server_response_get_code(zval *response)
+/* {{{ proto int SapiResponse::getCode() */
+static zval *sapi_response_get_code(zval *response)
 {
-    return zend_read_property(ServerResponse_ce_ptr, response, ZEND_STRL("code"), 0, NULL);
+    return zend_read_property(SapiResponse_ce_ptr, response, ZEND_STRL("code"), 0, NULL);
 }
 
-PHP_METHOD(ServerResponse, getCode)
+PHP_METHOD(SapiResponse, getCode)
 {
     zval *_this_zval = getThis();
 
     ZEND_PARSE_PARAMETERS_START(0, 0)
     ZEND_PARSE_PARAMETERS_END();
 
-    RETVAL_ZVAL(server_response_get_code(_this_zval), 1, 0);
+    RETVAL_ZVAL(sapi_response_get_code(_this_zval), 1, 0);
 }
-/* }}} ServerResponse::getCode */
+/* }}} SapiResponse::getCode */
 
-/* {{{ proto ServerResponseInterface ServerResponse::setCode(int $version) */
-PHP_METHOD(ServerResponse, setCode)
+/* {{{ proto SapiResponseInterface SapiResponse::setCode(int $version) */
+PHP_METHOD(SapiResponse, setCode)
 {
     zval *_this_zval = getThis();
     zend_long code;
@@ -1374,31 +1374,31 @@ PHP_METHOD(ServerResponse, setCode)
         Z_PARAM_LONG(code)
     ZEND_PARSE_PARAMETERS_END();
 
-    zend_update_property_long(ServerResponse_ce_ptr, _this_zval, ZEND_STRL("code"), code);
+    zend_update_property_long(SapiResponse_ce_ptr, _this_zval, ZEND_STRL("code"), code);
 
     RETURN_ZVAL(_this_zval, 1, 0);
 }
-/* }}} ServerResponse::setCode */
+/* }}} SapiResponse::setCode */
 
-/* {{{ proto array ServerResponse::getHeaders() */
-static zval *server_response_get_headers(zval *response)
+/* {{{ proto array SapiResponse::getHeaders() */
+static zval *sapi_response_get_headers(zval *response)
 {
-    return zend_read_property(ServerResponse_ce_ptr, response, ZEND_STRL("headers"), 0, NULL);
+    return zend_read_property(SapiResponse_ce_ptr, response, ZEND_STRL("headers"), 0, NULL);
 }
 
-PHP_METHOD(ServerResponse, getHeaders)
+PHP_METHOD(SapiResponse, getHeaders)
 {
     zval *_this_zval = getThis();
 
     ZEND_PARSE_PARAMETERS_START(0, 0)
     ZEND_PARSE_PARAMETERS_END();
 
-    RETVAL_ZVAL(server_response_get_headers(_this_zval), 1, 0);
+    RETVAL_ZVAL(sapi_response_get_headers(_this_zval), 1, 0);
 }
-/* }}} ServerResponse::getHeaders */
+/* }}} SapiResponse::getHeaders */
 
-/* {{{ proto ServerResponseInterface ServerResponse::setHeader(string $label, string $value) */
-static void server_response_set_header(zval *response, zend_string *label, zend_string *value, zend_bool replace)
+/* {{{ proto SapiResponseInterface SapiResponse::setHeader(string $label, string $value) */
+static void sapi_response_set_header(zval *response, zend_string *label, zend_string *value, zend_bool replace)
 {
     zval *prop_ptr;
     zend_string *normal_label;
@@ -1409,7 +1409,7 @@ static void server_response_set_header(zval *response, zend_string *label, zend_
 
     // Read property pointer
     if( !Z_OBJ_HT_P(response)->get_property_ptr_ptr ) {
-        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "ServerResponse::setHeader requires get_property_ptr_ptr");
+        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "SapiResponse::setHeader requires get_property_ptr_ptr");
         return;
     }
 
@@ -1431,7 +1431,7 @@ static void server_response_set_header(zval *response, zend_string *label, zend_
     }
 
     // Normalize label
-    normal_label = server_request_normalize_header_name_ex(label);
+    normal_label = sapi_request_normalize_header_name_ex(label);
 
     if( !ZSTR_LEN(normal_label) ) {
         zend_string_release(normal_label);
@@ -1465,7 +1465,7 @@ static void server_response_set_header(zval *response, zend_string *label, zend_
     zend_string_release(normal_label);
 }
 
-PHP_METHOD(ServerResponse, setHeader)
+PHP_METHOD(SapiResponse, setHeader)
 {
     zval *_this_zval = getThis();
     zend_string *label;
@@ -1476,14 +1476,14 @@ PHP_METHOD(ServerResponse, setHeader)
         Z_PARAM_STR(value)
     ZEND_PARSE_PARAMETERS_END();
 
-    server_response_set_header(_this_zval, label, value, 1);
+    sapi_response_set_header(_this_zval, label, value, 1);
 
     RETURN_ZVAL(_this_zval, 1, 0);
 }
-/* }}} ServerResponse::setHeader */
+/* }}} SapiResponse::setHeader */
 
-/* {{{ proto ServerResponseInterface ServerResponse::addHeader(string $label, string $value) */
-PHP_METHOD(ServerResponse, addHeader)
+/* {{{ proto SapiResponseInterface SapiResponse::addHeader(string $label, string $value) */
+PHP_METHOD(SapiResponse, addHeader)
 {
     zval *_this_zval = getThis();
     zend_string *label;
@@ -1494,21 +1494,21 @@ PHP_METHOD(ServerResponse, addHeader)
         Z_PARAM_STR(value)
     ZEND_PARSE_PARAMETERS_END();
 
-    server_response_set_header(_this_zval, label, value, 0);
+    sapi_response_set_header(_this_zval, label, value, 0);
 
     RETURN_ZVAL(_this_zval, 1, 0);
 }
-/* }}} ServerResponse::addHeader */
+/* }}} SapiResponse::addHeader */
 
-/* {{{ proto ServerResponseInterfae ServerResponse::unsetHeader(string $label) */
-static void server_response_unset_header(zval *response, zend_string *label)
+/* {{{ proto SapiResponseInterfae SapiResponse::unsetHeader(string $label) */
+static void sapi_response_unset_header(zval *response, zend_string *label)
 {
     zval *prop_ptr;
     zend_string *normal_label;
 
     // Read property pointer
     if( !Z_OBJ_HT_P(response)->get_property_ptr_ptr ) {
-        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "ServerResponse::unsetHeader requires get_property_ptr_ptr");
+        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "SapiResponse::unsetHeader requires get_property_ptr_ptr");
         return;
     }
 
@@ -1529,7 +1529,7 @@ static void server_response_unset_header(zval *response, zend_string *label)
         return;
     }
 
-    normal_label = server_request_normalize_header_name_ex(label);
+    normal_label = sapi_request_normalize_header_name_ex(label);
 
     if( ZSTR_LEN(normal_label) ) {
         zend_hash_del(Z_ARRVAL_P(prop_ptr), normal_label);
@@ -1538,7 +1538,7 @@ static void server_response_unset_header(zval *response, zend_string *label)
     zend_string_release(normal_label);
 }
 
-PHP_METHOD(ServerResponse, unsetHeader)
+PHP_METHOD(SapiResponse, unsetHeader)
 {
     zval *_this_zval = getThis();
     zend_string *label;
@@ -1547,14 +1547,14 @@ PHP_METHOD(ServerResponse, unsetHeader)
         Z_PARAM_STR(label)
     ZEND_PARSE_PARAMETERS_END();
 
-    server_response_unset_header(_this_zval, label);
+    sapi_response_unset_header(_this_zval, label);
 
     RETURN_ZVAL(_this_zval, 1, 0);
 }
-/* }}} ServerResponse::unsetHeader */
+/* }}} SapiResponse::unsetHeader */
 
-/* {{{ proto ?string ServerResponse::getHeader(string $label) */
-PHP_METHOD(ServerResponse, getHeader)
+/* {{{ proto ?string SapiResponse::getHeader(string $label) */
+PHP_METHOD(SapiResponse, getHeader)
 {
     zval *_this_zval = getThis();
     zend_string *label;
@@ -1571,7 +1571,7 @@ PHP_METHOD(ServerResponse, getHeader)
         return;
     }
 
-    normal_label = server_request_normalize_header_name_ex(label);
+    normal_label = sapi_request_normalize_header_name_ex(label);
 
     retval = zend_hash_find(Z_ARRVAL_P(headers), normal_label);
     if( retval ) {
@@ -1580,10 +1580,10 @@ PHP_METHOD(ServerResponse, getHeader)
 
     zend_string_release(normal_label);
 }
-/* }}} ServerResponse::getHeader */
+/* }}} SapiResponse::getHeader */
 
-/* {{{ proto bool ServerResponse::hasHeader(string $label) */
-PHP_METHOD(ServerResponse, hasHeader)
+/* {{{ proto bool SapiResponse::hasHeader(string $label) */
+PHP_METHOD(SapiResponse, hasHeader)
 {
     zval *_this_zval = getThis();
     zend_string *label;
@@ -1600,7 +1600,7 @@ PHP_METHOD(ServerResponse, hasHeader)
         RETURN_FALSE;
     }
 
-    normal_label = server_request_normalize_header_name_ex(label);
+    normal_label = sapi_request_normalize_header_name_ex(label);
 
     retval = zend_hash_find(Z_ARRVAL_P(headers), normal_label);
     if( retval ) {
@@ -1611,24 +1611,24 @@ PHP_METHOD(ServerResponse, hasHeader)
 
     zend_string_release(normal_label);
 }
-/* }}} ServerResponse::hasHeader */
+/* }}} SapiResponse::hasHeader */
 
-/* {{{ proto ServerResponseInterface ServerResponse::unsetHeaders() */
-PHP_METHOD(ServerResponse, unsetHeaders)
+/* {{{ proto SapiResponseInterface SapiResponse::unsetHeaders() */
+PHP_METHOD(SapiResponse, unsetHeaders)
 {
     zval *_this_zval = getThis();
 
     ZEND_PARSE_PARAMETERS_START(0, 0)
     ZEND_PARSE_PARAMETERS_END();
 
-    zend_update_property_null(ServerResponse_ce_ptr, _this_zval, ZEND_STRL("headers"));
+    zend_update_property_null(SapiResponse_ce_ptr, _this_zval, ZEND_STRL("headers"));
 
     RETURN_ZVAL(_this_zval, 1, 0);
 }
-/* }}} ServerResponse::unsetHeaders */
+/* }}} SapiResponse::unsetHeaders */
 
-/* {{{ proto ?array ServerResponse::getCookie(string $name) */
-PHP_METHOD(ServerResponse, getCookie)
+/* {{{ proto ?array SapiResponse::getCookie(string $name) */
+PHP_METHOD(SapiResponse, getCookie)
 {
     zval *_this_zval = getThis();
     zend_string *name;
@@ -1649,27 +1649,27 @@ PHP_METHOD(ServerResponse, getCookie)
         RETVAL_ZVAL(retval, 1, 0);
     }
 }
-/* }}} ServerResponse::getCookie */
+/* }}} SapiResponse::getCookie */
 
-/* {{{ proto array ServerResponse::getCookies() */
-static zval *server_response_get_cookies(zval *response)
+/* {{{ proto array SapiResponse::getCookies() */
+static zval *sapi_response_get_cookies(zval *response)
 {
-    return zend_read_property(ServerResponse_ce_ptr, response, ZEND_STRL("cookies"), 0, NULL);
+    return zend_read_property(SapiResponse_ce_ptr, response, ZEND_STRL("cookies"), 0, NULL);
 }
 
-PHP_METHOD(ServerResponse, getCookies)
+PHP_METHOD(SapiResponse, getCookies)
 {
     zval *_this_zval = getThis();
 
     ZEND_PARSE_PARAMETERS_START(0, 0)
     ZEND_PARSE_PARAMETERS_END();
 
-    RETVAL_ZVAL(server_response_get_cookies(_this_zval), 1, 0);
+    RETVAL_ZVAL(sapi_response_get_cookies(_this_zval), 1, 0);
 }
-/* }}} ServerResponse::getCookies */
+/* }}} SapiResponse::getCookies */
 
-/* {{{ proto bool ServerResponse::hasCookie(string $name) */
-PHP_METHOD(ServerResponse, hasCookie)
+/* {{{ proto bool SapiResponse::hasCookie(string $name) */
+PHP_METHOD(SapiResponse, hasCookie)
 {
     zval *_this_zval = getThis();
     zend_string *name;
@@ -1692,9 +1692,9 @@ PHP_METHOD(ServerResponse, hasCookie)
         RETURN_FALSE;
     }
 }
-/* }}} ServerResponse::hasCookie */
+/* }}} SapiResponse::hasCookie */
 
-/* {{{ proto ServerResponseInterface ServerResponse::setCookie(string name [, string value [, int expires [, string path [, string domain [, bool secure[, bool httponly]]]]]]) */
+/* {{{ proto SapiResponseInterface SapiResponse::setCookie(string name [, string value [, int expires [, string path [, string domain [, bool secure[, bool httponly]]]]]]) */
 static void php_head_parse_cookie_options_array(zval *options, zend_long *expires, zend_string **path, zend_string **domain, zend_bool *secure, zend_bool *httponly, zend_string **samesite)
 {
     /* copied from ext/standard/head.c, as it it not published in head.h */
@@ -1737,7 +1737,7 @@ static void php_head_parse_cookie_options_array(zval *options, zend_long *expire
     }
 }
 
-static void server_response_set_cookie(INTERNAL_FUNCTION_PARAMETERS, zend_bool url_encode)
+static void sapi_response_set_cookie(INTERNAL_FUNCTION_PARAMETERS, zend_bool url_encode)
 {
     zval *response = getThis();
     zval *ptr;
@@ -1840,33 +1840,33 @@ static void server_response_set_cookie(INTERNAL_FUNCTION_PARAMETERS, zend_bool u
     if( ptr ) {
         add_assoc_zval_ex(ptr, ZSTR_VAL(name), ZSTR_LEN(name), &cookie);
     } else {
-        zend_update_property(ServerResponse_ce_ptr, response, ZEND_STRL("cookies"), &cookie);
+        zend_update_property(SapiResponse_ce_ptr, response, ZEND_STRL("cookies"), &cookie);
     }
 
     RETURN_ZVAL(response, 1, 0);
 }
 
-PHP_METHOD(ServerResponse, setCookie)
+PHP_METHOD(SapiResponse, setCookie)
 {
-    return server_response_set_cookie(INTERNAL_FUNCTION_PARAM_PASSTHRU, 1);
+    return sapi_response_set_cookie(INTERNAL_FUNCTION_PARAM_PASSTHRU, 1);
 }
-/* }}} ServerResponse::setCookie */
+/* }}} SapiResponse::setCookie */
 
-/* {{{ proto ServerResponseInterface ServerResponse::setRawCookie(string name [, string value [, int expires [, string path [, string domain [, bool secure[, bool httponly]]]]]]) */
-PHP_METHOD(ServerResponse, setRawCookie)
+/* {{{ proto SapiResponseInterface SapiResponse::setRawCookie(string name [, string value [, int expires [, string path [, string domain [, bool secure[, bool httponly]]]]]]) */
+PHP_METHOD(SapiResponse, setRawCookie)
 {
-    return server_response_set_cookie(INTERNAL_FUNCTION_PARAM_PASSTHRU, 0);
+    return sapi_response_set_cookie(INTERNAL_FUNCTION_PARAM_PASSTHRU, 0);
 }
-/* }}} ServerResponse::setRawCookie */
+/* }}} SapiResponse::setRawCookie */
 
-/* {{{ proto ServerResponseInterface ServerResponse::unsetCookie(string $name) */
-static void server_response_unset_cookie(zval *response, zend_string *name)
+/* {{{ proto SapiResponseInterface SapiResponse::unsetCookie(string $name) */
+static void sapi_response_unset_cookie(zval *response, zend_string *name)
 {
     zval *prop_ptr;
 
     // Read property pointer
     if( !Z_OBJ_HT_P(response)->get_property_ptr_ptr ) {
-        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "ServerResponse::unsetCookie requires get_property_ptr_ptr");
+        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "SapiResponse::unsetCookie requires get_property_ptr_ptr");
         return;
     }
 
@@ -1890,7 +1890,7 @@ static void server_response_unset_cookie(zval *response, zend_string *name)
     zend_hash_del(Z_ARRVAL_P(prop_ptr), name);
 }
 
-PHP_METHOD(ServerResponse, unsetCookie)
+PHP_METHOD(SapiResponse, unsetCookie)
 {
     zval *_this_zval = getThis();
     zend_string *name;
@@ -1899,45 +1899,45 @@ PHP_METHOD(ServerResponse, unsetCookie)
         Z_PARAM_STR(name)
     ZEND_PARSE_PARAMETERS_END();
 
-    server_response_unset_cookie(_this_zval, name);
+    sapi_response_unset_cookie(_this_zval, name);
 
     RETURN_ZVAL(_this_zval, 1, 0);
 }
-/* }}} ServerResponse::unsetCookie */
+/* }}} SapiResponse::unsetCookie */
 
-/* {{{ proto ServerResponesInterface ServerResponse::unsetCookies() */
-PHP_METHOD(ServerResponse, unsetCookies)
+/* {{{ proto SapiResponseInterface SapiResponse::unsetCookies() */
+PHP_METHOD(SapiResponse, unsetCookies)
 {
     zval *_this_zval = getThis();
 
     ZEND_PARSE_PARAMETERS_START(0, 0)
     ZEND_PARSE_PARAMETERS_END();
 
-    zend_update_property_null(ServerResponse_ce_ptr, _this_zval, ZEND_STRL("cookies"));
+    zend_update_property_null(SapiResponse_ce_ptr, _this_zval, ZEND_STRL("cookies"));
 
     RETURN_ZVAL(_this_zval, 1, 0);
 }
-/* }}} ServerResponse::unsetHeaders */
+/* }}} SapiResponse::unsetHeaders */
 
-/* {{{ proto mixed ServerResponse::getContent() */
-static zval *server_response_get_content(zval *response)
+/* {{{ proto mixed SapiResponse::getContent() */
+static zval *sapi_response_get_content(zval *response)
 {
-    return zend_read_property(ServerResponse_ce_ptr, response, ZEND_STRL("content"), 0, NULL);
+    return zend_read_property(SapiResponse_ce_ptr, response, ZEND_STRL("content"), 0, NULL);
 }
 
-PHP_METHOD(ServerResponse, getContent)
+PHP_METHOD(SapiResponse, getContent)
 {
     zval *_this_zval = getThis();
 
     ZEND_PARSE_PARAMETERS_START(0, 0)
     ZEND_PARSE_PARAMETERS_END();
 
-    RETVAL_ZVAL(server_response_get_content(_this_zval), 1, 0);
+    RETVAL_ZVAL(sapi_response_get_content(_this_zval), 1, 0);
 }
-/* }}} ServerResponse::getContent */
+/* }}} SapiResponse::getContent */
 
-/* {{{ proto ServerResponseInterface ServerResponse::setContent(mixed $content) */
-PHP_METHOD(ServerResponse, setContent)
+/* {{{ proto SapiResponseInterface SapiResponse::setContent(mixed $content) */
+PHP_METHOD(SapiResponse, setContent)
 {
     zval *_this_zval = getThis();
     zval *content;
@@ -1946,14 +1946,14 @@ PHP_METHOD(ServerResponse, setContent)
         Z_PARAM_ZVAL(content)
     ZEND_PARSE_PARAMETERS_END();
 
-    zend_update_property(ServerResponse_ce_ptr, _this_zval, ZEND_STRL("content"), content);
+    zend_update_property(SapiResponse_ce_ptr, _this_zval, ZEND_STRL("content"), content);
 
     RETURN_ZVAL(_this_zval, 1, 0);
 }
-/* }}} ServerResponse::setContent */
+/* }}} SapiResponse::setContent */
 
-/* {{{ proto ServerResponseInterface ServerResponse::addHeaderCallback(callable $callback) */
-PHP_METHOD(ServerResponse, addHeaderCallback)
+/* {{{ proto SapiResponseInterface SapiResponse::addHeaderCallback(callable $callback) */
+PHP_METHOD(SapiResponse, addHeaderCallback)
 {
     zval *callback_func;
     zval *_this_zval = getThis();
@@ -1969,7 +1969,7 @@ PHP_METHOD(ServerResponse, addHeaderCallback)
 
     // Read property pointer
     if( !Z_OBJ_HT_P(_this_zval)->get_property_ptr_ptr ) {
-        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "ServerResponse::addHeaderCallback requires get_property_ptr_ptr");
+        zend_throw_exception_ex(spl_ce_RuntimeException, 0, "SapiResponse::addHeaderCallback requires get_property_ptr_ptr");
         return;
     }
 
@@ -1997,10 +1997,10 @@ PHP_METHOD(ServerResponse, addHeaderCallback)
 
     RETURN_ZVAL(_this_zval, 1, 0);
 }
-/* }}} ServerResponse::setHeaderCallbacks */
+/* }}} SapiResponse::setHeaderCallbacks */
 
-/* {{{ proto ServerResponseInterface ServerResponse::setHeaderCallbacks(array $callbacks) */
-PHP_METHOD(ServerResponse, setHeaderCallbacks)
+/* {{{ proto SapiResponseInterface SapiResponse::setHeaderCallbacks(array $callbacks) */
+PHP_METHOD(SapiResponse, setHeaderCallbacks)
 {
     zval *callbacks;
     zval *callback;
@@ -2013,7 +2013,7 @@ PHP_METHOD(ServerResponse, setHeaderCallbacks)
 
     // Reset callbacks property
     array_init(&arr);
-    zend_update_property(ServerResponse_ce_ptr, _this_zval, ZEND_STRL("callbacks"), &arr);
+    zend_update_property(SapiResponse_ce_ptr, _this_zval, ZEND_STRL("callbacks"), &arr);
 
     // Forward each item to addHeaderCallback
     ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(callbacks), callback) {
@@ -2026,105 +2026,105 @@ PHP_METHOD(ServerResponse, setHeaderCallbacks)
 
     RETURN_ZVAL(_this_zval, 1, 0);
 }
-/* }}} ServerResponse::setHeaderCallbacks */
+/* }}} SapiResponse::setHeaderCallbacks */
 
-/* {{{ proto callable[] ServerResponse::getHeaderCallbacks() */
-static zval *server_response_get_header_callbacks(zval *response)
+/* {{{ proto callable[] SapiResponse::getHeaderCallbacks() */
+static zval *sapi_response_get_header_callbacks(zval *response)
 {
-    return zend_read_property(ServerResponse_ce_ptr, response, ZEND_STRL("callbacks"), 0, NULL);
+    return zend_read_property(SapiResponse_ce_ptr, response, ZEND_STRL("callbacks"), 0, NULL);
 }
 
-PHP_METHOD(ServerResponse, getHeaderCallbacks)
+PHP_METHOD(SapiResponse, getHeaderCallbacks)
 {
     zval *_this_zval = getThis();
 
     ZEND_PARSE_PARAMETERS_START(0, 0)
     ZEND_PARSE_PARAMETERS_END();
 
-    RETVAL_ZVAL(server_response_get_header_callbacks(_this_zval), 1, 0);
+    RETVAL_ZVAL(sapi_response_get_header_callbacks(_this_zval), 1, 0);
 }
-/* }}} ServerResponse::getHeaderCallback */
+/* }}} SapiResponse::getHeaderCallback */
 
-/* {{{ ServerResponse methods */
-static zend_function_entry ServerResponse_methods[] = {
-    PHP_ME(ServerResponse, setVersion, ServerResponseInterface_setVersion_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
-    PHP_ME(ServerResponse, getVersion, ServerResponseInterface_getVersion_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
-    PHP_ME(ServerResponse, setCode, ServerResponseInterface_setCode_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
-    PHP_ME(ServerResponse, getCode, ServerResponseInterface_getCode_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
-    PHP_ME(ServerResponse, setHeader, ServerResponseInterface_addHeader_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
-    PHP_ME(ServerResponse, addHeader, ServerResponseInterface_setHeader_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
-    PHP_ME(ServerResponse, unsetHeader, ServerResponseInterface_unsetHeader_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
-    PHP_ME(ServerResponse, getHeader, ServerResponseInterface_getHeader_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
-    PHP_ME(ServerResponse, hasHeader, ServerResponseInterface_hasHeader_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
-    PHP_ME(ServerResponse, unsetHeaders, ServerResponseInterface_unsetHeaders_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
-    PHP_ME(ServerResponse, getHeaders, ServerResponseInterface_getHeaders_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
-    PHP_ME(ServerResponse, setCookie, ServerResponseInterface_setCookie_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
-    PHP_ME(ServerResponse, setRawCookie, ServerResponseInterface_setCookie_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
-    PHP_ME(ServerResponse, unsetCookie, ServerResponseInterface_unsetCookie_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
-    PHP_ME(ServerResponse, unsetCookies, ServerResponseInterface_unsetCookies_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
-    PHP_ME(ServerResponse, getCookie, ServerResponseInterface_getCookie_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
-    PHP_ME(ServerResponse, hasCookie, ServerResponseInterface_hasCookie_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
-    PHP_ME(ServerResponse, getCookies, ServerResponseInterface_getCookies_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
-    PHP_ME(ServerResponse, setContent, ServerResponseInterface_setContent_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
-    PHP_ME(ServerResponse, getContent, ServerResponseInterface_getContent_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
-    PHP_ME(ServerResponse, setHeaderCallbacks, ServerResponseInterface_setHeaderCallbacks_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
-    PHP_ME(ServerResponse, addHeaderCallback, ServerResponseInterface_addHeaderCallback_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
-    PHP_ME(ServerResponse, getHeaderCallbacks, ServerResponseInterface_getHeaderCallbacks_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+/* {{{ SapiResponse methods */
+static zend_function_entry SapiResponse_methods[] = {
+    PHP_ME(SapiResponse, setVersion, SapiResponseInterface_setVersion_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+    PHP_ME(SapiResponse, getVersion, SapiResponseInterface_getVersion_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+    PHP_ME(SapiResponse, setCode, SapiResponseInterface_setCode_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+    PHP_ME(SapiResponse, getCode, SapiResponseInterface_getCode_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+    PHP_ME(SapiResponse, setHeader, SapiResponseInterface_addHeader_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+    PHP_ME(SapiResponse, addHeader, SapiResponseInterface_setHeader_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+    PHP_ME(SapiResponse, unsetHeader, SapiResponseInterface_unsetHeader_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+    PHP_ME(SapiResponse, getHeader, SapiResponseInterface_getHeader_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+    PHP_ME(SapiResponse, hasHeader, SapiResponseInterface_hasHeader_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+    PHP_ME(SapiResponse, unsetHeaders, SapiResponseInterface_unsetHeaders_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+    PHP_ME(SapiResponse, getHeaders, SapiResponseInterface_getHeaders_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+    PHP_ME(SapiResponse, setCookie, SapiResponseInterface_setCookie_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+    PHP_ME(SapiResponse, setRawCookie, SapiResponseInterface_setCookie_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+    PHP_ME(SapiResponse, unsetCookie, SapiResponseInterface_unsetCookie_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+    PHP_ME(SapiResponse, unsetCookies, SapiResponseInterface_unsetCookies_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+    PHP_ME(SapiResponse, getCookie, SapiResponseInterface_getCookie_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+    PHP_ME(SapiResponse, hasCookie, SapiResponseInterface_hasCookie_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+    PHP_ME(SapiResponse, getCookies, SapiResponseInterface_getCookies_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+    PHP_ME(SapiResponse, setContent, SapiResponseInterface_setContent_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+    PHP_ME(SapiResponse, getContent, SapiResponseInterface_getContent_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+    PHP_ME(SapiResponse, setHeaderCallbacks, SapiResponseInterface_setHeaderCallbacks_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+    PHP_ME(SapiResponse, addHeaderCallback, SapiResponseInterface_addHeaderCallback_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
+    PHP_ME(SapiResponse, getHeaderCallbacks, SapiResponseInterface_getHeaderCallbacks_args, ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
     PHP_FE_END
 };
-/* }}} ServerResponse methods */
+/* }}} SapiResponse methods */
 
 /* {{{ PHP_MINIT_FUNCTION */
-PHP_MINIT_FUNCTION(serverresponse)
+PHP_MINIT_FUNCTION(sapiresponse)
 {
-    zend_class_entry ServerResponse_ce;
+    zend_class_entry SapiResponse_ce;
 
-    INIT_CLASS_ENTRY(ServerResponse_ce, "ServerResponse", ServerResponse_methods);
-    ServerResponse_ce_ptr = zend_register_internal_class(&ServerResponse_ce);
-    zend_class_implements(ServerResponse_ce_ptr, 1, ServerResponseInterface_ce_ptr);
+    INIT_CLASS_ENTRY(SapiResponse_ce, "SapiResponse", SapiResponse_methods);
+    SapiResponse_ce_ptr = zend_register_internal_class(&SapiResponse_ce);
+    zend_class_implements(SapiResponse_ce_ptr, 1, SapiResponseInterface_ce_ptr);
 
-    zend_declare_property_null(ServerResponse_ce_ptr, ZEND_STRL("version"), ZEND_ACC_PRIVATE);
-    zend_declare_property_null(ServerResponse_ce_ptr, ZEND_STRL("code"), ZEND_ACC_PRIVATE);
-    zend_declare_property_null(ServerResponse_ce_ptr, ZEND_STRL("headers"), ZEND_ACC_PRIVATE);
-    zend_declare_property_null(ServerResponse_ce_ptr, ZEND_STRL("cookies"), ZEND_ACC_PRIVATE);
-    zend_declare_property_null(ServerResponse_ce_ptr, ZEND_STRL("content"), ZEND_ACC_PRIVATE);
-    zend_declare_property_null(ServerResponse_ce_ptr, ZEND_STRL("callbacks"), ZEND_ACC_PRIVATE);
+    zend_declare_property_null(SapiResponse_ce_ptr, ZEND_STRL("version"), ZEND_ACC_PRIVATE);
+    zend_declare_property_null(SapiResponse_ce_ptr, ZEND_STRL("code"), ZEND_ACC_PRIVATE);
+    zend_declare_property_null(SapiResponse_ce_ptr, ZEND_STRL("headers"), ZEND_ACC_PRIVATE);
+    zend_declare_property_null(SapiResponse_ce_ptr, ZEND_STRL("cookies"), ZEND_ACC_PRIVATE);
+    zend_declare_property_null(SapiResponse_ce_ptr, ZEND_STRL("content"), ZEND_ACC_PRIVATE);
+    zend_declare_property_null(SapiResponse_ce_ptr, ZEND_STRL("callbacks"), ZEND_ACC_PRIVATE);
 
     return SUCCESS;
 }
 
-/* ServerResponseSender *********************************************************** */
+/* SapiResponseSender *********************************************************** */
 
 /* {{{ Argument Info */
 
-ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponseSender_send_args, 0, 1, IS_VOID, 0)
-    ZEND_ARG_OBJ_INFO(0, response, ServerResponseInterface, 0)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(SapiResponseSender_send_args, 0, 1, IS_VOID, 0)
+    ZEND_ARG_OBJ_INFO(0, response, SapiResponseInterface, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponseSender_runHeaderCallbacks_args, 0, 1, IS_VOID, 0)
-    ZEND_ARG_OBJ_INFO(0, response, ServerResponseInterface, 0)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(SapiResponseSender_runHeaderCallbacks_args, 0, 1, IS_VOID, 0)
+    ZEND_ARG_OBJ_INFO(0, response, SapiResponseInterface, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponseSender_sendStatus_args, 0, 1, IS_VOID, 0)
-    ZEND_ARG_OBJ_INFO(0, response, ServerResponseInterface, 0)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(SapiResponseSender_sendStatus_args, 0, 1, IS_VOID, 0)
+    ZEND_ARG_OBJ_INFO(0, response, SapiResponseInterface, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponseSender_sendHeaders_args, 0, 1, IS_VOID, 0)
-    ZEND_ARG_OBJ_INFO(0, response, ServerResponseInterface, 0)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(SapiResponseSender_sendHeaders_args, 0, 1, IS_VOID, 0)
+    ZEND_ARG_OBJ_INFO(0, response, SapiResponseInterface, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponseSender_sendCookies_args, 0, 1, IS_VOID, 0)
-    ZEND_ARG_OBJ_INFO(0, response, ServerResponseInterface, 0)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(SapiResponseSender_sendCookies_args, 0, 1, IS_VOID, 0)
+    ZEND_ARG_OBJ_INFO(0, response, SapiResponseInterface, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(ServerResponseSender_sendContent_args, 0, 1, IS_VOID, 0)
-    ZEND_ARG_OBJ_INFO(0, response, ServerResponseInterface, 0)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(SapiResponseSender_sendContent_args, 0, 1, IS_VOID, 0)
+    ZEND_ARG_OBJ_INFO(0, response, SapiResponseInterface, 0)
 ZEND_END_ARG_INFO()
 
 /* }}} Argument Info */
 
-/* {{{ proto void ServerResponseSender::runHeaderCallbacks() */
-static void server_response_sender_run_header_callbacks(zval *response)
+/* {{{ proto void SapiResponseSender::runHeaderCallbacks() */
+static void sapi_response_sender_run_header_callbacks(zval *response)
 {
     zval callbacks = {0};
     zval *callback;
@@ -2176,20 +2176,20 @@ static void server_response_sender_run_header_callbacks(zval *response)
     zval_ptr_dtor(&callbacks);
 }
 
-PHP_METHOD(ServerResponseSender, runHeaderCallbacks)
+PHP_METHOD(SapiResponseSender, runHeaderCallbacks)
 {
     zval *response;
 
     ZEND_PARSE_PARAMETERS_START(1, 1)
-        Z_PARAM_OBJECT_OF_CLASS(response, ServerResponseInterface_ce_ptr)
+        Z_PARAM_OBJECT_OF_CLASS(response, SapiResponseInterface_ce_ptr)
     ZEND_PARSE_PARAMETERS_END();
 
-    server_response_sender_run_header_callbacks(response);
+    sapi_response_sender_run_header_callbacks(response);
 }
-/* }}} ServerResponseSender::runHeaderCallbacks */
+/* }}} SapiResponseSender::runHeaderCallbacks */
 
-/* {{{ proto void ServerResponseSender::sendStatus() */
-static void server_response_sender_send_status(zval *response)
+/* {{{ proto void SapiResponseSender::sendStatus() */
+static void sapi_response_sender_send_status(zval *response)
 {
     sapi_header_line ctr = {0};
     zval *tmp;
@@ -2237,20 +2237,20 @@ static void server_response_sender_send_status(zval *response)
     zval_ptr_dtor(&version);
 }
 
-PHP_METHOD(ServerResponseSender, sendStatus)
+PHP_METHOD(SapiResponseSender, sendStatus)
 {
     zval *response;
 
     ZEND_PARSE_PARAMETERS_START(1, 1)
-        Z_PARAM_OBJECT_OF_CLASS(response, ServerResponseInterface_ce_ptr)
+        Z_PARAM_OBJECT_OF_CLASS(response, SapiResponseInterface_ce_ptr)
     ZEND_PARSE_PARAMETERS_END();
 
-    server_response_sender_send_status(response);
+    sapi_response_sender_send_status(response);
 }
-/* }}} ServerResponseSender::sendStatus */
+/* }}} SapiResponseSender::sendStatus */
 
-/* {{{ proto void ServerResponseSender::sendHeaders() */
-static inline void server_response_sender_send_header(zend_string *header, zval *value)
+/* {{{ proto void SapiResponseSender::sendHeaders() */
+static inline void sapi_response_sender_send_header(zend_string *header, zval *value)
 {
     sapi_header_line ctr = {0};
     smart_str buf = {0};
@@ -2268,7 +2268,7 @@ static inline void server_response_sender_send_header(zend_string *header, zval 
     smart_str_free(&buf);
 }
 
-static void server_response_sender_send_headers(zval *response)
+static void sapi_response_sender_send_headers(zval *response)
 {
     zval headers = {0};
     zend_ulong index;
@@ -2284,7 +2284,7 @@ static void server_response_sender_send_headers(zval *response)
     if( Z_TYPE(headers) == IS_ARRAY ) {
         ZEND_HASH_FOREACH_KEY_VAL(Z_ARRVAL(headers), index, label, value) {
             if( label ) {
-                server_response_sender_send_header(label, value);
+                sapi_response_sender_send_header(label, value);
             }
         } ZEND_HASH_FOREACH_END();
     }
@@ -2292,20 +2292,20 @@ static void server_response_sender_send_headers(zval *response)
     zval_ptr_dtor(&headers);
 }
 
-PHP_METHOD(ServerResponseSender, sendHeaders)
+PHP_METHOD(SapiResponseSender, sendHeaders)
 {
     zval *response;
 
     ZEND_PARSE_PARAMETERS_START(1, 1)
-        Z_PARAM_OBJECT_OF_CLASS(response, ServerResponseInterface_ce_ptr)
+        Z_PARAM_OBJECT_OF_CLASS(response, SapiResponseInterface_ce_ptr)
     ZEND_PARSE_PARAMETERS_END();
 
-    server_response_sender_send_headers(response);
+    sapi_response_sender_send_headers(response);
 }
-/* }}} ServerResponseSender::sendHeaders */
+/* }}} SapiResponseSender::sendHeaders */
 
-/* {{{ proto void ServerResponseSender::sendCookies() */
-static inline void server_response_sender_send_cookie(zend_string *name, zval *arr)
+/* {{{ proto void SapiResponseSender::sendCookies() */
+static inline void sapi_response_sender_send_cookie(zend_string *name, zval *arr)
 {
     zval *tmp;
     zend_string *value;
@@ -2354,7 +2354,7 @@ static inline void server_response_sender_send_cookie(zend_string *name, zval *a
     php_setcookie(name, value, expires, path, domain, secure, httponly, samesite, url_encode);
 }
 
-static void server_response_sender_send_cookies(zval *response)
+static void sapi_response_sender_send_cookies(zval *response)
 {
     zval cookies = {0};
     zend_string *key;
@@ -2370,7 +2370,7 @@ static void server_response_sender_send_cookies(zval *response)
     if( Z_TYPE(cookies) == IS_ARRAY ) {
         ZEND_HASH_FOREACH_KEY_VAL(Z_ARRVAL(cookies), index, key, val) {
             if( key && Z_TYPE_P(val) == IS_ARRAY ) {
-                server_response_sender_send_cookie(key, val);
+                sapi_response_sender_send_cookie(key, val);
             }
         } ZEND_HASH_FOREACH_END();
     }
@@ -2378,20 +2378,20 @@ static void server_response_sender_send_cookies(zval *response)
     zval_ptr_dtor(&cookies);
 }
 
-PHP_METHOD(ServerResponseSender, sendCookies)
+PHP_METHOD(SapiResponseSender, sendCookies)
 {
     zval *response;
 
     ZEND_PARSE_PARAMETERS_START(1, 1)
-        Z_PARAM_OBJECT_OF_CLASS(response, ServerResponseInterface_ce_ptr)
+        Z_PARAM_OBJECT_OF_CLASS(response, SapiResponseInterface_ce_ptr)
     ZEND_PARSE_PARAMETERS_END();
 
-    server_response_sender_send_cookies(response);
+    sapi_response_sender_send_cookies(response);
 }
-/* }}} ServerResponseSender::sendCookies */
+/* }}} SapiResponseSender::sendCookies */
 
-/* {{{ proto void ServerResponseSender::sendContent() */
-static inline void server_response_sender_send_iterable(zval *content) {
+/* {{{ proto void SapiResponseSender::sendContent() */
+static inline void sapi_response_sender_send_iterable(zval *content) {
     zend_object_iterator *iter;
     zend_class_entry *ce = Z_OBJCE_P(content);
     zval *val;
@@ -2435,7 +2435,7 @@ done:
     OBJ_RELEASE(&iter->std);
 }
 
-static void server_response_sender_send_content(zval *response)
+static void sapi_response_sender_send_content(zval *response)
 {
     zval *content;
     zend_string *content_str;
@@ -2486,7 +2486,7 @@ static void server_response_sender_send_content(zval *response)
 
         case IS_OBJECT:
             if (instanceof_function(Z_OBJCE_P(content), zend_ce_traversable)) {
-                server_response_sender_send_iterable(content);
+                sapi_response_sender_send_iterable(content);
                 break;
             }
             // !fallthrough to default!
@@ -2501,55 +2501,55 @@ static void server_response_sender_send_content(zval *response)
     zval_ptr_dtor(content);
 }
 
-PHP_METHOD(ServerResponseSender, sendContent)
+PHP_METHOD(SapiResponseSender, sendContent)
 {
     zval *response;
 
     ZEND_PARSE_PARAMETERS_START(1, 1)
-        Z_PARAM_OBJECT_OF_CLASS(response, ServerResponseInterface_ce_ptr)
+        Z_PARAM_OBJECT_OF_CLASS(response, SapiResponseInterface_ce_ptr)
     ZEND_PARSE_PARAMETERS_END();
 
-    server_response_sender_send_content(response);
+    sapi_response_sender_send_content(response);
 
 }
-/* }}} ServerResponseSender::sendContent */
+/* }}} SapiResponseSender::sendContent */
 
-/* {{{ proto void ServerResponseSender::send() */
-PHP_METHOD(ServerResponseSender, send)
+/* {{{ proto void SapiResponseSender::send() */
+PHP_METHOD(SapiResponseSender, send)
 {
     zval *response;
 
     ZEND_PARSE_PARAMETERS_START(1, 1)
-        Z_PARAM_OBJECT_OF_CLASS(response, ServerResponseInterface_ce_ptr)
+        Z_PARAM_OBJECT_OF_CLASS(response, SapiResponseInterface_ce_ptr)
     ZEND_PARSE_PARAMETERS_END();
 
-    server_response_sender_run_header_callbacks(response);
-    server_response_sender_send_status(response);
-    server_response_sender_send_headers(response);
-    server_response_sender_send_cookies(response);
-    server_response_sender_send_content(response);
+    sapi_response_sender_run_header_callbacks(response);
+    sapi_response_sender_send_status(response);
+    sapi_response_sender_send_headers(response);
+    sapi_response_sender_send_cookies(response);
+    sapi_response_sender_send_content(response);
 }
-/* }}} ServerResponseSender::send */
+/* }}} SapiResponseSender::send */
 
-/* {{{ ServerResponseSender methods */
-static zend_function_entry ServerResponseSender_methods[] = {
-    PHP_ME(ServerResponseSender, send, ServerResponseSender_send_args, ZEND_ACC_PUBLIC)
-    PHP_ME(ServerResponseSender, runHeaderCallbacks, ServerResponseSender_runHeaderCallbacks_args, ZEND_ACC_PUBLIC)
-    PHP_ME(ServerResponseSender, sendStatus, ServerResponseSender_sendStatus_args, ZEND_ACC_PUBLIC)
-    PHP_ME(ServerResponseSender, sendHeaders, ServerResponseSender_sendHeaders_args, ZEND_ACC_PUBLIC)
-    PHP_ME(ServerResponseSender, sendCookies, ServerResponseSender_sendCookies_args, ZEND_ACC_PUBLIC)
-    PHP_ME(ServerResponseSender, sendContent, ServerResponseSender_sendContent_args, ZEND_ACC_PUBLIC)
+/* {{{ SapiResponseSender methods */
+static zend_function_entry SapiResponseSender_methods[] = {
+    PHP_ME(SapiResponseSender, send, SapiResponseSender_send_args, ZEND_ACC_PUBLIC)
+    PHP_ME(SapiResponseSender, runHeaderCallbacks, SapiResponseSender_runHeaderCallbacks_args, ZEND_ACC_PUBLIC)
+    PHP_ME(SapiResponseSender, sendStatus, SapiResponseSender_sendStatus_args, ZEND_ACC_PUBLIC)
+    PHP_ME(SapiResponseSender, sendHeaders, SapiResponseSender_sendHeaders_args, ZEND_ACC_PUBLIC)
+    PHP_ME(SapiResponseSender, sendCookies, SapiResponseSender_sendCookies_args, ZEND_ACC_PUBLIC)
+    PHP_ME(SapiResponseSender, sendContent, SapiResponseSender_sendContent_args, ZEND_ACC_PUBLIC)
     PHP_FE_END
 };
-/* }}} ServerResponseSender methods */
+/* }}} SapiResponseSender methods */
 
 /* {{{ PHP_MINIT_FUNCTION */
-PHP_MINIT_FUNCTION(serverresponsesender)
+PHP_MINIT_FUNCTION(sapiresponsesender)
 {
-    zend_class_entry ServerResponseSender_ce;
+    zend_class_entry SapiResponseSender_ce;
 
-    INIT_CLASS_ENTRY(ServerResponseSender_ce, "ServerResponseSender", ServerResponseSender_methods);
-    ServerResponseSender_ce_ptr = zend_register_internal_class(&ServerResponseSender_ce);
+    INIT_CLASS_ENTRY(SapiResponseSender_ce, "SapiResponseSender", SapiResponseSender_methods);
+    SapiResponseSender_ce_ptr = zend_register_internal_class(&SapiResponseSender_ce);
 
     return SUCCESS;
 }

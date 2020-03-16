@@ -1,11 +1,11 @@
 --TEST--
-ServerRequest reflection
+SapiRequest reflection
 --FILE--
 <?php
-echo (new ReflectionClass(ServerRequest::CLASS));
-var_dump(new ServerRequest([]));
+echo (new ReflectionClass(SapiRequest::CLASS));
+var_dump(new SapiRequest([]));
 --EXPECT--
-Class [ <internal:request> class ServerRequest ] {
+Class [ <internal:request> class SapiRequest ] {
 
   - Constants [0] {
   }
@@ -56,8 +56,8 @@ Class [ <internal:request> class ServerRequest ] {
     }
   }
 }
-object(ServerRequest)#1 (27) {
-  ["isInitialized":"ServerRequest":private]=>
+object(SapiRequest)#1 (27) {
+  ["isInitialized":"SapiRequest":private]=>
   bool(true)
   ["accept"]=>
   array(0) {

@@ -1,8 +1,8 @@
 --TEST--
-ServerResponse::addHeader-bad
+SapiResponse::addHeader-bad
 --FILE--
 <?php
-$response = new ServerResponse();
+$response = new SapiResponse();
 try {
     $response->addHeader('', 'should-not-show');
 } catch (UnexpectedValueException $e) {

@@ -1,5 +1,5 @@
 --TEST--
-ServerRequest::$forwarded (etc.)
+SapiRequest::$forwarded (etc.)
 --FILE--
 <?php
 $_SERVER += [
@@ -10,7 +10,7 @@ $_SERVER += [
     'HTTP_FORWARDED' => 'For="[2001:db8:cafe::17]:4711", for=192.0.2.60;proto=http;by=203.0.113.43, for=192.0.2.43, 12.34.56.78',
 ];
 
-$request = new ServerRequest($GLOBALS);
+$request = new SapiRequest($GLOBALS);
 var_dump($request->forwardedFor);
 var_dump($request->forwardedHost);
 var_dump($request->forwardedProto);

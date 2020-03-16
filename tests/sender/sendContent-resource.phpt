@@ -1,14 +1,14 @@
 --TEST--
-ServerResponseSender::sendContent (resource)
+SapiResponseSender::sendContent (resource)
 --CGI--
 --INI--
 expose_php=0
 --FILE--
 <?php
-$response = new ServerResponse();
+$response = new SapiResponse();
 $fh = fopen('php://temp', 'w+');
 fwrite($fh, 'foo');
 $response->setContent($fh);
-(new ServerResponseSender())->send($response);
+(new SapiResponseSender())->send($response);
 --EXPECT--
 foo

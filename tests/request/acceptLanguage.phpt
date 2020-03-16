@@ -1,15 +1,15 @@
 --TEST--
-ServerRequest::$acceptLanguage
+SapiRequest::$acceptLanguage
 --FILE--
 <?php
-$request = new ServerRequest([]);
+$request = new SapiRequest([]);
 var_dump($request->acceptLanguage);
 
 $_SERVER += [
     'HTTP_HOST' => 'example.com',
     'HTTP_ACCEPT_LANGUAGE' => 'en-US, en-GB, en, *',
 ];
-$request = new ServerRequest($GLOBALS);
+$request = new SapiRequest($GLOBALS);
 var_dump($request->acceptLanguage);
 --EXPECTF--
 array(0) {

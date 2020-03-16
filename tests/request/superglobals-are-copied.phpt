@@ -1,9 +1,9 @@
 --TEST--
-ServerRequest - superglobals are copied
+SapiRequest - superglobals are copied
 --FILE--
 <?php
 $_SERVER['HTTP_HOST'] = 'example.com';
-$request = new ServerRequest($GLOBALS);
+$request = new SapiRequest($GLOBALS);
 $_SERVER['HTTP_HOST'] = 'NOT example.com';
 var_dump($request->server['HTTP_HOST']);
 --EXPECT--

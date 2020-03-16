@@ -1,8 +1,8 @@
 --TEST--
-ServerRequest::__construct without calling parent
+SapiRequest::__construct without calling parent
 --FILE--
 <?php
-class ExtRequest extends ServerRequest
+class ExtRequest extends SapiRequest
 {
     public function __construct()
     {
@@ -13,7 +13,7 @@ var_dump($ext);
 var_dump($ext->accept);
 --EXPECT--
 object(ExtRequest)#1 (27) {
-  ["isInitialized":"ServerRequest":private]=>
+  ["isInitialized":"SapiRequest":private]=>
   bool(false)
   ["accept"]=>
   NULL
