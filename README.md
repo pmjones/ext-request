@@ -7,13 +7,13 @@ for existing global PHP variables and functions.
 
 This extension defines three classes and one interface in the global namespace:
 
-- SapiRequest, composed of read-only copies of PHP superglobals and some other commonly-used values.
+- _SapiRequest_, composed of read-only copies of PHP superglobals and some other commonly-used values.
 
-- SapiResponse and SapiResponseInterface, essentially a wrapper around (and buffer for) response-related PHP functions.
+- _SapiResponse_ and _SapiResponseInterface_, essentially a wrapper around (and buffer for) response-related PHP functions.
 
-- SapiResponseSender, for sending a SapiResponse.
+- _SapiResponseSender_, for sending a _SapiResponse_.
 
-## SapiRequest
+## _SapiRequest_
 
 An object of public read-only properties representing the PHP request received
 by the server. Use it in place of the `$_GET`, `$_POST`, etc. superglobals. It
@@ -24,7 +24,7 @@ provides:
 - other public, immutable, read-only properties calculated from the superglobals
   (`$method`, `$headers`, `$accept`, `$uploads`, etc.);
 
-Note that SapiRequest can be extended to provide other userland functionality;
+Note that _SapiRequest_ can be extended to provide other userland functionality;
 however, the public properties cannot be modified or overridden.
 
 ### Instantiation
@@ -68,8 +68,8 @@ _SapiRequest_ has these public properties.
 
 These properties are public, immutable, read-only, and cannot be modified or overridden.
 
-- `?array $files`: A copy of `$_FILES`.
 - `?array $cookie`: A copy of `$_COOKIE`.
+- `?array $files`: A copy of `$_FILES`.
 - `?array $input`: A copy of `$_POST`.
 - `?array $query`: A copy of `$_GET`.
 - `?array $server`: A copy of `$_SERVER`.
@@ -77,7 +77,8 @@ These properties are public, immutable, read-only, and cannot be modified or ove
 
 ##### The `$uploads` array
 
-Normally, `$_FILES` looks like this with multi-file uploads:
+The _SapiRequest_ `$files` property is an identical copy of `$_FILES`. Normally,
+`$_FILES` looks like this with multi-file uploads:
 
 ```php
 // $_FILES ...
@@ -112,10 +113,9 @@ Normally, `$_FILES` looks like this with multi-file uploads:
 ];
 ```
 
-The SapiRequest $files property is an identical copy of `$_FILES`.
 
 However, that structure is not at all what we expect when we are used to
-working with `$_POST`. Therefore, the SapiRequest `$uploads` property
+working with `$_POST`. Therefore, the _SapiRequest_ `$uploads` property
 restructures the data in `$_FILES` to look more like `$_POST` does:
 
 ```php
@@ -198,7 +198,7 @@ the following keys:
 
 ##### The `$url` Array
 
-SapiRequest attempts to build a string of the full request URL of the using
+_SapiRequest_ attempts to build a string of the full request URL of the using
 the following:
 
 - If `$_SERVER['HTTPS'] === 'on'`, the scheme is 'https'; otherwise, it is
@@ -209,7 +209,7 @@ the following:
   otherwise, `$_SERVER['SERVER_PORT']` is used.
 - `$_SERVER['REQUEST_URI']` is used for the path and query string.
 
-SapiRequest then passes that string through [`parse_url()`](https://www.php.net/parse_url)
+_SapiRequest_ then passes that string through [`parse_url()`](https://www.php.net/parse_url)
 and retains the resulting array as `$url`.
 
 You can then retrieve the array elements using the `PHP_URL_*` constants:
@@ -219,7 +219,7 @@ $scheme = $request->url[PHP_URL_SCHEME];
 $host = $request->url[PHP_URL_HOST];
 $port = $request->url[PHP_URL_PORT];
 $path = $request->url[PHP_URL_PATH];
-$queryString = $requst->url[PHP_URL_QUERY];
+$queryString = $request->url[PHP_URL_QUERY];
 ```
 
 If `parse_url()` fails, the `$url` property will remain `null`.
@@ -249,31 +249,31 @@ These properties are public, immutable, read-only, and cannot be modified or ove
 
 The _SapiRequest_ object has no public methods other than its constructor:
 
-- `__construct(array $globals, [string $content])`
+- `__construct(array $globals, [?string $content = null])`
 
 ### Extending and Overriding
 
 **Although it is easy and convenient to extend this class, the authors recommend
 decoration and composition over extension in all but the most trivial of cases.**
 
-SapiRequest has a constructor. Child classes overriding `__construct()`
+_SapiRequest_ has a constructor. Child classes overriding `__construct()`
 should be sure to call `parent::__construct()`, or else the public read-only
 properties will not be set (defaulting to `null` in all cases).
 
 The public read-only properties cannot be overridden; however, child classes may
 add new properties as desired.
 
-SapiRequest has no methods; child classes may add methods as desired, and
-SapiRequest does not anticipate adding new methods of its own.
+_SapiRequest_ has no methods; child classes may add methods as desired, and
+_SapiRequest_ does not anticipate adding new methods of its own.
 
-## SapiResponse
+## _SapiResponse_
 
 A mutable object representing the PHP response to be sent from the server; use
 it in place of the `header()`, `setcookie()`, `setrawcookie()`, etc. functions.
 It provides a retention space for the HTTP response version, code, headers,
 cookies, and content, so they can be inspected before sending.
 
-Note that SapiResponse can be extended to provide other userland
+Note that _SapiResponse_ can be extended to provide other userland
 functionality. However, its public methods are final; they cannot be modified or
 overridden.
 
@@ -377,26 +377,26 @@ any return value is ignored.
 **Although it is easy and convenient to extend this class, the authors recommend
 decoration and composition over extension in all but the most trivial of cases.**
 
-SapiResponse is constructorless, which means you can add any constructor you
+_SapiResponse_ is constructorless, which means you can add any constructor you
 like and not have to call a parent constructor.
 
-The properties on SapiResponse are private, which means you may not access
-them, except through the existing SapiResponse methods.
+The properties on _SapiResponse_ are private, which means you may not access
+them, except through the existing _SapiResponse_ methods.
 
-The methods on SapiResponse are public **and final**, which means you cannot
+The methods on _SapiResponse_ are public **and final**, which means you cannot
 extend or override them in child classes. This keeps their behavior consistent.
 
 However, the class itself is **not** final, which means you can add any other
 properties and methods you like.
 
 The combination of a non-final class with private properties and public final
-methods keeps SapiResponse open for extension, but closed for modification.
+methods keeps _SapiResponse_ open for extension, but closed for modification.
 
-## SapiResponseSender
+## _SapiResponseSender_
 
-An object to send a SapiResponse.
+An object to send a _SapiResponse_.
 
-Note that SapiResponseSender methods can be extended and overridden.
+Note that _SapiResponseSender_ methods can be extended and overridden.
 
 ### Instantiation
 
@@ -455,10 +455,10 @@ _SapiResponseSender_ has these public methods:
 **Although it is easy and convenient to extend this class, the authors recommend
 decoration and composition over extension in all but the most trivial of cases.**
 
-SapiResponseSender is constructorless, which means you can add any constructor
+_SapiResponseSender_ is constructorless, which means you can add any constructor
 you like and not have to call a parent constructor.
 
-The SapiResponseSender methods are public but not final, which means you can
+The _SapiResponseSender_ methods are public but not final, which means you can
 extend and override them as you see fit. Doing so for any method other than
 sendContent() might not make sense. There is pretty much only one way to send
 headers, cookies, etc., but different kinds of content might well deserve
