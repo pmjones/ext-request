@@ -1,5 +1,5 @@
 --TEST--
-SapiRequest::$get
+SapiRequest::$query
 --GET--
 foo=bar&baz=bat
 --FILE--
