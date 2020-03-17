@@ -1,8 +1,8 @@
 --TEST--
-ServerResponse::setCode
+SapiResponse::setCode
 --FILE--
 <?php
-$response = new ServerResponse();
+$response = new SapiResponse();
 var_dump($response->setCode('500') === $response);
 var_dump($response->getCode());
 $response->setCode(401);

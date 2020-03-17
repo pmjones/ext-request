@@ -1,5 +1,5 @@
 --TEST--
-ServerRequest - basic auth
+SapiRequest - basic auth
 --FILE--
 <?php
 $_SERVER += [
@@ -8,7 +8,7 @@ $_SERVER += [
     'PHP_AUTH_USER' => 'foo',
     'PHP_AUTH_PW' => 'bar'
 ];
-$request = new ServerRequest($GLOBALS);
+$request = new SapiRequest($GLOBALS);
 var_dump($request->authType);
 var_dump($request->authUser);
 var_dump($request->authPw);

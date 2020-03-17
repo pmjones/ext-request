@@ -1,12 +1,12 @@
 --TEST--
-ServerResponse::addHeaderCallback
+SapiResponse::addHeaderCallback
 --CGI--
 --INI--
 expose_php=0
 --FILE--
 <?php
 $func = function($response) {};
-$response = new ServerResponse();
+$response = new SapiResponse();
 var_dump($response->getHeaderCallbacks() === null);
 var_dump(array() === $response->getHeaderCallbacks());
 

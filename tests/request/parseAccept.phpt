@@ -1,15 +1,15 @@
 --TEST--
-ServerRequest::parseAccept
+SapiRequest::parseAccept
 --FILE--
 <?php
-$request = new ServerRequest([
+$request = new SapiRequest([
     '_SERVER' => [
         'HTTP_ACCEPT' => null,
     ],
 ]);
 var_dump($request->accept);
 
-$request = new ServerRequest([
+$request = new SapiRequest([
     '_SERVER' => [
         'HTTP_ACCEPT' => '',
     ],
@@ -17,7 +17,7 @@ $request = new ServerRequest([
 var_dump($request->accept);
 
 // Accept
-$request = new ServerRequest([
+$request = new SapiRequest([
     '_SERVER' => [
         'HTTP_ACCEPT' => 'application/xml;q=0.8, application/json;foo=bar, text/*;q=0.2, */*;q=0.1',
     ],
@@ -25,7 +25,7 @@ $request = new ServerRequest([
 var_dump($request->accept);
 
 // Accept-Charset
-$request = new ServerRequest([
+$request = new SapiRequest([
     '_SERVER' => [
         'HTTP_ACCEPT_CHARSET' => 'iso-8859-5;q=0.8, unicode-1-1',
     ],
@@ -33,7 +33,7 @@ $request = new ServerRequest([
 var_dump($request->acceptCharset);
 
 // Accept-Encoding
-$request = new ServerRequest([
+$request = new SapiRequest([
     '_SERVER' => [
         'HTTP_ACCEPT_ENCODING' => 'compress;q=0.5, gzip;q=1.0',
     ],
@@ -41,7 +41,7 @@ $request = new ServerRequest([
 var_dump($request->acceptEncoding);
 
 // Accept-Language
-$request = new ServerRequest([
+$request = new SapiRequest([
     '_SERVER' => [
         'HTTP_ACCEPT_LANGUAGE' => 'en-US, en-GB, en, *',
     ],
@@ -49,7 +49,7 @@ $request = new ServerRequest([
 var_dump($request->acceptLanguage);
 
 // all accepts
-$request = new ServerRequest([
+$request = new SapiRequest([
     '_SERVER' => [
         'HTTP_ACCEPT' => 'application/xml;q=0.8, application/json;foo=bar, text/*;q=0.2, */*;q=0.1',
         'HTTP_ACCEPT_CHARSET' => 'iso-8859-5;q=0.8, unicode-1-1',

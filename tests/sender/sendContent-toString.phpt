@@ -1,5 +1,5 @@
 --TEST--
-ServerResponseSender::sendContent __toString()
+SapiResponseSender::sendContent __toString()
 --CGI--
 --INI--
 expose_php=0
@@ -12,8 +12,8 @@ class Stringable
         return 'foo';
     }
 }
-$response = new ServerResponse();
+$response = new SapiResponse();
 $response->setContent(new Stringable());
-(new ServerResponseSender())->send($response);
+(new SapiResponseSender())->send($response);
 --EXPECT--
 foo

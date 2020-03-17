@@ -1,8 +1,8 @@
 --TEST--
-ServerResponse::__construct (extended without calling parent)
+SapiResponse::__construct (extended without calling parent)
 --FILE--
 <?php
-class ExtResponse extends ServerResponse
+class ExtResponse extends SapiResponse
 {
     public function __construct()
     {
@@ -13,17 +13,17 @@ var_dump($ext);
 var_dump($ext->getHeaders());
 --EXPECT--
 object(ExtResponse)#1 (6) {
-  ["version":"ServerResponse":private]=>
+  ["version":"SapiResponse":private]=>
   NULL
-  ["code":"ServerResponse":private]=>
+  ["code":"SapiResponse":private]=>
   NULL
-  ["headers":"ServerResponse":private]=>
+  ["headers":"SapiResponse":private]=>
   NULL
-  ["cookies":"ServerResponse":private]=>
+  ["cookies":"SapiResponse":private]=>
   NULL
-  ["content":"ServerResponse":private]=>
+  ["content":"SapiResponse":private]=>
   NULL
-  ["callbacks":"ServerResponse":private]=>
+  ["callbacks":"SapiResponse":private]=>
   NULL
 }
 NULL

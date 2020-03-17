@@ -1,9 +1,9 @@
 --TEST--
-ServerRequest::__get extension indirect modification
+SapiRequest::__get extension indirect modification
 --FILE--
 <?php
 $_SERVER['HTTP_HOST'] = 'localhost';
-$request = new ServerRequest($GLOBALS);
+$request = new SapiRequest($GLOBALS);
 try {
     $request->accept[0] = array();
 } catch( Exception $e ) {
@@ -19,6 +19,6 @@ try {
 }
 --EXPECT--
 string(16) "RuntimeException"
-string(36) "ServerRequest::$accept is read-only."
+string(34) "SapiRequest::$accept is read-only."
 string(16) "RuntimeException"
-string(36) "ServerRequest::$method is read-only."
+string(34) "SapiRequest::$method is read-only."

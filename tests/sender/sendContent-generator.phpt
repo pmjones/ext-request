@@ -1,17 +1,17 @@
 --TEST--
-ServerResponseSender::sendContent with generator
+SapiResponseSender::sendContent with generator
 --CGI--
 --INI--
 expose_php=0
 --FILE--
 <?php
-$response = new ServerResponse();
+$response = new SapiResponse();
 $response->setContent(function () {
     yield "foo\n";
     yield "bar\n";
     yield "bat\n";
 });
-(new ServerResponseSender())->send($response);
+(new SapiResponseSender())->send($response);
 --EXPECT--
 foo
 bar

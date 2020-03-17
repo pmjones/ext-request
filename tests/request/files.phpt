@@ -1,5 +1,5 @@
 --TEST--
-ServerRequest::$files
+SapiRequest::$files
 --POST_RAW--
 Content-Type: multipart/form-data; boundary=---------------------------20896060251896012921717172737
 -----------------------------20896060251896012921717172737
@@ -15,7 +15,7 @@ Content-Type: text/plain-file1
 --FILE--
 <?php
 $_SERVER['HTTP_HOST'] = 'example.com';
-$request = new ServerRequest($GLOBALS);
+$request = new SapiRequest($GLOBALS);
 var_dump($request->files);
 var_dump($request->files == $_FILES);
 --EXPECTF--

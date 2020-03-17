@@ -1,18 +1,18 @@
 --TEST--
-ServerResponseSender::send (extended without constructor)
+SapiResponseSender::send (extended without constructor)
 --CGI--
 --INI--
 expose_php=0
 --FILE--
 <?php
-class ExtResponse extends ServerResponse
+class ExtResponse extends SapiResponse
 {
 }
 $ext = new ExtResponse();
 $ext->setHeader('foo', 'bar');
 $ext->setCookie('baz', 'dib');
 $ext->setContent('content');
-(new ServerResponseSender())->send($ext);
+(new SapiResponseSender())->send($ext);
 echo "\n";
 var_dump(headers_list());
 --EXPECT--

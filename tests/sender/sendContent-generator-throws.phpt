@@ -1,18 +1,18 @@
 --TEST--
-ServerResponseSender::sendContent with generator that throws
+SapiResponseSender::sendContent with generator that throws
 --CGI--
 --INI--
 expose_php=0
 --FILE--
 <?php
-$response = new ServerResponse();
+$response = new SapiResponse();
 $response->setContent(function () {
     yield "foo\n";
     throw new RuntimeException("failure");
     yield "bar\n";
 });
 try {
-    (new ServerResponseSender())->send($response);
+    (new SapiResponseSender())->send($response);
 } catch (RuntimeException $e) {
     echo $e->getMessage();
 }

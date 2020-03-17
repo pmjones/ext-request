@@ -1,12 +1,12 @@
 --TEST--
-ServerRequest::$acceptCharset
+SapiRequest::$acceptCharset
 --FILE--
 <?php
 $_SERVER += [
     'HTTP_HOST' => 'example.com',
     'HTTP_ACCEPT_CHARSET' => 'iso-8859-5;q=0.8, unicode-1-1',
 ];
-$request = new ServerRequest($GLOBALS);
+$request = new SapiRequest($GLOBALS);
 var_dump($request->acceptCharset);
 --EXPECTF--
 array(2) {

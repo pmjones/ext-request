@@ -1,9 +1,9 @@
 --TEST--
-ServerRequest::$url
+SapiRequest::$url
 --FILE--
 <?php
 // empty
-$request = new ServerRequest([]);
+$request = new SapiRequest([]);
 var_dump($request->url);
 
 $_SERVER += [
@@ -11,12 +11,12 @@ $_SERVER += [
     'REQUEST_URI' => '/foo/bar?baz=dib',
     'SERVER_PORT' => '8080',
 ];
-$request = new ServerRequest($GLOBALS);
+$request = new SapiRequest($GLOBALS);
 var_dump($request->url);
 
 // without host
 unset($_SERVER['HTTP_HOST']);
-$request = new ServerRequest($GLOBALS);
+$request = new SapiRequest($GLOBALS);
 var_dump($request->url);
 
 // secure
@@ -24,21 +24,21 @@ $_SERVER = [
     'SERVER_NAME' => 'example.com',
     'HTTPS' => 'on',
 ];
-$request = new ServerRequest($GLOBALS);
+$request = new SapiRequest($GLOBALS);
 var_dump($request->url['scheme']);
 
 // hostn
 $_SERVER = [
     'SERVER_NAME' => 'example.com',
 ];
-$request = new ServerRequest($GLOBALS);
+$request = new SapiRequest($GLOBALS);
 var_dump($request->url['host']);
 
 // host/port
 $_SERVER = [
     'HTTP_HOST' => 'example.com:8080',
 ];
-$request = new ServerRequest($GLOBALS);
+$request = new SapiRequest($GLOBALS);
 var_dump($request->url['host']);
 var_dump($request->url['port']);
 
@@ -47,7 +47,7 @@ $_SERVER = [
     'HTTP_HOST' => 'example.com',
     'SERVER_PORT' => '8080',
 ];
-$request = new ServerRequest($GLOBALS);
+$request = new SapiRequest($GLOBALS);
 var_dump($request->url['host']);
 var_dump($request->url['port']);
 

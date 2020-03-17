@@ -1,5 +1,5 @@
 --TEST--
-ServerResponseSender::sendContent __invoke() that throws
+SapiResponseSender::sendContent __invoke() that throws
 --CGI--
 --INI--
 expose_php=0
@@ -8,17 +8,17 @@ expose_php=0
 
 class Invokable
 {
-    public function __invoke(ServerResponse $response)
+    public function __invoke(SapiResponse $response)
     {
         echo "foo\n";
         throw new RuntimeException("failure");
         return "bar";
     }
 }
-$response = new ServerResponse();
+$response = new SapiResponse();
 $response->setContent(new Invokable());
 try {
-    (new ServerResponseSender())->send($response);
+    (new SapiResponseSender())->send($response);
 } catch (Throwable $e) {
     echo $e->getMessage();
 }

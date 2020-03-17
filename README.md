@@ -7,13 +7,13 @@ for existing global PHP variables and functions.
 
 This extension defines three classes and one interface in the global namespace:
 
-- ServerRequest, composed of read-only copies of PHP superglobals and some other commonly-used values.
+- _SapiRequest_, composed of read-only copies of PHP superglobals and some other commonly-used values.
 
-- ServerResponse and ServerResponseInterface, essentially a wrapper around (and buffer for) response-related PHP functions.
+- _SapiResponse_ and _SapiResponseInterface_, essentially a wrapper around (and buffer for) response-related PHP functions.
 
-- ServerResponseSender, for sending a ServerResponse.
+- _SapiResponseSender_, for sending a _SapiResponse_.
 
-## ServerRequest
+## _SapiRequest_
 
 An object of public read-only properties representing the PHP request received
 by the server. Use it in place of the `$_GET`, `$_POST`, etc. superglobals. It
@@ -24,22 +24,22 @@ provides:
 - other public, immutable, read-only properties calculated from the superglobals
   (`$method`, `$headers`, `$accept`, `$uploads`, etc.);
 
-Note that ServerRequest can be extended to provide other userland functionality;
+Note that _SapiRequest_ can be extended to provide other userland functionality;
 however, the public properties cannot be modified or overridden.
 
 ### Instantiation
 
-Instantiation of _ServerRequest_ is straightforward:
+Instantiation of _SapiRequest_ is straightforward:
 
 ```php
-$request = new ServerRequest($GLOBALS);
+$request = new SapiRequest($GLOBALS);
 ```
 
 If you want to provide custom superglobal values to the object, pass an array
 that mimics `$GLOBALS` to the constructor:
 
 ```php
-$request = new ServerRequest([
+$request = new SapiRequest([
     '_SERVER' => [
         'foo' => 'bar',
     ],
@@ -51,7 +51,7 @@ you want to provide a custom `$content` string instead, pass it as the second
 constructor argument:
 
 ```php
-$request = new ServerRequest(
+$request = new SapiRequest(
   $GLOBALS,
   'custom-php-input-string'
 );
@@ -62,14 +62,14 @@ $request = new ServerRequest(
 
 ### Properties
 
-_ServerRequest_ has these public properties.
+_SapiRequest_ has these public properties.
 
 #### Superglobal-related
 
 These properties are public, immutable, read-only, and cannot be modified or overridden.
 
-- `?array $files`: A copy of `$_FILES`.
 - `?array $cookie`: A copy of `$_COOKIE`.
+- `?array $files`: A copy of `$_FILES`.
 - `?array $input`: A copy of `$_POST`.
 - `?array $query`: A copy of `$_GET`.
 - `?array $server`: A copy of `$_SERVER`.
@@ -77,7 +77,8 @@ These properties are public, immutable, read-only, and cannot be modified or ove
 
 ##### The `$uploads` array
 
-Normally, `$_FILES` looks like this with multi-file uploads:
+The _SapiRequest_ `$files` property is an identical copy of `$_FILES`. Normally,
+`$_FILES` looks like this with multi-file uploads:
 
 ```php
 // $_FILES ...
@@ -112,10 +113,9 @@ Normally, `$_FILES` looks like this with multi-file uploads:
 ];
 ```
 
-The ServerRequest $files property is an identical copy of `$_FILES`.
 
 However, that structure is not at all what we expect when we are used to
-working with `$_POST`. Therefore, the ServerRequest `$uploads` property
+working with `$_POST`. Therefore, the _SapiRequest_ `$uploads` property
 restructures the data in `$_FILES` to look more like `$_POST` does:
 
 ```php
@@ -198,7 +198,7 @@ the following keys:
 
 ##### The `$url` Array
 
-ServerRequest attempts to build a string of the full request URL of the using
+_SapiRequest_ attempts to build a string of the full request URL of the using
 the following:
 
 - If `$_SERVER['HTTPS'] === 'on'`, the scheme is 'https'; otherwise, it is
@@ -209,7 +209,7 @@ the following:
   otherwise, `$_SERVER['SERVER_PORT']` is used.
 - `$_SERVER['REQUEST_URI']` is used for the path and query string.
 
-ServerRequest then passes that string through [`parse_url()`](https://www.php.net/parse_url)
+_SapiRequest_ then passes that string through [`parse_url()`](https://www.php.net/parse_url)
 and retains the resulting array as `$url`.
 
 You can then retrieve the array elements using the `PHP_URL_*` constants:
@@ -219,7 +219,7 @@ $scheme = $request->url[PHP_URL_SCHEME];
 $host = $request->url[PHP_URL_HOST];
 $port = $request->url[PHP_URL_PORT];
 $path = $request->url[PHP_URL_PATH];
-$queryString = $requst->url[PHP_URL_QUERY];
+$queryString = $request->url[PHP_URL_QUERY];
 ```
 
 If `parse_url()` fails, the `$url` property will remain `null`.
@@ -247,7 +247,7 @@ These properties are public, immutable, read-only, and cannot be modified or ove
 
 ### Methods
 
-The _ServerRequest_ object has no public methods other than its constructor:
+The _SapiRequest_ object has no public methods other than its constructor:
 
 - `__construct(array $globals, [?string $content = null])`
 
@@ -256,24 +256,24 @@ The _ServerRequest_ object has no public methods other than its constructor:
 **Although it is easy and convenient to extend this class, the authors recommend
 decoration and composition over extension in all but the most trivial of cases.**
 
-ServerRequest has a constructor. Child classes overriding `__construct()`
+_SapiRequest_ has a constructor. Child classes overriding `__construct()`
 should be sure to call `parent::__construct()`, or else the public read-only
 properties will not be set (defaulting to `null` in all cases).
 
 The public read-only properties cannot be overridden; however, child classes may
 add new properties as desired.
 
-ServerRequest has no methods; child classes may add methods as desired, and
-ServerRequest does not anticipate adding new methods of its own.
+_SapiRequest_ has no methods; child classes may add methods as desired, and
+_SapiRequest_ does not anticipate adding new methods of its own.
 
-## ServerResponse
+## _SapiResponse_
 
 A mutable object representing the PHP response to be sent from the server; use
 it in place of the `header()`, `setcookie()`, `setrawcookie()`, etc. functions.
 It provides a retention space for the HTTP response version, code, headers,
 cookies, and content, so they can be inspected before sending.
 
-Note that ServerResponse can be extended to provide other userland
+Note that _SapiResponse_ can be extended to provide other userland
 functionality. However, its public methods are final; they cannot be modified or
 overridden.
 
@@ -282,44 +282,44 @@ overridden.
 Instantation is straightforward:
 
 ```php
-$response = new ServerResponse();
+$response = new SapiResponse();
 ```
 
 ### Properties
 
-_ServerResponse_ has no public properties.
+_SapiResponse_ has no public properties.
 
 ### Methods
 
-_ServerResponse_ implements _ServerResponseInterface_, which has these public
+_SapiResponse_ implements _SapiResponseInterface_, which has these public
 methods; all of them are declared `final` and so may not be overridden.
 
 #### Protocol Version
 
-- `setVersion(string $version) : ServerResponseInterface`: Sets the protocol version for the response (typically
+- `setVersion(string $version) : SapiResponseInterface`: Sets the protocol version for the response (typically
   '1.0' or '1.1').
 
 - `getVersion() : ?string`: Returns the protocol version for the response.
 
 #### Status Code
 
-- `setCode(int $code) : ServerResponseInterface`: Sets the status code for the response; a buffered equivalent of
+- `setCode(int $code) : SapiResponseInterface`: Sets the status code for the response; a buffered equivalent of
   `http_response_code($code)`.
 
 - `getCode() : ?int`: Gets the status code for the response.
 
 #### Headers
 
-- `setHeader(string $label, string $value) : ServerResponseInterface`: Overwrites an HTTP header; a
+- `setHeader(string $label, string $value) : SapiResponseInterface`: Overwrites an HTTP header; a
   buffered equivalent of `header("$label: $value", true)`.
 
-- `addHeader(string $label, string $value) : ServerResponseInterface`: Appends to an HTTP header,
+- `addHeader(string $label, string $value) : SapiResponseInterface`: Appends to an HTTP header,
   comma-separating it from the existing value; a buffered equivalent of
   `header("$label: $value", false)`.
 
-- `unsetHeader(string $label) : ServerResponseInterface`: Removes a header from the buffer.
+- `unsetHeader(string $label) : SapiResponseInterface`: Removes a header from the buffer.
 
-- `unsetHeaders() : ServerResponseInterface`: Removes all headers from the buffer.
+- `unsetHeaders() : SapiResponseInterface`: Removes all headers from the buffer.
 
 - `getHeaders() : ?array`: Returns the array of headers to be sent.
 
@@ -333,15 +333,15 @@ while HTTP/1.x has no such requirement, lower-case is also recognized as valid.
 
 #### Cookies
 
-- `setCookie(...) : ServerResponseInterface`: A buffered equivalent of
+- `setCookie(...) : SapiResponseInterface`: A buffered equivalent of
   [`setcookie()`](http://php.net/setcookie) with identical arguments.
 
-- `setRawCookie(...) : ServerResponseInterface`: A buffered equivalent of
+- `setRawCookie(...) : SapiResponseInterface`: A buffered equivalent of
   [`setrawcookie()`](http://php.net/setrawcookie) with identical arguments.
 
-- `unsetCookie(string $name) : ServerResponseInterface`: Removes a cookie from the buffer.
+- `unsetCookie(string $name) : SapiResponseInterface`: Removes a cookie from the buffer.
 
-- `unsetCookies() : ServerResponseInterface`: Removes all cookies from the buffer.
+- `unsetCookies() : SapiResponseInterface`: Removes all cookies from the buffer.
 
 - `getCookies() : ?array`: Returns the array of cookies to be sent.
 
@@ -351,22 +351,22 @@ while HTTP/1.x has no such requirement, lower-case is also recognized as valid.
 
 #### Header Callbacks
 
-- `setHeaderCallbacks(array $callbacks) : ServerResponseInterface`: Sets an array of callbacks to
+- `setHeaderCallbacks(array $callbacks) : SapiResponseInterface`: Sets an array of callbacks to
   be invoked just before headers are sent. It replaces any existing callbacks.
   This is similar to [`header_register_callback()`](https://secure.php.net/header_register_callback),
   except that *multiple* callbacks may be registered with the Response.
 
-- `addHeaderCallback(callable $callback) : ServerResponseInterface`: Appends one callback to the
+- `addHeaderCallback(callable $callback) : SapiResponseInterface`: Appends one callback to the
   current array of header callbacks.
 
 - `getHeaderCallbacks() : ?array`: Returns the array of header callbacks.
 
-The header callback signature should be `function (ServerResponseInterface $response)`;
+The header callback signature should be `function (SapiResponseInterface $response)`;
 any return value is ignored.
 
 #### Content
 
-- `setContent(mixed $content) : ServerResponseInterface`: Sets the content of the response. This
+- `setContent(mixed $content) : SapiResponseInterface`: Sets the content of the response. This
   may be null, a string, resource, object, or anything else.
 
 - `getContent() : mixed`: Returns the content of the response. This may be null,
@@ -377,33 +377,33 @@ any return value is ignored.
 **Although it is easy and convenient to extend this class, the authors recommend
 decoration and composition over extension in all but the most trivial of cases.**
 
-ServerResponse is constructorless, which means you can add any constructor you
+_SapiResponse_ is constructorless, which means you can add any constructor you
 like and not have to call a parent constructor.
 
-The properties on ServerResponse are private, which means you may not access
-them, except through the existing ServerResponse methods.
+The properties on _SapiResponse_ are private, which means you may not access
+them, except through the existing _SapiResponse_ methods.
 
-The methods on ServerResponse are public **and final**, which means you cannot
+The methods on _SapiResponse_ are public **and final**, which means you cannot
 extend or override them in child classes. This keeps their behavior consistent.
 
 However, the class itself is **not** final, which means you can add any other
 properties and methods you like.
 
 The combination of a non-final class with private properties and public final
-methods keeps ServerResponse open for extension, but closed for modification.
+methods keeps _SapiResponse_ open for extension, but closed for modification.
 
-## ServerResponseSender
+## _SapiResponseSender_
 
-An object to send a ServerResponse.
+An object to send a _SapiResponse_.
 
-Note that ServerResponseSender methods can be extended and overridden.
+Note that _SapiResponseSender_ methods can be extended and overridden.
 
 ### Instantiation
 
 Instantiation is straightforward:
 
 ```php
-$sender = new ServerResponseSender();
+$sender = new SapiResponseSender();
 ```
 
 ### Properties
@@ -412,28 +412,28 @@ This class has no properties of any kind.
 
 ### Methods
 
-_ServerResponseSender_ has these public methods:
+_SapiResponseSender_ has these public methods:
 
-- `send(ServerResponseInterface $response) : void`: Calls the following methods in order;
+- `send(SapiResponseInterface $response) : void`: Calls the following methods in order;
   that is: runHeaderCallbacks(), sendStatus(), sendHeaders(), sendCookies(), and
   sendContent().
 
-- `runHeaderCallbacks(ServerResponseInterface $response) : void`: Invokes each callback
-  returned by ServerResponse::getHeaderCallbacks().
+- `runHeaderCallbacks(SapiResponseInterface $response) : void`: Invokes each callback
+  returned by SapiResponse::getHeaderCallbacks().
 
-- `sendStatus(ServerResponseInterface $response) : void`: Sends the HTTP status line
-  using header(). The line is composed of ServerResponse::getVersion() and
-  ServerResponse::getCode(). If the version is `null` it defaults to `1.1`;
+- `sendStatus(SapiResponseInterface $response) : void`: Sends the HTTP status line
+  using header(). The line is composed of SapiResponse::getVersion() and
+  SapiResponse::getCode(). If the version is `null` it defaults to `1.1`;
   if the code is null is defaults to `200`.
 
-- `sendHeaders(ServerResponseInterface $response) : void`: Sends each header returned
-  by ServerResponse::getHeaders() using header().
+- `sendHeaders(SapiResponseInterface $response) : void`: Sends each header returned
+  by SapiResponse::getHeaders() using header().
 
-- `sendCookies(ServerResponseInterface $response) : void`: Sends each cookie returned
-  by ServerResponse::getCookies() using setcookie() or setrawcookie().
+- `sendCookies(SapiResponseInterface $response) : void`: Sends each cookie returned
+  by SapiResponse::getCookies() using setcookie() or setrawcookie().
 
-- `sendContent(ServerResponseInterface $response) : void`: Sends the content returned
-  by ServerResponse::getContent().
+- `sendContent(SapiResponseInterface $response) : void`: Sends the content returned
+  by SapiResponse::getContent().
 
     - If the content is a resource, it is sent using `rewind()` and then
       `fpassthru()`; there is no further handling thereafter.
@@ -455,10 +455,10 @@ _ServerResponseSender_ has these public methods:
 **Although it is easy and convenient to extend this class, the authors recommend
 decoration and composition over extension in all but the most trivial of cases.**
 
-ServerResponseSender is constructorless, which means you can add any constructor
+_SapiResponseSender_ is constructorless, which means you can add any constructor
 you like and not have to call a parent constructor.
 
-The ServerResponseSender methods are public but not final, which means you can
+The _SapiResponseSender_ methods are public but not final, which means you can
 extend and override them as you see fit. Doing so for any method other than
 sendContent() might not make sense. There is pretty much only one way to send
 headers, cookies, etc., but different kinds of content might well deserve

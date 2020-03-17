@@ -1,11 +1,11 @@
 --TEST--
-ServerRequest::__construct
+SapiRequest::__construct
 --FILE--
 <?php
 $_SERVER['HTTP_HOST'] = 'localhost';
 
 // Basic construct
-$request = new ServerRequest($GLOBALS);
+$request = new SapiRequest($GLOBALS);
 var_dump(get_class($request));
 
 // Globals argument
@@ -28,7 +28,7 @@ $fakeGlobals = array(
         'k' => 'l',
     ),
 );
-$request = new ServerRequest($fakeGlobals);
+$request = new SapiRequest($fakeGlobals);
 var_dump(
     $request->server === $fakeGlobals['_SERVER'] &&
     $request->input === $fakeGlobals['_POST'] &&
@@ -38,7 +38,7 @@ var_dump(
 );
 
 // Partial globals argument
-$request = new ServerRequest(array(
+$request = new SapiRequest(array(
     '_GET' => array(
         'foo' => 'bar',
     ),
@@ -52,7 +52,7 @@ var_dump($request->query['foo']);
 // Check for immutability in globals
 $_GET['foo'] = new stdClass();
 try {
-    $request = new ServerRequest($GLOBALS);
+    $request = new SapiRequest($GLOBALS);
     echo 'fail immutable' . PHP_EOL;
 } catch( UnexpectedValueException $e ) {
     echo 'ok immutable' . PHP_EOL;
@@ -62,7 +62,7 @@ try {
 $ref = 'ref';
 $_GET['ref'] =& $ref;
 try {
-    $request = new ServerRequest($GLOBALS);
+    $request = new SapiRequest($GLOBALS);
     echo 'fail references' . PHP_EOL;
 } catch( UnexpectedValueException $e ) {
     echo 'ok references' . PHP_EOL;
@@ -77,7 +77,7 @@ try {
 }
 
 --EXPECT--
-string(13) "ServerRequest"
+string(11) "SapiRequest"
 bool(true)
 string(7) "foo.bar"
 string(3) "bar"

@@ -1,5 +1,5 @@
 --TEST--
-ServerRequest::$uploads (trivial)
+SapiRequest::$uploads (trivial)
 --FILE--
 <?php
 $_SERVER['HTTP_HOST'] = 'example.com';
@@ -80,7 +80,7 @@ $_FILES = [
     ],
   ],
 ];
-$request = new ServerRequest($GLOBALS);
+$request = new SapiRequest($GLOBALS);
 var_dump($request->uploads);
 --EXPECTF--
 array(5) {

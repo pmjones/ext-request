@@ -1,5 +1,5 @@
 --TEST--
-ServerRequest - variables_order
+SapiRequest - variables_order
 --INI--
 variables_order=G
 --POST--
@@ -9,7 +9,7 @@ foo=bar&baz=bat
 // Currently if a variable is missing from variables_order, it's not available
 $_SERVER['HTTP_HOST'] = 'example.com';
 var_dump($_POST);
-$request = new ServerRequest($GLOBALS);
+$request = new SapiRequest($GLOBALS);
 var_dump($request->input);
 --EXPECT--
 array(0) {

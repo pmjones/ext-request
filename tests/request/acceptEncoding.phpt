@@ -1,12 +1,12 @@
 --TEST--
-ServerRequest::$acceptEncoding
+SapiRequest::$acceptEncoding
 --FILE--
 <?php
 $_SERVER += [
     'HTTP_HOST' => 'example.com',
     'HTTP_ACCEPT_ENCODING' => 'compress;q=0.5, gzip;q=1.0',
 ];
-$request = new ServerRequest($GLOBALS);
+$request = new SapiRequest($GLOBALS);
 var_dump($request->acceptEncoding);
 --EXPECTF--
 array(2) {

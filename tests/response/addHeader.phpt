@@ -1,8 +1,8 @@
 --TEST--
-ServerResponse::addHeader
+SapiResponse::addHeader
 --FILE--
 <?php
-$response = new ServerResponse();
+$response = new SapiResponse();
 $response->addHeader('Foo-Bar', 'baz');
 $response->addHeader('foo-bar', 'dib');
 var_dump($response->getHeaders());

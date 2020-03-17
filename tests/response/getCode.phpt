@@ -1,8 +1,8 @@
 --TEST--
-ServerResponse::getCode
+SapiResponse::getCode
 --FILE--
 <?php
-$response = new ServerResponse();
+$response = new SapiResponse();
 var_dump($response->getCode());
 --EXPECT--
 NULL

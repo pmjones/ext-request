@@ -1,5 +1,5 @@
 --TEST--
-ServerRequest::$headers
+SapiRequest::$headers
 --FILE--
 <?php
 $_SERVER = [
@@ -9,7 +9,7 @@ $_SERVER = [
     'CONTENT_LENGTH' => '123',
     'CONTENT_TYPE' => 'text/plain',
 ];
-$request = new ServerRequest($GLOBALS);
+$request = new SapiRequest($GLOBALS);
 var_dump($request->headers);
 --EXPECT--
 array(4) {

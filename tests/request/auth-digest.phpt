@@ -1,5 +1,5 @@
 --TEST--
-ServerRequest - digest auth
+SapiRequest - digest auth
 --FILE--
 <?php
 $_SERVER += [
@@ -15,7 +15,7 @@ $_SERVER += [
         'response="irk"',
     ]),
 ];
-$request = new ServerRequest($GLOBALS);
+$request = new SapiRequest($GLOBALS);
 var_dump($request->authDigest);
 
 // missing parts
@@ -28,7 +28,7 @@ $_SERVER = [
         'cnonce=baz',
     ]),
 ];
-$request = new ServerRequest($GLOBALS);
+$request = new SapiRequest($GLOBALS);
 var_dump($request->authDigest);
 
 --EXPECTF--

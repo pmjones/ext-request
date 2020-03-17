@@ -1,13 +1,13 @@
 --TEST--
-ServerResponse reflection
+SapiResponse reflection
 --FILE--
 <?php
-echo preg_replace('/\?(\w+)/', '$1 or NULL', (new ReflectionClass(ServerResponse::CLASS)));
-$response = new ServerResponse();
+echo preg_replace('/\?(\w+)/', '$1 or NULL', (new ReflectionClass(SapiResponse::CLASS)));
+$response = new SapiResponse();
 var_dump($response);
 var_dump($response->getHeaders());
 --EXPECT--
-Class [ <internal:request> class ServerResponse implements ServerResponseInterface ] {
+Class [ <internal:request> class SapiResponse implements SapiResponseInterface ] {
 
   - Constants [0] {
   }
@@ -28,63 +28,63 @@ Class [ <internal:request> class ServerResponse implements ServerResponseInterfa
   }
 
   - Methods [23] {
-    Method [ <internal:request, prototype ServerResponseInterface> final public method setVersion ] {
+    Method [ <internal:request, prototype SapiResponseInterface> final public method setVersion ] {
 
       - Parameters [1] {
         Parameter #0 [ <required> string $version ]
       }
-      - Return [ ServerResponseInterface ]
+      - Return [ SapiResponseInterface ]
     }
 
-    Method [ <internal:request, prototype ServerResponseInterface> final public method getVersion ] {
+    Method [ <internal:request, prototype SapiResponseInterface> final public method getVersion ] {
 
       - Parameters [0] {
       }
       - Return [ string or NULL ]
     }
 
-    Method [ <internal:request, prototype ServerResponseInterface> final public method setCode ] {
+    Method [ <internal:request, prototype SapiResponseInterface> final public method setCode ] {
 
       - Parameters [1] {
         Parameter #0 [ <required> int $code ]
       }
-      - Return [ ServerResponseInterface ]
+      - Return [ SapiResponseInterface ]
     }
 
-    Method [ <internal:request, prototype ServerResponseInterface> final public method getCode ] {
+    Method [ <internal:request, prototype SapiResponseInterface> final public method getCode ] {
 
       - Parameters [0] {
       }
       - Return [ int or NULL ]
     }
 
-    Method [ <internal:request, prototype ServerResponseInterface> final public method setHeader ] {
+    Method [ <internal:request, prototype SapiResponseInterface> final public method setHeader ] {
 
       - Parameters [2] {
         Parameter #0 [ <required> string $label ]
         Parameter #1 [ <required> string $value ]
       }
-      - Return [ ServerResponseInterface ]
+      - Return [ SapiResponseInterface ]
     }
 
-    Method [ <internal:request, prototype ServerResponseInterface> final public method addHeader ] {
+    Method [ <internal:request, prototype SapiResponseInterface> final public method addHeader ] {
 
       - Parameters [2] {
         Parameter #0 [ <required> string $label ]
         Parameter #1 [ <required> string $value ]
       }
-      - Return [ ServerResponseInterface ]
+      - Return [ SapiResponseInterface ]
     }
 
-    Method [ <internal:request, prototype ServerResponseInterface> final public method unsetHeader ] {
+    Method [ <internal:request, prototype SapiResponseInterface> final public method unsetHeader ] {
 
       - Parameters [1] {
         Parameter #0 [ <required> string $label ]
       }
-      - Return [ ServerResponseInterface ]
+      - Return [ SapiResponseInterface ]
     }
 
-    Method [ <internal:request, prototype ServerResponseInterface> final public method getHeader ] {
+    Method [ <internal:request, prototype SapiResponseInterface> final public method getHeader ] {
 
       - Parameters [1] {
         Parameter #0 [ <required> string $label ]
@@ -92,7 +92,7 @@ Class [ <internal:request> class ServerResponse implements ServerResponseInterfa
       - Return [ string or NULL ]
     }
 
-    Method [ <internal:request, prototype ServerResponseInterface> final public method hasHeader ] {
+    Method [ <internal:request, prototype SapiResponseInterface> final public method hasHeader ] {
 
       - Parameters [1] {
         Parameter #0 [ <required> string $label ]
@@ -100,21 +100,21 @@ Class [ <internal:request> class ServerResponse implements ServerResponseInterfa
       - Return [ bool ]
     }
 
-    Method [ <internal:request, prototype ServerResponseInterface> final public method unsetHeaders ] {
+    Method [ <internal:request, prototype SapiResponseInterface> final public method unsetHeaders ] {
 
       - Parameters [0] {
       }
-      - Return [ ServerResponseInterface ]
+      - Return [ SapiResponseInterface ]
     }
 
-    Method [ <internal:request, prototype ServerResponseInterface> final public method getHeaders ] {
+    Method [ <internal:request, prototype SapiResponseInterface> final public method getHeaders ] {
 
       - Parameters [0] {
       }
       - Return [ array or NULL ]
     }
 
-    Method [ <internal:request, prototype ServerResponseInterface> final public method setCookie ] {
+    Method [ <internal:request, prototype SapiResponseInterface> final public method setCookie ] {
 
       - Parameters [7] {
         Parameter #0 [ <required> string $name ]
@@ -125,10 +125,10 @@ Class [ <internal:request> class ServerResponse implements ServerResponseInterfa
         Parameter #5 [ <optional> bool $secure ]
         Parameter #6 [ <optional> bool $httponly ]
       }
-      - Return [ ServerResponseInterface ]
+      - Return [ SapiResponseInterface ]
     }
 
-    Method [ <internal:request, prototype ServerResponseInterface> final public method setRawCookie ] {
+    Method [ <internal:request, prototype SapiResponseInterface> final public method setRawCookie ] {
 
       - Parameters [7] {
         Parameter #0 [ <required> string $name ]
@@ -139,25 +139,25 @@ Class [ <internal:request> class ServerResponse implements ServerResponseInterfa
         Parameter #5 [ <optional> bool $secure ]
         Parameter #6 [ <optional> bool $httponly ]
       }
-      - Return [ ServerResponseInterface ]
+      - Return [ SapiResponseInterface ]
     }
 
-    Method [ <internal:request, prototype ServerResponseInterface> final public method unsetCookie ] {
+    Method [ <internal:request, prototype SapiResponseInterface> final public method unsetCookie ] {
 
       - Parameters [1] {
         Parameter #0 [ <required> string $name ]
       }
-      - Return [ ServerResponseInterface ]
+      - Return [ SapiResponseInterface ]
     }
 
-    Method [ <internal:request, prototype ServerResponseInterface> final public method unsetCookies ] {
+    Method [ <internal:request, prototype SapiResponseInterface> final public method unsetCookies ] {
 
       - Parameters [0] {
       }
-      - Return [ ServerResponseInterface ]
+      - Return [ SapiResponseInterface ]
     }
 
-    Method [ <internal:request, prototype ServerResponseInterface> final public method getCookie ] {
+    Method [ <internal:request, prototype SapiResponseInterface> final public method getCookie ] {
 
       - Parameters [1] {
         Parameter #0 [ <required> string $name ]
@@ -165,7 +165,7 @@ Class [ <internal:request> class ServerResponse implements ServerResponseInterfa
       - Return [ array or NULL ]
     }
 
-    Method [ <internal:request, prototype ServerResponseInterface> final public method hasCookie ] {
+    Method [ <internal:request, prototype SapiResponseInterface> final public method hasCookie ] {
 
       - Parameters [1] {
         Parameter #0 [ <required> string $name ]
@@ -173,44 +173,44 @@ Class [ <internal:request> class ServerResponse implements ServerResponseInterfa
       - Return [ bool ]
     }
 
-    Method [ <internal:request, prototype ServerResponseInterface> final public method getCookies ] {
+    Method [ <internal:request, prototype SapiResponseInterface> final public method getCookies ] {
 
       - Parameters [0] {
       }
       - Return [ array or NULL ]
     }
 
-    Method [ <internal:request, prototype ServerResponseInterface> final public method setContent ] {
+    Method [ <internal:request, prototype SapiResponseInterface> final public method setContent ] {
 
       - Parameters [1] {
         Parameter #0 [ <required> $content ]
       }
-      - Return [ ServerResponseInterface ]
+      - Return [ SapiResponseInterface ]
     }
 
-    Method [ <internal:request, prototype ServerResponseInterface> final public method getContent ] {
+    Method [ <internal:request, prototype SapiResponseInterface> final public method getContent ] {
 
       - Parameters [0] {
       }
     }
 
-    Method [ <internal:request, prototype ServerResponseInterface> final public method setHeaderCallbacks ] {
+    Method [ <internal:request, prototype SapiResponseInterface> final public method setHeaderCallbacks ] {
 
       - Parameters [1] {
         Parameter #0 [ <required> array $callbacks ]
       }
-      - Return [ ServerResponseInterface ]
+      - Return [ SapiResponseInterface ]
     }
 
-    Method [ <internal:request, prototype ServerResponseInterface> final public method addHeaderCallback ] {
+    Method [ <internal:request, prototype SapiResponseInterface> final public method addHeaderCallback ] {
 
       - Parameters [1] {
         Parameter #0 [ <required> callable $callback ]
       }
-      - Return [ ServerResponseInterface ]
+      - Return [ SapiResponseInterface ]
     }
 
-    Method [ <internal:request, prototype ServerResponseInterface> final public method getHeaderCallbacks ] {
+    Method [ <internal:request, prototype SapiResponseInterface> final public method getHeaderCallbacks ] {
 
       - Parameters [0] {
       }
@@ -218,18 +218,18 @@ Class [ <internal:request> class ServerResponse implements ServerResponseInterfa
     }
   }
 }
-object(ServerResponse)#1 (6) {
-  ["version":"ServerResponse":private]=>
+object(SapiResponse)#1 (6) {
+  ["version":"SapiResponse":private]=>
   NULL
-  ["code":"ServerResponse":private]=>
+  ["code":"SapiResponse":private]=>
   NULL
-  ["headers":"ServerResponse":private]=>
+  ["headers":"SapiResponse":private]=>
   NULL
-  ["cookies":"ServerResponse":private]=>
+  ["cookies":"SapiResponse":private]=>
   NULL
-  ["content":"ServerResponse":private]=>
+  ["content":"SapiResponse":private]=>
   NULL
-  ["callbacks":"ServerResponse":private]=>
+  ["callbacks":"SapiResponse":private]=>
   NULL
 }
 NULL

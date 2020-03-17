@@ -17,9 +17,9 @@
 
 typedef unsigned char YYCTYPE;
 
-#define lex server_request_lex_generic
-#define strip_slashes server_request_strip_slashes
-#define token1 server_request_parser_token_init
+#define lex sapi_request_lex_generic
+#define strip_slashes sapi_request_strip_slashes
+#define token1 sapi_request_parser_token_init
 
 /*!re2c
     re2c:define:YYCURSOR = in->cur;
@@ -103,7 +103,7 @@ static struct scanner_token lex_quoted_str(struct scanner_input *in, YYCTYPE q)
     return tok;
 }
 
-/* {{{ server_request_lex_generic */
+/* {{{ sapi_request_lex_generic */
 static struct scanner_token lex(struct scanner_input *in)
 {
     struct scanner_token tok = {0};
@@ -135,11 +135,11 @@ static struct scanner_token lex(struct scanner_input *in)
     //fprintf(stderr, "TOKEN[%d] %.*s\n", tok.type, tok.yyleng, tok.yytext);
     return tok;
 }
-/* }}} server_request_lex_generic */
+/* }}} sapi_request_lex_generic */
 
-/* {{{ server_request_parse_accept */
+/* {{{ sapi_request_parse_accept */
 /* @see https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html */
-static int server_request_accept_compare(const void *a, const void *b)
+static int sapi_request_accept_compare(const void *a, const void *b)
 {
     Bucket *f = (Bucket *) a;
     Bucket *s = (Bucket *) b;
@@ -213,7 +213,7 @@ static int parse_accept_params(struct scanner_input *in, zval *params)
     return 1;
 }
 
-void server_request_parse_accept(zval *return_value, const YYCTYPE *str, size_t len)
+void sapi_request_parse_accept(zval *return_value, const YYCTYPE *str, size_t len)
 {
     // Pad the buffer
     YYCTYPE *str2 = emalloc(len + YYMAXFILL + 1);
@@ -265,16 +265,16 @@ void server_request_parse_accept(zval *return_value, const YYCTYPE *str, size_t 
     };
 
     // Sort
-    zend_hash_sort(Z_ARRVAL_P(return_value), server_request_accept_compare, 1);
+    zend_hash_sort(Z_ARRVAL_P(return_value), sapi_request_accept_compare, 1);
 
     efree(str2);
 }
-/* }}} server_request_parse_accept */
+/* }}} sapi_request_parse_accept */
 
-/* {{{ server_request_parse_content_type */
+/* {{{ sapi_request_parse_content_type */
 /* @see https://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.7 */
 /* @see https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html */
-void server_request_parse_content_type(zval *return_value, const YYCTYPE *str, size_t len)
+void sapi_request_parse_content_type(zval *return_value, const YYCTYPE *str, size_t len)
 {
     // Pad the buffer
     YYCTYPE *str2 = emalloc(len + YYMAXFILL + 1);
@@ -351,13 +351,13 @@ void server_request_parse_content_type(zval *return_value, const YYCTYPE *str, s
 err:
     efree(str2);
 }
-/* }}} server_request_parse_content_type */
+/* }}} sapi_request_parse_content_type */
 
-/* {{{ server_request_parse_digest_auth */
+/* {{{ sapi_request_parse_digest_auth */
 /* @see: https://secure.php.net/manual/en/features.http-auth.php */
 /* @see: https://www.w3.org/Protocols/rfc2616/rfc2616-sec2.html */
 /* @see: https://en.wikipedia.org/wiki/Digest_access_authentication */
-void server_request_parse_digest_auth(zval *return_value, const YYCTYPE *str, size_t len)
+void sapi_request_parse_digest_auth(zval *return_value, const YYCTYPE *str, size_t len)
 {
     // Pad the buffer
     YYCTYPE *str2 = emalloc(len + YYMAXFILL + 1);
@@ -434,10 +434,10 @@ void server_request_parse_digest_auth(zval *return_value, const YYCTYPE *str, si
     zval_dtor(&need);
     efree(str2);
 }
-/* }}} server_request_parse_digest_auth */
+/* }}} sapi_request_parse_digest_auth */
 
-/* }}} server_request_parse_x_forwarded_for */
-void server_request_parse_x_forwarded_for(zval *return_value, const YYCTYPE *str, size_t len)
+/* }}} sapi_request_parse_x_forwarded_for */
+void sapi_request_parse_x_forwarded_for(zval *return_value, const YYCTYPE *str, size_t len)
 {
     // Pad the buffer
     YYCTYPE *str2 = emalloc(len + YYMAXFILL + 1);
@@ -476,10 +476,10 @@ void server_request_parse_x_forwarded_for(zval *return_value, const YYCTYPE *str
 
     efree(str2);
 }
-/* }}} server_request_parse_x_forwarded_for */
+/* }}} sapi_request_parse_x_forwarded_for */
 
-/* }}} server_request_parse_forwarded */
-static inline struct scanner_token server_request_parser_forwarded_assignment(struct scanner_input *in, zval *params)
+/* }}} sapi_request_parse_forwarded */
+static inline struct scanner_token sapi_request_parser_forwarded_assignment(struct scanner_input *in, zval *params)
 {
     struct scanner_token tok;
     struct scanner_token left;
@@ -520,7 +520,7 @@ static inline struct scanner_token server_request_parser_forwarded_assignment(st
     }
 }
 
-void server_request_parse_forwarded(zval *return_value, const YYCTYPE *str, size_t len)
+void sapi_request_parse_forwarded(zval *return_value, const YYCTYPE *str, size_t len)
 {
     // Pad the buffer
     YYCTYPE *str2 = emalloc(len + YYMAXFILL + 1);
@@ -543,7 +543,7 @@ void server_request_parse_forwarded(zval *return_value, const YYCTYPE *str, size
     for( ;; ) {
         zval current = {0};
         array_init(&current);
-        tok = server_request_parser_forwarded_assignment(&in, &current);
+        tok = sapi_request_parser_forwarded_assignment(&in, &current);
         add_next_index_zval(return_value, &current);
 
         if( tok.type != TOKEN_COMMA ) {
@@ -553,4 +553,4 @@ void server_request_parse_forwarded(zval *return_value, const YYCTYPE *str, size
 
     efree(str2);
 }
-/* }}} server_request_parse_forwarded */
+/* }}} sapi_request_parse_forwarded */
