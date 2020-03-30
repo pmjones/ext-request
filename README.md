@@ -27,6 +27,21 @@ provides:
 Note that _SapiRequest_ can be extended to provide other userland functionality;
 however, the public properties cannot be modified or overridden.
 
+### Installing
+
+Although 1.x of this extension is installable via PECL, this 2.x version is
+not released yet.
+
+First, clone this repository; then, in the repository directory, issue these
+commands to compile and install the extension:
+
+```
+$ phpize
+$ ./configure
+$ make
+# make install
+```
+
 ### Instantiation
 
 Instantiation of _SapiRequest_ is straightforward:
@@ -161,7 +176,10 @@ These properties are public, immutable, read-only, and cannot be modified or ove
 - `?string $forwardedHost`: The `$_SERVER['HTTP_X_FORWARDED_HOST']` value.
 - `?string $forwardedProto`: The `$_SERVER['HTTP_X_FORWARDED_PROTO']` value.
 - `?array $headers`: An array of key/value pairs computed from `$_SERVER` using all
-  `HTTP_*` header keys, plus RFC 3875 headers not prefixed with `HTTP_`.
+  `HTTP_*` header keys, plus RFC 3875 headers not prefixed with `HTTP_`. Note that
+  the header keys are retained in lower-case. This is to
+  [comply with HTTP/2 requirements](https://tools.ietf.org/html/rfc7540#section-8.1.2);
+  while HTTP/1.x has no such requirement, lower-case is also recognized as valid.
 - `?string $method`: The `$_SERVER['REQUEST_METHOD']` value, or the
   `$_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE']` value when appropriate.
 - `?array $url`: The result from applying `parse_url()` to a a URL string
@@ -296,14 +314,14 @@ methods; all of them are declared `final` and so may not be overridden.
 
 #### Protocol Version
 
-- `setVersion(string $version) : SapiResponseInterface`: Sets the protocol version for the response (typically
-  '1.0' or '1.1').
+- `setVersion(?string $version) : SapiResponseInterface`: Sets the protocol
+  version for the response (typically '1.0', '1.1', or '2').
 
 - `getVersion() : ?string`: Returns the protocol version for the response.
 
 #### Status Code
 
-- `setCode(int $code) : SapiResponseInterface`: Sets the status code for the response; a buffered equivalent of
+- `setCode(?int $code) : SapiResponseInterface`: Sets the status code for the response; a buffered equivalent of
   `http_response_code($code)`.
 
 - `getCode() : ?int`: Gets the status code for the response.
