@@ -30,42 +30,42 @@ var_dump($request->uploads);
 --EXPECTF--
 array(3) {
   ["file1"]=>
-  array(5) {
+  object(SapiUpload)#%d (5) {
     ["name"]=>
     string(9) "file1.txt"
     ["type"]=>
     string(16) "text/plain-file1"
-    ["tmp_name"]=>
+    ["size"]=>
+    int(1)
+    ["tmpName"]=>
     string(%d) "%s"
     ["error"]=>
     int(0)
-    ["size"]=>
-    int(1)
   }
   ["file2"]=>
-  array(5) {
+  object(SapiUpload)#%d (5) {
     ["name"]=>
     string(9) "file2.txt"
     ["type"]=>
     string(0) ""
-    ["tmp_name"]=>
+    ["size"]=>
+    int(0)
+    ["tmpName"]=>
     string(0) ""
     ["error"]=>
     int(2)
-    ["size"]=>
-    int(0)
   }
   ["file3"]=>
-  array(5) {
+  object(SapiUpload)#%d (5) {
     ["name"]=>
     string(9) "file3.txt"
     ["type"]=>
     string(16) "text/plain-file3"
-    ["tmp_name"]=>
+    ["size"]=>
+    int(1)
+    ["tmpName"]=>
     string(%d) "%s"
     ["error"]=>
     int(0)
-    ["size"]=>
-    int(1)
   }
 }
