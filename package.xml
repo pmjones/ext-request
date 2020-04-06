@@ -15,8 +15,8 @@
     <channel>pecl.php.net</channel>
     <summary>Provides server-side request and response objects.</summary>
     <description><![CDATA[
-This extension provides server-side request and response objects for PHP 7.3
-and later.
+This extension provides server-side request and response objects for PHP 7 >= 7.3
+and PHP 8 >= 8.0.
 
 These are *not* HTTP message objects proper. They are more like wrappers
 for existing global PHP variables and functions.
@@ -24,8 +24,7 @@ for existing global PHP variables and functions.
 This extension defines three classes in the global namespace:
 
 - SapiRequest, composed of read-only copies of PHP superglobals and some
-  other commonly-used values, with methods for adding application-specific
-  request information in immutable fashion.
+  other commonly-used values.
 
 - SapiResponse, essentially a wrapper around (and buffer for) response-
   related PHP functions.
@@ -45,7 +44,7 @@ This extension defines three classes in the global namespace:
         <email>pmjones@php.net</email>
         <active>yes</active>
     </lead>
-    <date>2020-02-??</date>
+    <date>2020-04-07</date>
     <version>
         <release>2.0.0</release>
         <api>2.0.0</api>
@@ -70,7 +69,10 @@ First 2.0 release, updated for PHP 7.3 and later.
             <file role="src" name="parsers.re" />
             <file role="src" name="php_request.c" />
             <file role="src" name="php_request.h" />
+            <file role="src" name="request_sapiupload.c" />
+            <file role="src" name="request_utils.h" />
             <dir name="tests">
+                <file role="test" name="MySapiResponse.inc" />
                 <file role="test" name="phpinfo.phpt" />
                 <dir name="request">
                     <file role="test" name="___reflection.phpt" />
@@ -94,18 +96,16 @@ First 2.0 release, updated for PHP 7.3 and later.
                     <file role="test" name="contentMd5.phpt" />
                     <file role="test" name="contentType.phpt" />
                     <file role="test" name="cookie.phpt" />
-                    <file role="test" name="env.phpt" />
                     <file role="test" name="files.phpt" />
                     <file role="test" name="forward.phpt" />
-                    <file role="test" name="get.phpt" />
                     <file role="test" name="headers.phpt" />
                     <file role="test" name="inheritance.phpt" />
+                    <file role="test" name="input.phpt" />
                     <file role="test" name="method.phpt" />
                     <file role="test" name="parseAccept.phpt" />
                     <file role="test" name="parseContent.phpt" />
                     <file role="test" name="parseDigestAuth.phpt" />
-                    <file role="test" name="post.phpt" />
-                    <file role="test" name="requestedWith.phpt" />
+                    <file role="test" name="query.phpt" />
                     <file role="test" name="superglobals-are-copied.phpt" />
                     <file role="test" name="uploads-complex.phpt" />
                     <file role="test" name="uploads-real.phpt" />
@@ -120,8 +120,12 @@ First 2.0 release, updated for PHP 7.3 and later.
                     <file role="test" name="addHeader.phpt" />
                     <file role="test" name="addHeaderCallback.phpt" />
                     <file role="test" name="getCode.phpt" />
+                    <file role="test" name="getCookie.phpt" />
+                    <file role="test" name="getHeader.phpt" />
                     <file role="test" name="getHeaderCallbacks.phpt" />
                     <file role="test" name="getVersion.phpt" />
+                    <file role="test" name="hasCookie.phpt" />
+                    <file role="test" name="hasHeader.phpt" />
                     <file role="test" name="setCode.phpt" />
                     <file role="test" name="setContent.phpt" />
                     <file role="test" name="setCookie-bad.phpt" />
@@ -132,15 +136,30 @@ First 2.0 release, updated for PHP 7.3 and later.
                 </dir>
                 <dir name="sender">
                     <file role="test" name="___reflection.phpt" />
+                    <file role="test" name="iface.phpt" />
                     <file role="test" name="runHeaderCallbacks.phpt" />
                     <file role="test" name="send-extended.phpt" />
                     <file role="test" name="send.phpt" />
                     <file role="test" name="sendCode.phpt" />
+                    <file role="test" name="sendContent-generator-throws.phpt" />
+                    <file role="test" name="sendContent-generator.phpt" />
+                    <file role="test" name="sendContent-invoke-throws.phpt" />
                     <file role="test" name="sendContent-invoke.phpt" />
                     <file role="test" name="sendContent-resource.phpt" />
                     <file role="test" name="sendContent-toString.phpt" />
                     <file role="test" name="sendCookies.phpt" />
                     <file role="test" name="sendHeaders.phpt" />
+                </dir>
+                <dir name="upload">
+                    <file role="test" name="___reflection.phpt" />
+                    <file role="test" name="___reflection.phpt" />
+                    <file role="test" name="__clone.phpt" />
+                    <file role="test" name="__construct.phpt" />
+                    <file role="test" name="__get.phpt" />
+                    <file role="test" name="__isset.phpt" />
+                    <file role="test" name="__set.phpt" />
+                    <file role="test" name="__unset.phpt" />
+                    <file role="test" name="move.phpt" />
                 </dir>
             </dir>
         </dir>
