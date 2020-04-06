@@ -196,9 +196,7 @@ PHP_METHOD(SapiUpload, __construct)
     zval *uninit = NULL;
     zval rv = {0};
 
-    // needs to be zval to support null?
-    ZEND_PARSE_PARAMETERS_START(0, 5)
-        Z_PARAM_OPTIONAL
+    ZEND_PARSE_PARAMETERS_START(5, 5)
         Z_PARAM_ZVAL(name)
         Z_PARAM_ZVAL(type)
         Z_PARAM_ZVAL(size)
@@ -214,21 +212,11 @@ PHP_METHOD(SapiUpload, __construct)
     }
     zend_unset_property(SapiUpload_ce_ptr, _this_zval, ZEND_STRL("isUninitialized"));
 
-    if (name) {
-        zend_update_property(SapiUpload_ce_ptr, _this_zval, ZEND_STRL("name"), name);
-    }
-    if (type) {
-        zend_update_property(SapiUpload_ce_ptr, _this_zval, ZEND_STRL("type"), type);
-    }
-    if (size) {
-        zend_update_property(SapiUpload_ce_ptr, _this_zval, ZEND_STRL("size"), size);
-    }
-    if (tmpName) {
-        zend_update_property(SapiUpload_ce_ptr, _this_zval, ZEND_STRL("tmpName"), tmpName);
-    }
-    if (error) {
-        zend_update_property(SapiUpload_ce_ptr, _this_zval, ZEND_STRL("error"), error);
-    }
+    zend_update_property(SapiUpload_ce_ptr, _this_zval, ZEND_STRL("name"), name);
+    zend_update_property(SapiUpload_ce_ptr, _this_zval, ZEND_STRL("type"), type);
+    zend_update_property(SapiUpload_ce_ptr, _this_zval, ZEND_STRL("size"), size);
+    zend_update_property(SapiUpload_ce_ptr, _this_zval, ZEND_STRL("tmpName"), tmpName);
+    zend_update_property(SapiUpload_ce_ptr, _this_zval, ZEND_STRL("error"), error);
 
 err:
     zval_ptr_dtor(&rv);

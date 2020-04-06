@@ -9,9 +9,28 @@ This extension defines three classes and one interface in the global namespace:
 
 - _SapiRequest_, composed of read-only copies of PHP superglobals and some other commonly-used values.
 
+- _SapiUpload_, a value-object style descriptor of each uploaded file.
+
 - _SapiResponse_ and _SapiResponseInterface_, essentially a wrapper around (and buffer for) response-related PHP functions.
 
 - _SapiResponseSender_, for sending a _SapiResponse_.
+
+## Installing
+
+Although 1.x of this extension is installable via PECL, this 2.x version is
+not released yet.
+
+First, clone this repository; then, in the repository directory, issue these
+commands to compile and install the extension:
+
+```
+$ phpize
+$ ./configure
+$ make
+# make install
+```
+
+Then enable the `request.so` extension in your `php.ini` file.
 
 ## _SapiRequest_
 
@@ -26,21 +45,6 @@ provides:
 
 Note that _SapiRequest_ can be extended to provide other userland functionality;
 however, the public properties cannot be modified or overridden.
-
-### Installing
-
-Although 1.x of this extension is installable via PECL, this 2.x version is
-not released yet.
-
-First, clone this repository; then, in the repository directory, issue these
-commands to compile and install the extension:
-
-```
-$ phpize
-$ ./configure
-$ make
-# make install
-```
 
 ### Instantiation
 
@@ -88,7 +92,8 @@ These properties are public, immutable, read-only, and cannot be modified or ove
 - `?array $input`: A copy of `$_POST`.
 - `?array $query`: A copy of `$_GET`.
 - `?array $server`: A copy of `$_SERVER`.
-- `?array $uploads`: A copy of `$_FILES`, restructured to look more like `$_POST`.
+- `?array $uploads`: A copy of `$_FILES`, restructured to look more like `$_POST`;
+  instead of array descriptors, the elements are instances of _SapiUpload_.
 
 ##### The `$uploads` array
 
@@ -128,10 +133,9 @@ The _SapiRequest_ `$files` property is an identical copy of `$_FILES`. Normally,
 ];
 ```
 
-
 However, that structure is not at all what we expect when we are used to
 working with `$_POST`. Therefore, the _SapiRequest_ `$uploads` property
-restructures the data in `$_FILES` to look more like `$_POST` does:
+restructures the data in `$_FILES` to look more like `$_POST` does ...
 
 ```php
 // $request->uploads ...
@@ -161,6 +165,8 @@ restructures the data in `$_FILES` to look more like `$_POST` does:
     ],
 ];
 ```
+
+... and then replaces each array-based descriptor with a _SapiUpload_ instance.
 
 #### HTTP-related
 
@@ -283,6 +289,38 @@ add new properties as desired.
 
 _SapiRequest_ has no methods; child classes may add methods as desired, and
 _SapiRequest_ does not anticipate adding new methods of its own.
+
+## _SapiUpload_
+
+A read-only object describing an individual file upload.
+
+### Properties
+
+_SapiUpload_ has these public properties; they are immutable, read-only,
+and cannot be modified or overridden:
+
+- `?string $name`: The original name of the file on the client machine.
+
+- `?string $type`: The mime type of the file, if the client provided this
+  information.
+
+- `?int $size`: The size, in bytes, of the uploaded file.
+
+- `?string $tmpName`: The temporary filename of the file in which the uploaded
+  file was stored on the server.
+
+- `?int $error`: The [error code](https://www.php.net/manual/en/features.file-upload.errors.php)
+  associated with this file upload.
+
+### Methods
+
+_SapiRequest_ has these public methods:
+
+- `__construct(?string $name, ?string $type, ?int $size, ?string $tmpName, ?int $error)`:
+  The constructor; once constructed, it cannot be constructed again.
+
+- `move(string $destination) : bool`: The equivalent of
+  [`move_uploaded_file`](https://www.php.net/move_uploaded_file).
 
 ## _SapiResponse_
 

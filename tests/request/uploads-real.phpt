@@ -21,6 +21,10 @@ Content-Disposition: form-data; name="file3"; filename="C:\foo\bar/file3.txt"
 Content-Type: text/plain-file3;
 
 3
+-----------------------------20896060251896012921717172737
+Content-Disposition: form-data; name="file4"; filename="file4.txt"
+
+4
 -----------------------------20896060251896012921717172737--
 --FILE--
 <?php
@@ -28,7 +32,7 @@ $_SERVER['HTTP_HOST'] = 'example.com';
 $request = new SapiRequest($GLOBALS);
 var_dump($request->uploads);
 --EXPECTF--
-array(3) {
+array(4) {
   ["file1"]=>
   object(SapiUpload)#%d (5) {
     ["name"]=>
@@ -61,6 +65,19 @@ array(3) {
     string(9) "file3.txt"
     ["type"]=>
     string(16) "text/plain-file3"
+    ["size"]=>
+    int(1)
+    ["tmpName"]=>
+    string(%d) "%s"
+    ["error"]=>
+    int(0)
+  }
+  ["file4"]=>
+  object(SapiUpload)#%d (5) {
+    ["name"]=>
+    string(9) "file4.txt"
+    ["type"]=>
+    string(0) ""
     ["size"]=>
     int(1)
     ["tmpName"]=>
