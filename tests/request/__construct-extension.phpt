@@ -13,8 +13,8 @@ var_dump($ext);
 var_dump($ext->accept);
 --EXPECT--
 object(ExtRequest)#1 (27) {
-  ["isInitialized":"SapiRequest":private]=>
-  bool(false)
+  ["isUninitialized":"SapiRequest":private]=>
+  bool(true)
   ["accept"]=>
   NULL
   ["acceptCharset"]=>

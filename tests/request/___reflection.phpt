@@ -17,7 +17,7 @@ Class [ <internal:request> class SapiRequest ] {
   }
 
   - Properties [27] {
-    Property [ <default> private $isInitialized ]
+    Property [ <default> private $isUninitialized ]
     Property [ <default> public $accept ]
     Property [ <default> public $acceptCharset ]
     Property [ <default> public $acceptEncoding ]
@@ -56,9 +56,7 @@ Class [ <internal:request> class SapiRequest ] {
     }
   }
 }
-object(SapiRequest)#1 (27) {
-  ["isInitialized":"SapiRequest":private]=>
-  bool(true)
+object(SapiRequest)#1 (26) {
   ["accept"]=>
   array(0) {
   }
