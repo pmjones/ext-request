@@ -26,6 +26,7 @@ extern PHP_REQUEST_API zend_class_entry *SapiRequest_ce_ptr;
 extern PHP_REQUEST_API zend_class_entry *SapiResponse_ce_ptr;
 extern PHP_REQUEST_API zend_class_entry *SapiResponseInterface_ce_ptr;
 extern PHP_REQUEST_API zend_class_entry *SapiResponseSender_ce_ptr;
+extern PHP_REQUEST_API zend_class_entry *SapiUpload_ce_ptr;
 
 /* {{{ SapiResponse Argument Info */
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(SapiResponseInterface_getVersion_args, 0, 0, IS_STRING, 1)

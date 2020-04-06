@@ -85,126 +85,126 @@ var_dump($request->uploads);
 --EXPECTF--
 array(5) {
   ["foo1"]=>
-  array(5) {
-    ["error"]=>
-    int(4)
+  object(SapiUpload)#%d (5) {
     ["name"]=>
-    string(0) ""
-    ["size"]=>
-    int(0)
-    ["tmp_name"]=>
     string(0) ""
     ["type"]=>
     string(0) ""
+    ["size"]=>
+    int(0)
+    ["tmpName"]=>
+    string(0) ""
+    ["error"]=>
+    int(4)
   }
   ["foo2"]=>
-  array(5) {
-    ["error"]=>
-    int(4)
+  object(SapiUpload)#%d (5) {
     ["name"]=>
-    string(0) ""
-    ["size"]=>
-    int(0)
-    ["tmp_name"]=>
     string(0) ""
     ["type"]=>
     string(0) ""
+    ["size"]=>
+    int(0)
+    ["tmpName"]=>
+    string(0) ""
+    ["error"]=>
+    int(4)
   }
   ["foo3"]=>
-  array(5) {
-    ["error"]=>
-    int(4)
+  object(SapiUpload)#%d (5) {
     ["name"]=>
-    string(0) ""
-    ["size"]=>
-    int(0)
-    ["tmp_name"]=>
     string(0) ""
     ["type"]=>
     string(0) ""
+    ["size"]=>
+    int(0)
+    ["tmpName"]=>
+    string(0) ""
+    ["error"]=>
+    int(4)
   }
   ["bar"]=>
   array(3) {
     [0]=>
-    array(5) {
-      ["error"]=>
-      int(4)
+    object(SapiUpload)#%d (5) {
       ["name"]=>
-      string(0) ""
-      ["size"]=>
-      int(0)
-      ["tmp_name"]=>
       string(0) ""
       ["type"]=>
       string(0) ""
+      ["size"]=>
+      int(0)
+      ["tmpName"]=>
+      string(0) ""
+      ["error"]=>
+      int(4)
     }
     [1]=>
-    array(5) {
-      ["error"]=>
-      int(4)
+    object(SapiUpload)#%d (5) {
       ["name"]=>
-      string(0) ""
-      ["size"]=>
-      int(0)
-      ["tmp_name"]=>
       string(0) ""
       ["type"]=>
       string(0) ""
+      ["size"]=>
+      int(0)
+      ["tmpName"]=>
+      string(0) ""
+      ["error"]=>
+      int(4)
     }
     [2]=>
-    array(5) {
-      ["error"]=>
-      int(4)
+    object(SapiUpload)#%d (5) {
       ["name"]=>
-      string(0) ""
-      ["size"]=>
-      int(0)
-      ["tmp_name"]=>
       string(0) ""
       ["type"]=>
       string(0) ""
+      ["size"]=>
+      int(0)
+      ["tmpName"]=>
+      string(0) ""
+      ["error"]=>
+      int(4)
     }
   }
   ["baz"]=>
   array(3) {
     ["baz1"]=>
-    array(5) {
-      ["error"]=>
-      int(4)
+    object(SapiUpload)#%d (5) {
       ["name"]=>
-      string(0) ""
-      ["size"]=>
-      int(0)
-      ["tmp_name"]=>
       string(0) ""
       ["type"]=>
       string(0) ""
+      ["size"]=>
+      int(0)
+      ["tmpName"]=>
+      string(0) ""
+      ["error"]=>
+      int(4)
     }
     ["baz2"]=>
-    array(5) {
-      ["error"]=>
-      int(4)
+    object(SapiUpload)#%d (5) {
       ["name"]=>
-      string(0) ""
-      ["size"]=>
-      int(0)
-      ["tmp_name"]=>
       string(0) ""
       ["type"]=>
       string(0) ""
+      ["size"]=>
+      int(0)
+      ["tmpName"]=>
+      string(0) ""
+      ["error"]=>
+      int(4)
     }
     ["baz3"]=>
-    array(5) {
-      ["error"]=>
-      int(4)
+    object(SapiUpload)#%d (5) {
       ["name"]=>
-      string(0) ""
-      ["size"]=>
-      int(0)
-      ["tmp_name"]=>
       string(0) ""
       ["type"]=>
       string(0) ""
+      ["size"]=>
+      int(0)
+      ["tmpName"]=>
+      string(0) ""
+      ["error"]=>
+      int(4)
     }
   }
 }

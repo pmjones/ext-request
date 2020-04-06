@@ -2,7 +2,7 @@
 SapiRequest reflection
 --FILE--
 <?php
-echo (new ReflectionClass(SapiRequest::CLASS));
+echo preg_replace('/\?(\w+)/', '$1 or NULL', (new ReflectionClass(SapiRequest::CLASS)));
 var_dump(new SapiRequest([]));
 --EXPECT--
 Class [ <internal:request> class SapiRequest ] {
