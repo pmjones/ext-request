@@ -17,7 +17,7 @@ Class [ <internal:request> class SapiRequest ] {
   }
 
   - Properties [27] {
-    Property [ <default> private $isUninitialized ]
+    Property [ <default> private $isUnconstructed ]
     Property [ <default> public $accept ]
     Property [ <default> public $acceptCharset ]
     Property [ <default> public $acceptEncoding ]

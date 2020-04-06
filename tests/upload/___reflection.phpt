@@ -17,7 +17,7 @@ Class [ <internal:request> class SapiUpload ] {
   }
 
   - Properties [6] {
-    Property [ <default> private $isUninitialized ]
+    Property [ <default> private $isUnconstructed ]
     Property [ <default> public $name ]
     Property [ <default> public $type ]
     Property [ <default> public $size ]

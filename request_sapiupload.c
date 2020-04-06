@@ -204,13 +204,13 @@ PHP_METHOD(SapiUpload, __construct)
         Z_PARAM_ZVAL(error)
     ZEND_PARSE_PARAMETERS_END();
 
-    uninit = zend_read_property(SapiUpload_ce_ptr, _this_zval, ZEND_STRL("isUninitialized"), 0, &rv);
+    uninit = zend_read_property(SapiUpload_ce_ptr, _this_zval, ZEND_STRL("isUnconstructed"), 0, &rv);
     if( !uninit || !zend_is_true(uninit) ) {
         zend_string *ce_name = Z_OBJCE_P(_this_zval)->name;
         zend_throw_exception_ex(spl_ce_RuntimeException, 0, "%.*s::__construct() called after construction.", (int)ZSTR_LEN(ce_name), ZSTR_VAL(ce_name));
         goto err;
     }
-    zend_unset_property(SapiUpload_ce_ptr, _this_zval, ZEND_STRL("isUninitialized"));
+    zend_unset_property(SapiUpload_ce_ptr, _this_zval, ZEND_STRL("isUnconstructed"));
 
     zend_update_property(SapiUpload_ce_ptr, _this_zval, ZEND_STRL("name"), name);
     zend_update_property(SapiUpload_ce_ptr, _this_zval, ZEND_STRL("type"), type);
@@ -287,7 +287,7 @@ PHP_REQUEST_API PHP_MINIT_FUNCTION(sapiupload)
     SapiUpload_ce_ptr = zend_register_internal_class(&SapiUpload_ce);
     SapiUpload_ce_ptr->create_object = request_sapiupload_obj_create;
 
-    zend_declare_property_bool(SapiUpload_ce_ptr, ZEND_STRL("isUninitialized"), 1, ZEND_ACC_PRIVATE);
+    zend_declare_property_bool(SapiUpload_ce_ptr, ZEND_STRL("isUnconstructed"), 1, ZEND_ACC_PRIVATE);
 
     zend_declare_property_null(SapiUpload_ce_ptr, ZEND_STRL("name"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("name"));

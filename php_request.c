@@ -963,13 +963,13 @@ PHP_METHOD(SapiRequest, __construct)
     _this_zval = getThis();
 
     // Check and update isUnintialized property
-    uninit = zend_read_property(SapiRequest_ce_ptr, _this_zval, ZEND_STRL("isUninitialized"), 0, &rv);
+    uninit = zend_read_property(SapiRequest_ce_ptr, _this_zval, ZEND_STRL("isUnconstructed"), 0, &rv);
     if( !uninit || !zend_is_true(uninit) ) {
         zend_string *ce_name = Z_OBJCE_P(_this_zval)->name;
         zend_throw_exception_ex(spl_ce_RuntimeException, 0, "%.*s::__construct() called after construction.", (int)ZSTR_LEN(ce_name), ZSTR_VAL(ce_name));
         return;
     }
-    zend_unset_property(SapiRequest_ce_ptr, _this_zval, ZEND_STRL("isUninitialized"));
+    zend_unset_property(SapiRequest_ce_ptr, _this_zval, ZEND_STRL("isUnconstructed"));
 
     // initialize array properties
     sapi_request_init_array_prop(_this_zval, ZEND_STRL("accept"));
@@ -1071,7 +1071,7 @@ PHP_MINIT_FUNCTION(sapirequest)
     SapiRequest_ce_ptr = zend_register_internal_class(&ce);
     SapiRequest_ce_ptr->create_object = sapi_request_obj_create;
 
-    zend_declare_property_bool(SapiRequest_ce_ptr, ZEND_STRL("isUninitialized"), 1, ZEND_ACC_PRIVATE);
+    zend_declare_property_bool(SapiRequest_ce_ptr, ZEND_STRL("isUnconstructed"), 1, ZEND_ACC_PRIVATE);
 
     zend_declare_property_null(SapiRequest_ce_ptr, ZEND_STRL("accept"), ZEND_ACC_PUBLIC);
     register_default_prop_handlers(ZEND_STRL("accept"));
