@@ -8,7 +8,7 @@ class MySapiResponse implements SapiResponseInterface
     private $cookies = [];
     private $callbacks = [];
 
-    public function setVersion(string $version): SapiResponseInterface {
+    public function setVersion(?string $version): SapiResponseInterface {
         $this->version = $version;
         return $this;
     }
@@ -17,7 +17,7 @@ class MySapiResponse implements SapiResponseInterface
         return $this->version;
     }
 
-    public function setCode(int $code): SapiResponseInterface {
+    public function setCode(?int $code): SapiResponseInterface {
         $this->code = $code;
         return $this;
     }

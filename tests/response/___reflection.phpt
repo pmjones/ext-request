@@ -31,7 +31,7 @@ Class [ <internal:request> class SapiResponse implements SapiResponseInterface ]
     Method [ <internal:request, prototype SapiResponseInterface> final public method setVersion ] {
 
       - Parameters [1] {
-        Parameter #0 [ <required> string $version ]
+        Parameter #0 [ <required> string or NULL $version ]
       }
       - Return [ SapiResponseInterface ]
     }
@@ -46,7 +46,7 @@ Class [ <internal:request> class SapiResponse implements SapiResponseInterface ]
     Method [ <internal:request, prototype SapiResponseInterface> final public method setCode ] {
 
       - Parameters [1] {
-        Parameter #0 [ <required> int $code ]
+        Parameter #0 [ <required> int or NULL $code ]
       }
       - Return [ SapiResponseInterface ]
     }

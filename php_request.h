@@ -33,14 +33,14 @@ ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(SapiResponseInterface_getVersion_args, 0
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(SapiResponseInterface_setVersion_args, 0, 1, SapiResponseInterface, 0)
-    ZEND_ARG_TYPE_INFO(0, version, IS_STRING, 0)
+    ZEND_ARG_TYPE_INFO(0, version, IS_STRING, 1)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(SapiResponseInterface_getCode_args, 0, 0, IS_LONG, 1)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(SapiResponseInterface_setCode_args, 0, 1, SapiResponseInterface, 0)
-    ZEND_ARG_TYPE_INFO(0, code, IS_LONG, 0)
+    ZEND_ARG_TYPE_INFO(0, code, IS_LONG, 1)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(SapiResponseInterface_getHeaders_args, 0, 0, IS_ARRAY, 1)
