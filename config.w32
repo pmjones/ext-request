@@ -3,7 +3,7 @@
 ARG_ENABLE("request", "enable request support", "no");
 
 if (PHP_REQUEST != "no") {
-	EXTENSION("request", "php_request.c parsers.c request_sapirequest.c request_sapiresponse.c request_sapiresponseinterface.c request_sapiresponsesender.c request_sapiupload.c");
+	EXTENSION("request", "php_request.c request_parsers.c request_sapirequest.c request_sapiresponse.c request_sapiresponseinterface.c request_sapiresponsesender.c request_sapiupload.c");
 	AC_DEFINE("HAVE_REQUEST", 1, "Have Request Support");
 }
 
