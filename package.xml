@@ -44,7 +44,7 @@ This extension defines three classes in the global namespace:
         <email>pmjones@php.net</email>
         <active>yes</active>
     </lead>
-    <date>2020-04-07</date>
+    <date>2020-04-??</date>
     <version>
         <release>2.0.0</release>
         <api>2.0.0</api>
@@ -167,7 +167,7 @@ First 2.0 release, updated for PHP 7.3 and later.
     <dependencies>
         <required>
             <php>
-                <min>7.0.0</min>
+                <min>7.3.0</min>
             </php>
             <pearinstaller>
                 <min>1.4.1</min>

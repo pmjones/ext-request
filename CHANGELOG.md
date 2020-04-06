@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.0] - 2020-04-??
+
+Major breaks as a result of declined RFC to include in core.
+
 ## [1.0.0b2] - 2017-07-25
 
 ### Added
