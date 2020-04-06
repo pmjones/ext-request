@@ -9,6 +9,8 @@
 #include "Zend/zend_exceptions.h"
 #include "Zend/zend_interfaces.h"
 
+#include "ext/standard/head.h"
+
 #include "php_request.h"
 #include "request_utils.h"
 
