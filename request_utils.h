@@ -1,8 +1,30 @@
 
 #include "Zend/zend_API.h"
 #include "Zend/zend_exceptions.h"
+#include "Zend/zend_smart_str.h"
 
 #include "ext/spl/spl_exceptions.h"
+
+
+
+static inline void smart_str_appendz_ex(smart_str *dest, zval *zv, zend_bool persistent)
+{
+    zend_string *tmp;
+    if( Z_TYPE_P(zv) == IS_STRING ) {
+        smart_str_append_ex(dest, Z_STR_P(zv), persistent);
+    } else {
+        tmp = zval_get_string(zv);
+        smart_str_append_ex(dest, Z_STR_P(zv), persistent);
+        zend_string_release(tmp);
+    }
+}
+
+static inline void smart_str_appendz(smart_str *dest, zval *zv)
+{
+    smart_str_appendz_ex(dest, zv, 0);
+}
+
+
 
 struct prop_handlers {
     zend_object_has_property_t has_property;
