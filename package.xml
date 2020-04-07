@@ -15,21 +15,19 @@
     <channel>pecl.php.net</channel>
     <summary>Provides server-side request and response objects.</summary>
     <description><![CDATA[
-This extension provides server-side request and response objects for PHP 7 >= 7.3
-and PHP 8 >= 8.0.
+This extension provides server-side request and response objects for PHP.
 
-These are *not* HTTP message objects proper. They are more like wrappers
-for existing global PHP variables and functions.
+These are *not* HTTP message objects proper. They are more like wrappers for existing global PHP variables and functions.
 
-This extension defines three classes in the global namespace:
+Four classes and one interface are defined in the global namespace:
 
-- SapiRequest, composed of read-only copies of PHP superglobals and some
-  other commonly-used values.
+- _SapiRequest_, composed of read-only copies of PHP superglobals and some other commonly-used values.
 
-- SapiResponse, essentially a wrapper around (and buffer for) response-
-  related PHP functions.
+- _SapiUpload_, a value-object style descriptor of each uploaded file.
 
-- SapiResponseSender, for sending a SapiResponse.
+- _SapiResponse_ and _SapiResponseInterface_, essentially a wrapper around (and buffer for) response-related PHP functions.
+
+- _SapiResponseSender_, for sending a _SapiResponse_.
 
 ]]></description>
     <lead>
@@ -44,7 +42,7 @@ This extension defines three classes in the global namespace:
         <email>pmjones@php.net</email>
         <active>yes</active>
     </lead>
-    <date>2020-04-??</date>
+    <date>2020-04-07</date>
     <version>
         <release>2.0.0</release>
         <api>2.0.0</api>
@@ -55,7 +53,7 @@ This extension defines three classes in the global namespace:
     </stability>
     <license uri="https://opensource.org/licenses/MIT">MIT</license>
     <notes><![CDATA[
-First 2.0 release, updated for PHP 7.3 and later.
+First 2.0 release, updated for PHP 7.3, 7.4, 8.0, and later.
 ]]></notes>
     <contents>
         <dir name="/">

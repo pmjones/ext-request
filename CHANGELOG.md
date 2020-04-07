@@ -2,9 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
-## [2.0.0] - 2020-04-??
+## [2.0.0] - 2020-04-07
 
-Major breaks as a result of declined RFC to include in core.
+Major breaks as a result of declined RFC to include in the standard PHP
+distribution.
 
 ## [1.0.0b2] - 2017-07-25
 
@@ -48,6 +49,7 @@ Initial release.
 
 * * *
 
+[2.0.0]: https://github.com/pmjones/ext-request/releases/tag/2.0.0
 [1.0.0b2]: https://github.com/pmjones/ext-request/releases/tag/1.0.0b2
 [1.0.0b1]: https://github.com/pmjones/ext-request/releases/tag/1.0.0b1
 [1.0.0a2]: https://github.com/pmjones/ext-request/releases/tag/1.0.0a2

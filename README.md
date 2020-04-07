@@ -5,7 +5,7 @@ This extension provides server-side request and response objects for PHP.
 These are *not* HTTP message objects proper. They are more like wrappers
 for existing global PHP variables and functions.
 
-This extension defines three classes and one interface in the global namespace:
+This extension defines four classes and one interface in the global namespace:
 
 - _SapiRequest_, composed of read-only copies of PHP superglobals and some other commonly-used values.
 
