@@ -25,7 +25,8 @@ In most cases, it is easiest to install via PECL:
 # pecl install request
 ```
 
-Alternatively, clone this repository; then, in the repository directory, issue these commands to compile and install the extension:
+Alternatively, clone or otherwise download this repository; then, in the
+repository directory, issue these commands to compile and install the extension:
 
 ```
 $ phpize
