@@ -17,11 +17,15 @@ This extension defines four classes and one interface in the global namespace:
 
 ## Installing
 
-Although 1.x of this extension is installable via PECL, this 2.x version is
-not released yet.
+### Via PECL
 
-First, clone this repository; then, in the repository directory, issue these
-commands to compile and install the extension:
+In most cases, it is easiest to install via PECL:
+
+```
+# pecl install request
+```
+
+Alternatively, clone this repository; then, in the repository directory, issue these commands to compile and install the extension:
 
 ```
 $ phpize
@@ -30,7 +34,7 @@ $ make
 # make install
 ```
 
-Then enable the `request.so` extension in your `php.ini` file.
+Finally, enable the `request.so` extension in your `php.ini` file, and restart your web server.
 
 ## _SapiRequest_
 
