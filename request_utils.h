@@ -1,9 +1,68 @@
 
 #include "Zend/zend_API.h"
 #include "Zend/zend_exceptions.h"
+#include "Zend/zend_interfaces.h"
+#include "Zend/zend_portability.h"
+#include "Zend/zend_smart_str.h"
+#include "Zend/zend_types.h"
+
+#include "ext/standard/php_string.h"
 
 #include "ext/spl/spl_exceptions.h"
 
+
+
+/* {{{ smart_str_appendz */
+static inline void smart_str_appendz_ex(smart_str *dest, zval *zv, zend_bool persistent)
+{
+    zend_string *tmp;
+    if( Z_TYPE_P(zv) == IS_STRING ) {
+        smart_str_append_ex(dest, Z_STR_P(zv), persistent);
+    } else {
+        tmp = zval_get_string(zv);
+        smart_str_append_ex(dest, Z_STR_P(zv), persistent);
+        zend_string_release(tmp);
+    }
+}
+
+static inline void smart_str_appendz(smart_str *dest, zval *zv)
+{
+    smart_str_appendz_ex(dest, zv, 0);
+}
+/* }}} smart_str_appendz */
+
+
+
+/* {{{ sapi_request_normalize_header_name */
+static inline void sapi_request_normalize_header_name(char *key, size_t key_length)
+{
+    register char *r = key;
+    register char *r_end = r + key_length - 1;
+
+    *r = tolower((unsigned char) *r);
+    r++;
+    for( ; r <= r_end; r++ ) {
+        if( *r == '_' ) {
+            *r = '-';
+        } else {
+            *r = tolower((unsigned char) *r);
+        }
+    }
+}
+
+static inline zend_string *sapi_request_normalize_header_name_ex(zend_string *in)
+{
+    zend_string *out = php_trim(in, ZEND_STRL(" \t\r\n\v"), 3);
+    sapi_request_normalize_header_name(ZSTR_VAL(out), ZSTR_LEN(out));
+    zend_string_forget_hash_val(out);
+    zend_string_hash_val(out);
+    return out;
+}
+/* }}} sapi_request_normalize_header_name */
+
+
+
+/* {{{ prop_handlers */
 struct prop_handlers {
     zend_object_has_property_t has_property;
     zend_object_read_property_t read_property;
@@ -27,6 +86,7 @@ static inline void register_prop_handlers(
     hnd.unset_property = unset_property ? unset_property : std_object_handlers.unset_property;
     zend_hash_str_update_mem(prop_handlers, name, name_length, &hnd, sizeof(hnd));
 }
+/* }}} prop_handlers */
 
 
 
