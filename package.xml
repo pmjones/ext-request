@@ -65,10 +65,15 @@ First 2.0 release, updated for PHP 7.3 and later.
             <file role="src" name="config.m4" />
             <file role="src" name="config.w32" />
             <file role="src" name="Makefile.frag" />
-            <file role="src" name="parsers.c" />
-            <file role="src" name="parsers.re" />
             <file role="src" name="php_request.c" />
             <file role="src" name="php_request.h" />
+            <file role="src" name="request_parsers.c" />
+            <file role="src" name="request_parsers.re" />
+            <file role="src" name="request_sapirequest.c" />
+            <file role="src" name="request_sapiresponse.c" />
+            <file role="src" name="request_sapiresponseinterface.c" />
+            <file role="src" name="request_sapiresponseinterface.h" />
+            <file role="src" name="request_sapiresponsesender.c" />
             <file role="src" name="request_sapiupload.c" />
             <file role="src" name="request_utils.h" />
             <dir name="tests">
