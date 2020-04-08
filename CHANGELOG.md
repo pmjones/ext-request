@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [2.0.0] - 2020-04-07
+## [2.0.0] - 2020-04-08
 
 Major breaks as a result of declined RFC to include in the standard PHP
 distribution.

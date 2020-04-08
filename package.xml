@@ -42,7 +42,7 @@ Four classes and one interface are defined in the global namespace:
         <email>pmjones@php.net</email>
         <active>yes</active>
     </lead>
-    <date>2020-04-07</date>
+    <date>2020-04-08</date>
     <version>
         <release>2.0.0</release>
         <api>2.0.0</api>
