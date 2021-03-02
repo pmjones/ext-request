@@ -319,7 +319,7 @@ and cannot be modified or overridden:
 
 ### Methods
 
-_SapiRequest_ has these public methods:
+_SapiUpload_ has these public methods:
 
 - `__construct(?string $name, ?string $type, ?int $size, ?string $tmpName, ?int $error)`:
   The constructor; once constructed, it cannot be constructed again.
