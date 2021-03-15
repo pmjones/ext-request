@@ -16,7 +16,7 @@ PHP_REQUEST_API zend_class_entry *SapiResponse_ce_ptr;
 /* {{{ proto string SapiResponse::getVersion() */
 static zval *sapi_response_get_version(zval *response)
 {
-    return zend_read_property(SapiResponse_ce_ptr, response, ZEND_STRL("version"), 0, NULL);
+    return php7to8_zend_read_property(SapiResponse_ce_ptr, response, ZEND_STRL("version"), 0, NULL);
 }
 
 PHP_METHOD(SapiResponse, getVersion)
@@ -40,7 +40,11 @@ PHP_METHOD(SapiResponse, setVersion)
         Z_PARAM_STR(version)
     ZEND_PARSE_PARAMETERS_END();
 
+#if PHP_VERSION_ID < 80000
     zend_update_property_str(SapiResponse_ce_ptr, _this_zval, ZEND_STRL("version"), version);
+#else
+    zend_update_property_str(SapiResponse_ce_ptr, Z_OBJ_P(_this_zval), ZEND_STRL("version"), version);
+#endif
 
     RETURN_ZVAL(_this_zval, 1, 0);
 }
@@ -49,7 +53,7 @@ PHP_METHOD(SapiResponse, setVersion)
 /* {{{ proto int SapiResponse::getCode() */
 static zval *sapi_response_get_code(zval *response)
 {
-    return zend_read_property(SapiResponse_ce_ptr, response, ZEND_STRL("code"), 0, NULL);
+    return php7to8_zend_read_property(SapiResponse_ce_ptr, response, ZEND_STRL("code"), 0, NULL);
 }
 
 PHP_METHOD(SapiResponse, getCode)
@@ -73,7 +77,11 @@ PHP_METHOD(SapiResponse, setCode)
         Z_PARAM_LONG(code)
     ZEND_PARSE_PARAMETERS_END();
 
+#if PHP_VERSION_ID < 80000
     zend_update_property_long(SapiResponse_ce_ptr, _this_zval, ZEND_STRL("code"), code);
+#else
+    zend_update_property_long(SapiResponse_ce_ptr, Z_OBJ_P(_this_zval), ZEND_STRL("code"), code);
+#endif
 
     RETURN_ZVAL(_this_zval, 1, 0);
 }
@@ -82,7 +90,7 @@ PHP_METHOD(SapiResponse, setCode)
 /* {{{ proto array SapiResponse::getHeaders() */
 static zval *sapi_response_get_headers(zval *response)
 {
-    return zend_read_property(SapiResponse_ce_ptr, response, ZEND_STRL("headers"), 0, NULL);
+    return php7to8_zend_read_property(SapiResponse_ce_ptr, response, ZEND_STRL("headers"), 0, NULL);
 }
 
 PHP_METHOD(SapiResponse, getHeaders)
@@ -264,7 +272,7 @@ PHP_METHOD(SapiResponse, getHeader)
         Z_PARAM_STR(label)
     ZEND_PARSE_PARAMETERS_END();
 
-    headers = zend_read_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("headers"), 0, NULL);
+    headers = php7to8_zend_read_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("headers"), 0, NULL);
     if( !headers || Z_TYPE_P(headers) != IS_ARRAY ) {
         return;
     }
@@ -293,7 +301,7 @@ PHP_METHOD(SapiResponse, hasHeader)
         Z_PARAM_STR(label)
     ZEND_PARSE_PARAMETERS_END();
 
-    headers = zend_read_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("headers"), 0, NULL);
+    headers = php7to8_zend_read_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("headers"), 0, NULL);
     if( !headers || Z_TYPE_P(headers) != IS_ARRAY ) {
         RETURN_FALSE;
     }
@@ -319,7 +327,7 @@ PHP_METHOD(SapiResponse, unsetHeaders)
     ZEND_PARSE_PARAMETERS_START(0, 0)
     ZEND_PARSE_PARAMETERS_END();
 
-    zend_update_property_null(SapiResponse_ce_ptr, _this_zval, ZEND_STRL("headers"));
+    php7to8_zend_update_property_null(SapiResponse_ce_ptr, _this_zval, ZEND_STRL("headers"));
 
     RETURN_ZVAL(_this_zval, 1, 0);
 }
@@ -337,7 +345,7 @@ PHP_METHOD(SapiResponse, getCookie)
         Z_PARAM_STR(name)
     ZEND_PARSE_PARAMETERS_END();
 
-    cookies = zend_read_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("cookies"), 0, NULL);
+    cookies = php7to8_zend_read_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("cookies"), 0, NULL);
     if( !cookies || Z_TYPE_P(cookies) != IS_ARRAY ) {
         return;
     }
@@ -352,7 +360,7 @@ PHP_METHOD(SapiResponse, getCookie)
 /* {{{ proto array SapiResponse::getCookies() */
 static zval *sapi_response_get_cookies(zval *response)
 {
-    return zend_read_property(SapiResponse_ce_ptr, response, ZEND_STRL("cookies"), 0, NULL);
+    return php7to8_zend_read_property(SapiResponse_ce_ptr, response, ZEND_STRL("cookies"), 0, NULL);
 }
 
 PHP_METHOD(SapiResponse, getCookies)
@@ -378,7 +386,7 @@ PHP_METHOD(SapiResponse, hasCookie)
         Z_PARAM_STR(name)
     ZEND_PARSE_PARAMETERS_END();
 
-    cookies = zend_read_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("cookies"), 0, NULL);
+    cookies = php7to8_zend_read_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("cookies"), 0, NULL);
     if( !cookies || Z_TYPE_P(cookies) != IS_ARRAY ) {
         RETURN_FALSE;
     }
@@ -537,7 +545,7 @@ static void sapi_response_set_cookie(INTERNAL_FUNCTION_PARAMETERS, zend_bool url
     if( ptr ) {
         add_assoc_zval_ex(ptr, ZSTR_VAL(name), ZSTR_LEN(name), &cookie);
     } else {
-        zend_update_property(SapiResponse_ce_ptr, response, ZEND_STRL("cookies"), &cookie);
+        php7to8_zend_update_property(SapiResponse_ce_ptr, response, ZEND_STRL("cookies"), &cookie);
     }
 
     RETURN_ZVAL(response, 1, 0);
@@ -610,7 +618,7 @@ PHP_METHOD(SapiResponse, unsetCookies)
     ZEND_PARSE_PARAMETERS_START(0, 0)
     ZEND_PARSE_PARAMETERS_END();
 
-    zend_update_property_null(SapiResponse_ce_ptr, _this_zval, ZEND_STRL("cookies"));
+    php7to8_zend_update_property_null(SapiResponse_ce_ptr, _this_zval, ZEND_STRL("cookies"));
 
     RETURN_ZVAL(_this_zval, 1, 0);
 }
@@ -619,7 +627,7 @@ PHP_METHOD(SapiResponse, unsetCookies)
 /* {{{ proto mixed SapiResponse::getContent() */
 static zval *sapi_response_get_content(zval *response)
 {
-    return zend_read_property(SapiResponse_ce_ptr, response, ZEND_STRL("content"), 0, NULL);
+    return php7to8_zend_read_property(SapiResponse_ce_ptr, response, ZEND_STRL("content"), 0, NULL);
 }
 
 PHP_METHOD(SapiResponse, getContent)
@@ -643,7 +651,7 @@ PHP_METHOD(SapiResponse, setContent)
         Z_PARAM_ZVAL(content)
     ZEND_PARSE_PARAMETERS_END();
 
-    zend_update_property(SapiResponse_ce_ptr, _this_zval, ZEND_STRL("content"), content);
+    php7to8_zend_update_property(SapiResponse_ce_ptr, _this_zval, ZEND_STRL("content"), content);
 
     RETURN_ZVAL(_this_zval, 1, 0);
 }
@@ -710,7 +718,7 @@ PHP_METHOD(SapiResponse, setHeaderCallbacks)
 
     // Reset callbacks property
     array_init(&arr);
-    zend_update_property(SapiResponse_ce_ptr, _this_zval, ZEND_STRL("callbacks"), &arr);
+    php7to8_zend_update_property(SapiResponse_ce_ptr, _this_zval, ZEND_STRL("callbacks"), &arr);
 
     // Forward each item to addHeaderCallback
     ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(callbacks), callback) {
@@ -728,7 +736,7 @@ PHP_METHOD(SapiResponse, setHeaderCallbacks)
 /* {{{ proto callable[] SapiResponse::getHeaderCallbacks() */
 static zval *sapi_response_get_header_callbacks(zval *response)
 {
-    return zend_read_property(SapiResponse_ce_ptr, response, ZEND_STRL("callbacks"), 0, NULL);
+    return php7to8_zend_read_property(SapiResponse_ce_ptr, response, ZEND_STRL("callbacks"), 0, NULL);
 }
 
 PHP_METHOD(SapiResponse, getHeaderCallbacks)

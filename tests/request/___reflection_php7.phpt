@@ -1,9 +1,9 @@
 --TEST--
-SapiRequest reflection (PHP8)
+SapiRequest reflection (PHP7)
 --SKIPIF--
 <?php
 if( !extension_loaded('request') ) die('skip ');
-if( PHP_VERSION_ID < 80000 ) die('skip ');
+if( PHP_VERSION_ID >= 80000 ) die('skip ');
 ?>
 --FILE--
 <?php
@@ -22,33 +22,33 @@ Class [ <internal:request> class SapiRequest ] {
   }
 
   - Properties [27] {
-    Property [ private $isUnconstructed = true ]
-    Property [ public $accept = NULL ]
-    Property [ public $acceptCharset = NULL ]
-    Property [ public $acceptEncoding = NULL ]
-    Property [ public $acceptLanguage = NULL ]
-    Property [ public $authDigest = NULL ]
-    Property [ public $authPw = NULL ]
-    Property [ public $authType = NULL ]
-    Property [ public $authUser = NULL ]
-    Property [ public $content = NULL ]
-    Property [ public $contentCharset = NULL ]
-    Property [ public $contentLength = NULL ]
-    Property [ public $contentMd5 = NULL ]
-    Property [ public $contentType = NULL ]
-    Property [ public $cookie = NULL ]
-    Property [ public $files = NULL ]
-    Property [ public $forwarded = NULL ]
-    Property [ public $forwardedFor = NULL ]
-    Property [ public $forwardedHost = NULL ]
-    Property [ public $forwardedProto = NULL ]
-    Property [ public $headers = NULL ]
-    Property [ public $input = NULL ]
-    Property [ public $method = NULL ]
-    Property [ public $query = NULL ]
-    Property [ public $server = NULL ]
-    Property [ public $uploads = NULL ]
-    Property [ public $url = NULL ]
+    Property [ <default> private $isUnconstructed ]
+    Property [ <default> public $accept ]
+    Property [ <default> public $acceptCharset ]
+    Property [ <default> public $acceptEncoding ]
+    Property [ <default> public $acceptLanguage ]
+    Property [ <default> public $authDigest ]
+    Property [ <default> public $authPw ]
+    Property [ <default> public $authType ]
+    Property [ <default> public $authUser ]
+    Property [ <default> public $content ]
+    Property [ <default> public $contentCharset ]
+    Property [ <default> public $contentLength ]
+    Property [ <default> public $contentMd5 ]
+    Property [ <default> public $contentType ]
+    Property [ <default> public $cookie ]
+    Property [ <default> public $files ]
+    Property [ <default> public $forwarded ]
+    Property [ <default> public $forwardedFor ]
+    Property [ <default> public $forwardedHost ]
+    Property [ <default> public $forwardedProto ]
+    Property [ <default> public $headers ]
+    Property [ <default> public $input ]
+    Property [ <default> public $method ]
+    Property [ <default> public $query ]
+    Property [ <default> public $server ]
+    Property [ <default> public $uploads ]
+    Property [ <default> public $url ]
   }
 
   - Methods [1] {
@@ -56,7 +56,7 @@ Class [ <internal:request> class SapiRequest ] {
 
       - Parameters [2] {
         Parameter #0 [ <required> array $globals ]
-        Parameter #1 [ <optional> string or NULL $content = <default> ]
+        Parameter #1 [ <optional> string or NULL $content ]
       }
     }
   }

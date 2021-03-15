@@ -12,6 +12,18 @@
 
 
 
+#if PHP_VERSION_ID < 80000
+#define php7to8_zend_update_property(ce, o, ...) zend_update_property(ce, o, __VA_ARGS__)
+#define php7to8_zend_update_property_null(ce, o, ...) zend_update_property_null(ce, o, __VA_ARGS__)
+#define php7to8_zend_read_property(ce, o, ...) zend_read_property(ce, o, __VA_ARGS__)
+#else
+#define php7to8_zend_update_property(ce, o, ...) zend_update_property(ce, Z_OBJ_P(o), __VA_ARGS__)
+#define php7to8_zend_update_property_null(ce, o, ...) zend_update_property_null(ce, Z_OBJ_P(o), __VA_ARGS__)
+#define php7to8_zend_read_property(ce, o, ...) zend_read_property(ce, Z_OBJ_P(o), __VA_ARGS__)
+#endif
+
+
+
 /* {{{ smart_str_appendz */
 static inline void smart_str_appendz_ex(smart_str *dest, zval *zv, zend_bool persistent)
 {

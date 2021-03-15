@@ -591,10 +591,15 @@ yy41:
 
 /* {{{ sapi_request_parse_accept */
 /* @see https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html */
+#if PHP_VERSION_ID < 80000
 static int sapi_request_accept_compare(const void *a, const void *b)
 {
     Bucket *f = (Bucket *) a;
     Bucket *s = (Bucket *) b;
+#else
+static int sapi_request_accept_compare(Bucket *f, Bucket *s)
+{
+#endif
     zval *first = &f->val;
     zval *second = &s->val;
 

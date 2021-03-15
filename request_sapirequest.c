@@ -590,7 +590,7 @@ static inline void sapi_request_copy_global_prop(
             return;
         }
         // Update property value
-        zend_update_property(SapiRequest_ce_ptr, obj, obj_key, obj_key_length, tmp);
+        php7to8_zend_update_property(SapiRequest_ce_ptr, obj, obj_key, obj_key_length, tmp);
         Z_TRY_ADDREF_P(tmp);
     }
 }
@@ -602,7 +602,7 @@ static inline void sapi_request_init_array_prop(
 ) {
     zval tmp = {0};
     array_init(&tmp);
-    zend_update_property(SapiRequest_ce_ptr, obj, obj_key, obj_key_length, &tmp);
+    php7to8_zend_update_property(SapiRequest_ce_ptr, obj, obj_key, obj_key_length, &tmp);
 }
 
 static inline void sapi_request_set_forwarded(zval *object, zval *server)
@@ -617,27 +617,27 @@ static inline void sapi_request_set_forwarded(zval *object, zval *server)
     if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_X_FORWARDED_FOR"))) ) {
         array_init(&forwardedFor);
         sapi_request_parse_x_forwarded_for(&forwardedFor, Z_STRVAL_P(tmp), Z_STRLEN_P(tmp));
-        zend_update_property(SapiRequest_ce_ptr, object, ZEND_STRL("forwardedFor"), &forwardedFor);
+        php7to8_zend_update_property(SapiRequest_ce_ptr, object, ZEND_STRL("forwardedFor"), &forwardedFor);
     }
 
     if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_X_FORWARDED_HOST"))) ) {
         convert_to_string(tmp);
         tmp_str = php_trim(Z_STR_P(tmp), ZEND_STRL(" \t\r\n\v"), 3);
         ZVAL_STR(&forwardedHost, tmp_str);
-        zend_update_property(SapiRequest_ce_ptr, object, ZEND_STRL("forwardedHost"), &forwardedHost);
+        php7to8_zend_update_property(SapiRequest_ce_ptr, object, ZEND_STRL("forwardedHost"), &forwardedHost);
     }
 
     if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_X_FORWARDED_PROTO"))) ) {
         convert_to_string(tmp);
         tmp_str = php_trim(Z_STR_P(tmp), ZEND_STRL(" \t\r\n\v"), 3);
         ZVAL_STR(&forwardedProto, tmp_str);
-        zend_update_property(SapiRequest_ce_ptr, object, ZEND_STRL("forwardedProto"), &forwardedProto);
+        php7to8_zend_update_property(SapiRequest_ce_ptr, object, ZEND_STRL("forwardedProto"), &forwardedProto);
     }
 
     if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_FORWARDED"))) ) {
         array_init(&forwarded);
         sapi_request_parse_forwarded(&forwarded, Z_STRVAL_P(tmp), Z_STRLEN_P(tmp));
-        zend_update_property(SapiRequest_ce_ptr, object, ZEND_STRL("forwarded"), &forwarded);
+        php7to8_zend_update_property(SapiRequest_ce_ptr, object, ZEND_STRL("forwarded"), &forwarded);
     }
 }
 
@@ -702,7 +702,7 @@ static inline void sapi_request_set_url(zval *object, zval *server)
         add_assoc_null(&arr, "fragment");
     }
 
-    zend_update_property(SapiRequest_ce_ptr, object, ZEND_STRL("url"), &arr);
+    php7to8_zend_update_property(SapiRequest_ce_ptr, object, ZEND_STRL("url"), &arr);
 
     php_url_free(url);
 }
@@ -716,7 +716,7 @@ static inline void sapi_request_set_accept_by_name(zval *object, zval *server, c
     tmp = zend_hash_str_find(Z_ARRVAL_P(server), src, src_length);
     if( tmp && Z_TYPE_P(tmp) == IS_STRING ) {
         sapi_request_parse_accept(&val, Z_STRVAL_P(tmp), Z_STRLEN_P(tmp));
-        zend_update_property(SapiRequest_ce_ptr, object, dest, dest_length, &val);
+        php7to8_zend_update_property(SapiRequest_ce_ptr, object, dest, dest_length, &val);
     }
 }
 
@@ -760,7 +760,7 @@ static inline void sapi_request_set_accept_language(zval *object, zval *server)
     if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_ACCEPT_LANGUAGE"))) ) {
         sapi_request_parse_accept(&val, Z_STRVAL_P(tmp), Z_STRLEN_P(tmp));
         sapi_request_parse_accept_language(&val);
-        zend_update_property(SapiRequest_ce_ptr, object, ZEND_STRL("acceptLanguage"), &val);
+        php7to8_zend_update_property(SapiRequest_ce_ptr, object, ZEND_STRL("acceptLanguage"), &val);
     }
 }
 
@@ -770,21 +770,21 @@ static inline void sapi_request_set_auth(zval *object, zval *server)
     zval digest = {0};
 
     if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("PHP_AUTH_PW"))) ) {
-        zend_update_property(SapiRequest_ce_ptr, object, ZEND_STRL("authPw"), tmp);
+        php7to8_zend_update_property(SapiRequest_ce_ptr, object, ZEND_STRL("authPw"), tmp);
     }
 
     if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("PHP_AUTH_TYPE"))) ) {
-        zend_update_property(SapiRequest_ce_ptr, object, ZEND_STRL("authType"), tmp);
+        php7to8_zend_update_property(SapiRequest_ce_ptr, object, ZEND_STRL("authType"), tmp);
     }
 
     if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("PHP_AUTH_USER"))) ) {
-        zend_update_property(SapiRequest_ce_ptr, object, ZEND_STRL("authUser"), tmp);
+        php7to8_zend_update_property(SapiRequest_ce_ptr, object, ZEND_STRL("authUser"), tmp);
     }
 
     if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("PHP_AUTH_DIGEST"))) ) {
         zend_string *str = zval_get_string(tmp);
         sapi_request_parse_digest_auth(&digest, ZSTR_VAL(str), ZSTR_LEN(str));
-        zend_update_property(SapiRequest_ce_ptr, object, ZEND_STRL("authDigest"), &digest);
+        php7to8_zend_update_property(SapiRequest_ce_ptr, object, ZEND_STRL("authDigest"), &digest);
     }
 
 }
@@ -795,7 +795,7 @@ static inline void sapi_request_set_content_length(zval *object, zval *length)
     if( zend_string_equals_literal(tmp, "") ) {
         zend_string_release(tmp);
         convert_to_long(length);
-        zend_update_property(SapiRequest_ce_ptr, object, ZEND_STRL("contentLength"), length);
+        php7to8_zend_update_property(SapiRequest_ce_ptr, object, ZEND_STRL("contentLength"), length);
     }
 }
 
@@ -806,7 +806,7 @@ static inline void sapi_request_set_content(zval *object, zval *server)
     zval contentType = {0};
 
     if( (tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_CONTENT_MD5"))) ) {
-        zend_update_property(SapiRequest_ce_ptr, object, ZEND_STRL("contentMd5"), tmp);
+        php7to8_zend_update_property(SapiRequest_ce_ptr, object, ZEND_STRL("contentMd5"), tmp);
     }
 
     if( tmp = zend_hash_str_find(Z_ARRVAL_P(server), ZEND_STRL("HTTP_CONTENT_LENGTH")) ) {
@@ -819,12 +819,12 @@ static inline void sapi_request_set_content(zval *object, zval *server)
             // contentType
             tmp = zend_hash_str_find(Z_ARRVAL(contentType), ZEND_STRL("value"));
             if( tmp ) {
-                zend_update_property(SapiRequest_ce_ptr, object, ZEND_STRL("contentType"), tmp);
+                php7to8_zend_update_property(SapiRequest_ce_ptr, object, ZEND_STRL("contentType"), tmp);
             }
             // charset
             tmp = zend_hash_str_find(Z_ARRVAL(contentType), ZEND_STRL("charset"));
             if( tmp ) {
-                zend_update_property(SapiRequest_ce_ptr, object, ZEND_STRL("contentCharset"), tmp);
+                php7to8_zend_update_property(SapiRequest_ce_ptr, object, ZEND_STRL("contentCharset"), tmp);
             }
         }
     }
@@ -853,13 +853,18 @@ PHP_METHOD(SapiRequest, __construct)
     _this_zval = getThis();
 
     // Check and update isUnintialized property
-    uninit = zend_read_property(SapiRequest_ce_ptr, _this_zval, ZEND_STRL("isUnconstructed"), 0, &rv);
+    uninit = php7to8_zend_read_property(SapiRequest_ce_ptr, _this_zval, ZEND_STRL("isUnconstructed"), 0, &rv);
     if( !uninit || !zend_is_true(uninit) ) {
         zend_string *ce_name = Z_OBJCE_P(_this_zval)->name;
         zend_throw_exception_ex(spl_ce_RuntimeException, 0, "%.*s::__construct() called after construction.", (int)ZSTR_LEN(ce_name), ZSTR_VAL(ce_name));
         return;
     }
+
+#if PHP_VERSION_ID < 80000
     zend_unset_property(SapiRequest_ce_ptr, _this_zval, ZEND_STRL("isUnconstructed"));
+#else
+    zend_unset_property(SapiRequest_ce_ptr, Z_OBJ_P(_this_zval), ZEND_STRL("isUnconstructed"));
+#endif
 
     // initialize array properties
     sapi_request_init_array_prop(_this_zval, ZEND_STRL("accept"));
@@ -891,17 +896,17 @@ PHP_METHOD(SapiRequest, __construct)
     }
 
     // Read back server property
-    server = zend_read_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("server"), 0, &rv);
+    server = php7to8_zend_read_property(Z_OBJCE_P(_this_zval), _this_zval, ZEND_STRL("server"), 0, &rv);
 
     // Internal setters that require server
     if( server && Z_TYPE_P(server) == IS_ARRAY ) {
         // headers
         sapi_request_normalize_headers(&headers, server);
-        zend_update_property(SapiRequest_ce_ptr, _this_zval, ZEND_STRL("headers"), &headers);
+        php7to8_zend_update_property(SapiRequest_ce_ptr, _this_zval, ZEND_STRL("headers"), &headers);
 
         // method
         sapi_request_detect_method(&method, server);
-        zend_update_property(SapiRequest_ce_ptr, _this_zval, ZEND_STRL("method"), &method);
+        php7to8_zend_update_property(SapiRequest_ce_ptr, _this_zval, ZEND_STRL("method"), &method);
 
         // forwarded
         sapi_request_set_forwarded(_this_zval, server);
@@ -921,16 +926,16 @@ PHP_METHOD(SapiRequest, __construct)
     }
 
     // Read back files property
-    files = zend_read_property(SapiRequest_ce_ptr, _this_zval, ZEND_STRL("files"), 0, &rv);
+    files = php7to8_zend_read_property(SapiRequest_ce_ptr, _this_zval, ZEND_STRL("files"), 0, &rv);
 
     if( files && Z_TYPE_P(files) == IS_ARRAY ) {
         array_init(&uploads);
         sapi_request_normalize_files(&uploads, files);
-        zend_update_property(SapiRequest_ce_ptr, _this_zval, ZEND_STRL("uploads"), &uploads);
+        php7to8_zend_update_property(SapiRequest_ce_ptr, _this_zval, ZEND_STRL("uploads"), &uploads);
     }
 
     if (content && Z_TYPE_P(content) == IS_STRING) {
-        zend_update_property(SapiRequest_ce_ptr, _this_zval, ZEND_STRL("content"), content);
+        php7to8_zend_update_property(SapiRequest_ce_ptr, _this_zval, ZEND_STRL("content"), content);
     }
 }
 /* }}} SapiRequest::__construct */
