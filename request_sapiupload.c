@@ -204,19 +204,24 @@ PHP_METHOD(SapiUpload, __construct)
         Z_PARAM_ZVAL(error)
     ZEND_PARSE_PARAMETERS_END();
 
-    uninit = zend_read_property(SapiUpload_ce_ptr, _this_zval, ZEND_STRL("isUnconstructed"), 0, &rv);
+    uninit = php7to8_zend_read_property(SapiUpload_ce_ptr, _this_zval, ZEND_STRL("isUnconstructed"), 0, &rv);
     if( !uninit || !zend_is_true(uninit) ) {
         zend_string *ce_name = Z_OBJCE_P(_this_zval)->name;
         zend_throw_exception_ex(spl_ce_RuntimeException, 0, "%.*s::__construct() called after construction.", (int)ZSTR_LEN(ce_name), ZSTR_VAL(ce_name));
         goto err;
     }
-    zend_unset_property(SapiUpload_ce_ptr, _this_zval, ZEND_STRL("isUnconstructed"));
 
-    zend_update_property(SapiUpload_ce_ptr, _this_zval, ZEND_STRL("name"), name);
-    zend_update_property(SapiUpload_ce_ptr, _this_zval, ZEND_STRL("type"), type);
-    zend_update_property(SapiUpload_ce_ptr, _this_zval, ZEND_STRL("size"), size);
-    zend_update_property(SapiUpload_ce_ptr, _this_zval, ZEND_STRL("tmpName"), tmpName);
-    zend_update_property(SapiUpload_ce_ptr, _this_zval, ZEND_STRL("error"), error);
+#if PHP_VERSION_ID < 80000
+    zend_unset_property(SapiUpload_ce_ptr, _this_zval, ZEND_STRL("isUnconstructed"));
+#else
+    zend_unset_property(SapiUpload_ce_ptr, Z_OBJ_P(_this_zval), ZEND_STRL("isUnconstructed"));
+#endif
+
+    php7to8_zend_update_property(SapiUpload_ce_ptr, _this_zval, ZEND_STRL("name"), name);
+    php7to8_zend_update_property(SapiUpload_ce_ptr, _this_zval, ZEND_STRL("type"), type);
+    php7to8_zend_update_property(SapiUpload_ce_ptr, _this_zval, ZEND_STRL("size"), size);
+    php7to8_zend_update_property(SapiUpload_ce_ptr, _this_zval, ZEND_STRL("tmpName"), tmpName);
+    php7to8_zend_update_property(SapiUpload_ce_ptr, _this_zval, ZEND_STRL("error"), error);
 
 err:
     zval_ptr_dtor(&rv);
@@ -232,13 +237,12 @@ PHP_METHOD(SapiUpload, move)
     zval func_name = {0};
     zval params[2] = {0};
     zval rv = {0};
-    zval *retval = NULL;
 
     ZEND_PARSE_PARAMETERS_START(1, 1)
         Z_PARAM_STR(destination)
     ZEND_PARSE_PARAMETERS_END();
 
-    tmp_name = zend_read_property(SapiUpload_ce_ptr, _this_zval, ZEND_STRL("tmpName"), 0, &rv);
+    tmp_name = php7to8_zend_read_property(SapiUpload_ce_ptr, _this_zval, ZEND_STRL("tmpName"), 0, &rv);
     if (!tmp_name) {
         RETURN_FALSE;
     }
@@ -248,10 +252,7 @@ PHP_METHOD(SapiUpload, move)
 
     ZVAL_STRING(&func_name, "move_uploaded_file");
 
-    retval = call_user_function(NULL, NULL, &func_name, return_value, 2, params);
-    if (retval) {
-        ZVAL_ZVAL(return_value, retval, 1, 0);
-    }
+    call_user_function(NULL, NULL, &func_name, return_value, 2, params);
 
     zval_ptr_dtor(&func_name);
     zval_ptr_dtor(&params[0]);

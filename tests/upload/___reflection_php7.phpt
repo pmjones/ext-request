@@ -1,9 +1,9 @@
 --TEST--
-SapiUpload reflection (PHP8)
+SapiUpload reflection (PHP7)
 --SKIPIF--
 <?php
 if( !extension_loaded('request') ) die('skip ');
-if( PHP_VERSION_ID < 80000 ) die('skip ');
+if( PHP_VERSION_ID >= 80000 ) die('skip ');
 ?>
 --FILE--
 <?php
@@ -22,23 +22,23 @@ Class [ <internal:request> class SapiUpload ] {
   }
 
   - Properties [6] {
-    Property [ private $isUnconstructed = true ]
-    Property [ public $name = NULL ]
-    Property [ public $type = NULL ]
-    Property [ public $size = NULL ]
-    Property [ public $tmpName = NULL ]
-    Property [ public $error = NULL ]
+    Property [ <default> private $isUnconstructed ]
+    Property [ <default> public $name ]
+    Property [ <default> public $type ]
+    Property [ <default> public $size ]
+    Property [ <default> public $tmpName ]
+    Property [ <default> public $error ]
   }
 
   - Methods [2] {
     Method [ <internal:request, ctor> public method __construct ] {
 
       - Parameters [5] {
-        Parameter #0 [ <optional> string or NULL $name = <default> ]
-        Parameter #1 [ <optional> string or NULL $type = <default> ]
-        Parameter #2 [ <optional> int or NULL $size = <default> ]
-        Parameter #3 [ <optional> string or NULL $tmpName = <default> ]
-        Parameter #4 [ <optional> int or NULL $error = <default> ]
+        Parameter #0 [ <optional> string or NULL $name ]
+        Parameter #1 [ <optional> string or NULL $type ]
+        Parameter #2 [ <optional> int or NULL $size ]
+        Parameter #3 [ <optional> string or NULL $tmpName ]
+        Parameter #4 [ <optional> int or NULL $error ]
       }
     }
 
