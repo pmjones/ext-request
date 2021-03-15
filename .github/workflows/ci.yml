@@ -1,0 +1,133 @@
+name: ci
+
+on:
+    push:
+        branches:
+            - master
+            - github-actions
+            - ci
+    pull_request:
+        branches:
+            - master
+
+jobs:
+
+# docker
+    docker_debian:
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                PHP_VERSION:
+                    - "7.3"
+                    - "7.4"
+                    - "8.0"
+        steps:
+            - uses: actions/checkout@v2
+            - env:
+                  PHP_VERSION: ${{ matrix.PHP_VERSION }}
+                  DOCKER_NAME: debian
+              run: bash ./.github/scripts/docker.sh
+            - name: dump logs
+              if: ${{ failure() }}
+              run: |
+                  for i in `find tests -name "*.log" 2>/dev/null`; do
+                      echo "-- START ${i}";
+                      cat "${i}";
+                      echo "-- END";
+                  done
+    docker_alpine:
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                PHP_VERSION:
+                    - "7.3"
+                    - "7.4"
+                    - "8.0"
+        steps:
+            - uses: actions/checkout@v2
+            - env:
+                  PHP_VERSION: ${{ matrix.PHP_VERSION }}
+                  DOCKER_NAME: alpine
+              run: bash ./.github/scripts/docker.sh
+            - name: dump logs
+              if: ${{ failure() }}
+              run: |
+                  for i in `find tests -name "*.log" 2>/dev/null`; do
+                      echo "-- START ${i}";
+                      cat "${i}";
+                      echo "-- END";
+                  done
+    docker_fedora:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+            - env:
+                  DOCKER_NAME: fedora
+                  TEST_PHP_EXECUTABLE: /usr/bin/php
+              run: bash ./.github/scripts/docker.sh
+            - name: dump logs
+              if: ${{ failure() }}
+              run: |
+                  for i in `find tests -name "*.log" 2>/dev/null`; do
+                      echo "-- START ${i}";
+                      cat "${i}";
+                      echo "-- END";
+                  done
+
+# linux
+    linux:
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                PHP_VERSION:
+                    - "7.3"
+                    - "7.4"
+                    - "8.0"
+                COVERAGE: ["true", "false"]
+        steps:
+            - uses: actions/checkout@v2
+            - env:
+                  PHP_VERSION: ${{ matrix.PHP_VERSION }}
+                  COVERAGE: ${{ matrix.COVERAGE }}
+              run: bash ./.github/scripts/linux.sh
+            - name: Coveralls
+              if: ${{ matrix.COVERAGE == 'true' }}
+              uses: coverallsapp/github-action@master
+              with:
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  path-to-lcov: ./coverage.info
+            - name: dump logs
+              if: ${{ failure() }}
+              run: |
+                  for i in `find tests -name "*.log" 2>/dev/null`; do
+                      echo "-- START ${i}";
+                      cat "${i}";
+                      echo "-- END";
+                  done
+
+# osx
+    osx:
+        runs-on: macos-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                PHP_VERSION:
+                    - "7.3"
+                    - "7.4"
+                    - "8.0"
+        steps:
+            - uses: actions/checkout@v2
+            - env:
+                  PHP_VERSION: ${{ matrix.PHP_VERSION }}
+              run: bash ./.github/scripts/osx.sh
+            - name: dump logs
+              if: ${{ failure() }}
+              run: |
+                  for i in `find tests -name "*.log" 2>/dev/null`; do
+                      echo "-- START ${i}";
+                      cat "${i}";
+                      echo "-- END";
+                  done
