@@ -1,9 +1,9 @@
 --TEST--
-SapiResponse reflection (PHP8)
+SapiResponse reflection (PHP7)
 --SKIPIF--
 <?php
 if( !extension_loaded('request') ) die('skip ');
-if( PHP_VERSION_ID < 80000 ) die('skip ');
+if( PHP_VERSION_ID >= 80000 ) die('skip ');
 ?>
 --FILE--
 <?php
@@ -24,12 +24,12 @@ Class [ <internal:request> class SapiResponse implements SapiResponseInterface ]
   }
 
   - Properties [6] {
-    Property [ private $version = NULL ]
-    Property [ private $code = NULL ]
-    Property [ private $headers = NULL ]
-    Property [ private $cookies = NULL ]
-    Property [ private $content = NULL ]
-    Property [ private $callbacks = NULL ]
+    Property [ <default> private $version ]
+    Property [ <default> private $code ]
+    Property [ <default> private $headers ]
+    Property [ <default> private $cookies ]
+    Property [ <default> private $content ]
+    Property [ <default> private $callbacks ]
   }
 
   - Methods [23] {
@@ -123,12 +123,12 @@ Class [ <internal:request> class SapiResponse implements SapiResponseInterface ]
 
       - Parameters [7] {
         Parameter #0 [ <required> string $name ]
-        Parameter #1 [ <optional> string $value = <default> ]
-        Parameter #2 [ <optional> $expires_or_options = <default> ]
-        Parameter #3 [ <optional> string $path = <default> ]
-        Parameter #4 [ <optional> string $domain = <default> ]
-        Parameter #5 [ <optional> bool $secure = <default> ]
-        Parameter #6 [ <optional> bool $httponly = <default> ]
+        Parameter #1 [ <optional> string $value ]
+        Parameter #2 [ <optional> $expires_or_options ]
+        Parameter #3 [ <optional> string $path ]
+        Parameter #4 [ <optional> string $domain ]
+        Parameter #5 [ <optional> bool $secure ]
+        Parameter #6 [ <optional> bool $httponly ]
       }
       - Return [ SapiResponseInterface ]
     }
@@ -137,12 +137,12 @@ Class [ <internal:request> class SapiResponse implements SapiResponseInterface ]
 
       - Parameters [7] {
         Parameter #0 [ <required> string $name ]
-        Parameter #1 [ <optional> string $value = <default> ]
-        Parameter #2 [ <optional> $expires_or_options = <default> ]
-        Parameter #3 [ <optional> string $path = <default> ]
-        Parameter #4 [ <optional> string $domain = <default> ]
-        Parameter #5 [ <optional> bool $secure = <default> ]
-        Parameter #6 [ <optional> bool $httponly = <default> ]
+        Parameter #1 [ <optional> string $value ]
+        Parameter #2 [ <optional> $expires_or_options ]
+        Parameter #3 [ <optional> string $path ]
+        Parameter #4 [ <optional> string $domain ]
+        Parameter #5 [ <optional> bool $secure ]
+        Parameter #6 [ <optional> bool $httponly ]
       }
       - Return [ SapiResponseInterface ]
     }

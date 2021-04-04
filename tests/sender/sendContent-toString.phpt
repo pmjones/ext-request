@@ -5,7 +5,7 @@ SapiResponseSender::sendContent __toString()
 expose_php=0
 --FILE--
 <?php
-class Stringable
+class MyStringable
 {
     public function __toString() : string
     {
@@ -13,7 +13,7 @@ class Stringable
     }
 }
 $response = new SapiResponse();
-$response->setContent(new Stringable());
+$response->setContent(new MyStringable());
 (new SapiResponseSender())->send($response);
 --EXPECT--
 foo
